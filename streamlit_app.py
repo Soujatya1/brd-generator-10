@@ -1,151 +1,207 @@
 import streamlit as st
-import pandas as pd
-import math
-from pathlib import Path
+from langchain_groq import ChatGroq
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
+from docx import Document
+from io import BytesIO
+import hashlib
+import PyPDF2
+import os
+import pdfplumber
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+model = ChatGroq(
+    groq_api_key="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", 
+    model_name="Llama3-70b-8192"
 )
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+llm_chain = LLMChain(
+    llm=model, 
+    prompt=PromptTemplate(
+        input_variables=['template_format', 'requirements', 'tables'],
+        template="""
+        Create a Business Requirements Document (BRD) based on the following details:
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+        Document Structure:
+        {template_format}
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+        Requirements:
+        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise and specific.
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+        Tables:
+        If applicable, include the following tabular information extracted from the documents:
+        {tables}
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+        Formatting:
+        1. Use headings and subheadings for clear organization.
+        2. Include bullet points or numbered lists where necessary for better readability.
+        3. Clearly differentiate between functional and non-functional requirements.
+        4. Provide tables in a well-structured format, ensuring alignment and readability.
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
+        Key Points:
+        1. Use the given format `{template_format}` strictly as the base structure for the BRD.
+        2. Ensure all relevant information from the requirements is displayed under the corresponding section.
+        3. Avoid including irrelevant or speculative information.
+        4. Summarize lengthy content while preserving its meaning.
+
+        Output:
+        The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
+        """
+    )
+)
+
+def extract_content_from_docx(file):
+    doc = Document(file)
+    text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+    tables = []
+    for table in doc.tables:
+        table_data = []
+        for row in table.rows:
+            table_data.append([cell.text.strip() for cell in row.cells])
+        tables.append(table_data)
+    tables_as_text = "\n\n".join(["\n".join(["\t".join(row) for row in table]) for table in tables])
+    return text, tables_as_text
+
+def extract_text_from_pdf(file):
+    text = ""
+    tables = ""
+    with pdfplumber.open(file) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text()
+            # Try extracting tables as well
+            for table in page.extract_tables():
+                tables += "\n" + "\n".join(["\t".join(row) for row in table])
+    return text, tables
+
+st.title("BRD Generator")
+st.write("Upload requirement documents and define the BRD structure below to generate a detailed Business Requirements Document.")
+
+uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
+template_format = st.text_area("Enter the BRD format:", height=200, placeholder="Define the structure of the BRD here...")
+
+if uploaded_files:
+    if "extracted_data" not in st.session_state:
+        combined_requirements = ""
+        all_tables_as_text = ""
+        for uploaded_file in uploaded_files:
+            file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
+            if file_extension == ".docx":
+                text, tables_as_text = extract_content_from_docx(uploaded_file)
+                combined_requirements += text + "\n"
+                all_tables_as_text += tables_as_text + "\n"
+            elif file_extension == ".pdf":
+                combined_requirements += extract_text_from_pdf(uploaded_file) + "\n"
+            else:
+                st.warning(f"Unsupported file format: {uploaded_file.name}")
+        
+        st.session_state.extracted_data = {
+            'requirements': combined_requirements,
+            'tables': all_tables_as_text
+        }
+    else:
+        combined_requirements = st.session_state.extracted_data['requirements']
+        all_tables_as_text = st.session_state.extracted_data['tables']
+else:
+    combined_requirements = ""
+    all_tables_as_text = ""
+
+def generate_hash(template_format, requirements):
+    combined_string = template_format + requirements
+    return hashlib.md5(combined_string.encode()).hexdigest()
+
+if "outputs_cache" not in st.session_state:
+    st.session_state.outputs_cache = {}
+
+if st.button("Generate BRD") and combined_requirements and template_format:
+    prompt_input = {
+        "template_format": template_format,
+        "requirements": combined_requirements,
+        "tables": all_tables_as_text,
+    }
+    
+    doc_hash = generate_hash(template_format, combined_requirements)
+    
+    if doc_hash in st.session_state.outputs_cache:
+        output = st.session_state.outputs_cache[doc_hash]
+    else:
+        output = llm_chain.run(prompt_input)
+        st.session_state.outputs_cache[doc_hash] = output
+    
+    st.write(output)
+
+    doc = Document()
+    doc.add_heading('Business Requirements Document', level=1)
+    doc.add_paragraph(output, style='Normal')
+
+    # Add the tables to the Word document
+    if all_tables_as_text:
+        doc.add_heading("Tables", level=2)
+        doc.add_paragraph(all_tables_as_text, style='Normal')
+
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+
+    st.download_button(
+        label="Download BRD as Word document",
+        data=buffer,
+        file_name="BRD.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+output = st.session_state.outputs_cache
 
-    return gdp_df
+if isinstance(output, dict) and 'text' in output:
+    output_text = output['text']
+else:
+    output_text = str(output)
+    
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import difflib
 
-gdp_df = get_gdp_data()
+def calculate_text_similarity(text1, text2):
+    vectorizer = TfidfVectorizer().fit_transform([text1, text2])
+    vectors = vectorizer.toarray()
+    cosine_sim = cosine_similarity(vectors)
+    return cosine_sim[0][1] * 100
 
-# -----------------------------------------------------------------------------
-# Draw the actual page
+def calculate_structural_similarity(tables1, tables2):
+    sm = difflib.SequenceMatcher(None, tables1, tables2)
+    return sm.ratio() * 100
 
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
+st.write("Optional: Upload a sample BRD for comparison.")
+sample_file = st.file_uploader("Upload a sample BRD (PDF/DOCX):", type=["pdf", "docx"])
 
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
+if sample_file:
+    file_extension = os.path.splitext(sample_file.name)[-1].lower()
+    if file_extension == ".docx":
+        sample_text, sample_tables = extract_content_from_docx(sample_file)
+    elif file_extension == ".pdf":
+        sample_text = extract_text_from_pdf(sample_file)
+        sample_tables = ""
+    else:
+        st.warning(f"Unsupported file format: {sample_file.name}")
+        sample_text, sample_tables = "", ""
 
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
+    if st.session_state.extracted_data['requirements'] and template_format and sample_text:
+        
+        content_similarity = calculate_text_similarity(st.session_state.extracted_data['requirements'], sample_text)
+        content_similarity_1 = calculate_text_similarity(output_text, sample_text)
+        format_similarity = calculate_structural_similarity(all_tables_as_text, sample_tables)
+        st.subheader("Match Score Results")
+        if content_similarity_1 != 0:
+            similarity_ratio = (content_similarity_1 / content_similarity)*100
+            st.write(f"Similarity Score: {similarity_ratio:.2f}%")
         else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
+            print("Error: content_similarity_1 is 0, division by zero is not possible.")
+        content_weight = 0.7
+        format_weight = 0.3
+        final_score = (content_similarity * content_weight) + (format_similarity * format_weight)
 
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+        # Display results
+        #st.subheader("Match Score Results")
+        #st.write(f"Content Match: {content_similarity:.2f}%")
+        #st.write(f"Format Match: {format_similarity:.2f}%")
+        #st.write(f"Overall Match Score: {final_score:.2f}%")
+    else:
+        st.warning("Please generate a BRD first or ensure the sample document has valid content.")
