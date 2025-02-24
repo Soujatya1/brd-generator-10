@@ -1,2 +1,10 @@
 streamlit
-pandas
+langchain_groq
+langchain
+numpy
+langchain_community
+langchain_core
+python-docx
+PyPDF2
+scikit-learn
+pdfplumber
