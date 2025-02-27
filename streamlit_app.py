@@ -67,7 +67,6 @@ def extract_text_from_pdf(file):
     with pdfplumber.open(file) as pdf:
         for page in pdf.pages:
             text += page.extract_text()
-            # Try extracting tables as well
             for table in page.extract_tables():
                 tables += "\n" + "\n".join(["\t".join(row) for row in table])
     return text, tables
@@ -132,7 +131,6 @@ if st.button("Generate BRD") and combined_requirements and template_format:
     doc.add_heading('Business Requirements Document', level=1)
     doc.add_paragraph(output, style='Normal')
 
-    # Add the tables to the Word document
     if all_tables_as_text:
         doc.add_heading("Tables", level=2)
         doc.add_paragraph(all_tables_as_text, style='Normal')
