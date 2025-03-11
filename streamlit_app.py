@@ -294,8 +294,8 @@ if uploaded_files:
             st.write(", ".join(st.session_state.key_topics))
 
 # Caching mechanism
-def generate_hash(requirements, tables, test_count):
-    combined_string = f"{requirements}{tables}{test_count}"
+def generate_hash(requirements, tables):
+    combined_string = f"{requirements}{tables}"
     return hashlib.md5(combined_string.encode()).hexdigest()
 
 if "outputs_cache" not in st.session_state:
