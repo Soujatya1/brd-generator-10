@@ -138,7 +138,8 @@ if st.button("Generate BRD") and uploaded_files:
         
         prompt_input = {
             "requirements": st.session_state.extracted_data['requirements'],
-            "tables": st.session_state.extracted_data['tables']
+            "tables": st.session_state.extracted_data['tables'],
+            "brd_format": BRD_FORMAT
         }
         
         output = llm_chain.run(prompt_input)
