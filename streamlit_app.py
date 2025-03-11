@@ -75,24 +75,12 @@ def initialize_test_scenario_generator():
         prompt=PromptTemplate(
             input_variables=['brd_content'],
             template="""
-            Based on the following Business Requirements Document (BRD), create a comprehensive set of test scenarios for section 7.0 Test Scenarios:
-
+            Based on the following Business Requirements Document (BRD), generate detailed test scenarios for section 7.0 Test Scenarios:
+            
             BRD Content:
             {brd_content}
-
-            Create at least 15 detailed test scenarios that would thoroughly validate all the requirements in this BRD. 
-            For each test scenario, include:
-
-            1. Test ID (TS-XXX format)
-            2. Test Name (descriptive title)
-            3. Test Category (Functional, Non-functional, Integration, etc.)
-            4. Test Priority (High, Medium, Low)
-            5. Test Objective (What is being tested and why)
-            6. Preconditions (What must be in place before testing)
-            7. Test Steps (Numbered steps for execution)
-            8. Expected Results (What should happen if the test passes)
-            9. Test Data Requirements (Sample data needed)
-            10. Related Requirements (Which requirements from the BRD this test validates)
+            
+            Generate at least 15 test scenarios covering functional, non-functional, integration, and edge cases. Format them under the existing '7.0 Test Scenarios' heading.
             """
         )
     )
@@ -148,7 +136,8 @@ if st.button("Generate BRD") and uploaded_files:
         test_scenario_generator = initialize_test_scenario_generator()
         test_scenarios = test_scenario_generator.run({"brd_content": output})
         
-        output += "\n\n# 7.0 Test Scenarios\n" + test_scenarios
+        # Insert test scenarios under the existing '7.0 Test Scenarios' heading
+        output = output.replace("7.0 Test Scenarios", "7.0 Test Scenarios\n" + test_scenarios)
         
         st.success("BRD generated successfully!")
         
