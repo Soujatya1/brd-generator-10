@@ -7,10 +7,6 @@ from io import BytesIO
 import os
 import pdfplumber
 
-# Set page configuration
-st.set_page_config(page_title="Business Requirements Document Generator", layout="wide")
-
-# Define hardcoded BRD format
 BRD_FORMAT = """
 1.0 Introduction
     1.1 Purpose
@@ -31,7 +27,6 @@ BRD_FORMAT = """
 10.0 Appendix
 """
 
-# Initialize the LLM
 @st.cache_resource
 def initialize_llm():
     model = ChatGroq(
@@ -62,7 +57,6 @@ def initialize_llm():
     )
     return llm_chain
 
-# Initialize the Test Scenarios Generator
 @st.cache_resource
 def initialize_test_scenario_generator():
     model = ChatGroq(
@@ -94,10 +88,8 @@ def initialize_test_scenario_generator():
     )
     return test_scenario_chain
 
-# File uploader
 uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
 
-# Processing files
 if uploaded_files:
     combined_requirements = []
     all_tables_as_text = []
@@ -124,7 +116,6 @@ if uploaded_files:
         'tables': "\n\n".join(all_tables_as_text)
     }
 
-# Generate BRD
 if st.button("Generate BRD") and uploaded_files:
     if not st.session_state.extracted_data['requirements']:
         st.error("No content extracted from documents.")
@@ -140,20 +131,16 @@ if st.button("Generate BRD") and uploaded_files:
         
         output = llm_chain.run(prompt_input)
         
-        # Generate test scenarios
         test_scenario_generator = initialize_test_scenario_generator()
         test_scenarios = test_scenario_generator.run({"brd_content": output})
         
-        # Insert test scenarios under the existing '7.0 Test Scenarios' heading
         output = output.replace("7.0 Test Scenarios", "7.0 Test Scenarios\n" + test_scenarios)
         
         st.success("BRD generated successfully!")
         
-        # Display the output
         st.subheader("Generated Business Requirements Document")
         st.markdown(output)
         
-        # Create a Word document
         doc = Document()
         doc.add_heading('Business Requirements Document', level=0)
         
