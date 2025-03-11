@@ -51,23 +51,23 @@ def initialize_llm():
             Create a comprehensive Business Requirements Document (BRD) based on the following details:
 
             Document Structure:
-            1.0 Introduction [Page 4]
-                1.1 Purpose [Page 4]
-                1.2 To be process / High level solution [Page 4]
-            2.0 Impact Analysis [Page 4]
-                2.1 System impacts – Primary and cross functional [Page 4]
-                2.2 Impacted Products [Page 5]
-                2.3 List of APIs required [Page 5]
-            3.0 Process / Data Flow diagram / Figma [Page 6]
-            4.0 Business / System Requirement [Page 7]
-                4.1 Application / Module Name [Page 7]
-                4.2 Application / Module Name [Page 7]
-            5.0 MIS / DATA Requirement [Page 8]
-            6.0 Communication Requirement [Page 8]
-            7.0 Test Scenarios [Page 8]
-            8.0 Questions / Suggestions [Page 8]
-            9.0 Reference Document [Page 9]
-            10.0 Appendix [Page 9]
+            1.0 Introduction
+                1.1 Purpose
+                1.2 To be process / High level solution
+            2.0 Impact Analysis
+                2.1 System impacts – Primary and cross functional
+                2.2 Impacted Products
+                2.3 List of APIs required
+            3.0 Process / Data Flow diagram / Figma
+            4.0 Business / System Requirement
+                4.1 Application / Module Name
+                4.2 Application / Module Name
+            5.0 MIS / DATA Requirement
+            6.0 Communication Requirement
+            7.0 Test Scenarios
+            8.0 Questions / Suggestions
+            9.0 Reference Document
+            10.0 Appendix
 
             Requirements:
             Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise, specific, and maintain professional language.
@@ -149,19 +149,8 @@ def extract_text_from_pdf(file):
     return text, tables
 
 # UI Components
-st.title("Enhanced BRD Generator")
+st.title("AI-Powered BRD Generator")
 st.write("Upload requirement documents to generate a professionally formatted Business Requirements Document.")
-
-with st.expander("About this tool", expanded=False):
-    st.write("""
-    This tool analyzes your uploaded requirement documents and generates a well-structured Business Requirements Document (BRD) 
-    following a standard format with proper page numbering. The generated document can be downloaded as a Word file.
-    
-    The BRD will follow this structure:
-    ```
-    {}
-    ```
-    """.format(BRD_FORMAT))
 
 # File uploader
 uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
