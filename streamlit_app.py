@@ -87,8 +87,8 @@ def initialize_llm():
             Requirements Processing:
             1. Categorize extracted information based on the BRD structure
             2. Prioritize clarity and organization over verbosity
-            3. Include explicit section headings with page numbers as shown above
-            4. Ensure all content from input documents is represented in the appropriate sections
+            3. Ensure all content from input documents is represented in the appropriate sections
+            4. Also, in the test scenarios topic, generate 5-6 different test scenarios based on the documents uploaded
 
             Input Document Content:
             {requirements}
@@ -288,25 +288,3 @@ if st.button("Generate BRD") and uploaded_files:
                 file_name="Business_Requirements_Document.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
-
-# Similarity comparison
-st.write("---")
-st.subheader("Optional: Upload a sample BRD for comparison")
-sample_file = st.file_uploader("Upload a sample BRD (PDF/DOCX):", type=["pdf", "docx"], key="sample_file")
-
-def calculate_text_similarity(text1, text2):
-    vectorizer = TfidfVectorizer().fit_transform([text1, text2])
-    vectors = vectorizer.toarray()
-    cosine_sim = cosine_similarity(vectors)
-    return cosine_sim[0][1] * 100
-
-def calculate_structural_similarity(tables1, tables2):
-    sm = difflib.SequenceMatcher(None, tables1, tables2)
-    return sm.ratio() * 100
-
-if sample_file and "outputs_cache" in st.session_state and st.session_state.outputs_cache:
-    with st.spinner("Analyzing similarity..."):
-        file_extension = os.path.splitext(sample_file.name)[-1].lower()
-        
-        if file_extension == ".docx":
-            sample_text, sample_table
