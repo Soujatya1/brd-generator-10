@@ -80,7 +80,15 @@ def initialize_test_scenario_generator():
             BRD Content:
             {brd_content}
             
-            Generate at least 15 test scenarios covering functional, non-functional, integration, and edge cases. Format them under the existing '7.0 Test Scenarios' heading.
+            Special Instructions for Test Scenarios Section:
+            Based on the entire BRD content, generate at least 5 detailed test scenarios that would comprehensively validate the requirements. For each test scenario:
+            - Provide a clear test ID and descriptive name
+            - Include test objective/purpose
+            - List detailed test steps
+            - Define expected results/acceptance criteria
+            - Specify test data requirements if applicable
+            - Indicate whether it's a positive or negative test case
+            - Note any dependencies or prerequisites
             """
         )
     )
