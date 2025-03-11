@@ -42,12 +42,12 @@ def initialize_llm():
     llm_chain = LLMChain(
         llm=model, 
         prompt=PromptTemplate(
-            input_variables=['requirements', 'tables', 'BRD_FORMAT'],
+            input_variables=['requirements', 'tables', 'brd_format'],
             template="""
             Create a comprehensive Business Requirements Document (BRD) based on the following details:
             
             Document Structure:
-            {BRD_FORMAT}
+            {brd_format}
             
             Input Document Content:
             {requirements}
