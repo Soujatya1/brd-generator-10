@@ -325,7 +325,6 @@ if st.button("Generate BRD") and uploaded_files:
         doc_hash = generate_hash(
             st.session_state.extracted_data['requirements'], 
             st.session_state.extracted_data['tables'],
-            detail_level,
             test_scenario_count
         )
         
