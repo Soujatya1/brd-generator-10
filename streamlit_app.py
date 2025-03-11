@@ -233,49 +233,11 @@ def analyze_content_for_topics(text):
     return unique_keywords[:20]
 
 # UI Components
-st.title("Enhanced BRD Generator")
+st.title("AI_Powered BRD Generator")
 st.write("Upload requirement documents to generate a professionally formatted Business Requirements Document.")
-
-with st.expander("About this tool", expanded=False):
-    st.write("""
-    This tool analyzes your uploaded requirement documents and generates a well-structured Business Requirements Document (BRD) 
-    following a standard format with proper page numbering. The generated document will include:
-    
-    - Detailed descriptions for each section, tailored to your specific requirements
-    - Comprehensive test scenarios based on the content of your requirements
-    - Professional formatting with proper headings and page numbers
-    
-    The BRD will follow this structure:
-    ```
-    {}
-    ```
-    """.format(BRD_FORMAT))
 
 # File uploader
 uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
-
-# Settings options
-with st.expander("Advanced Settings"):
-    detail_level = st.select_slider(
-        "Detail Level for BRD",
-        options=["Concise", "Standard", "Detailed", "Comprehensive"],
-        value="Detailed",
-        help="Controls how detailed the generated BRD will be"
-    )
-    
-    test_scenario_count = st.slider(
-        "Number of Test Scenarios to Generate",
-        min_value=5,
-        max_value=25,
-        value=15,
-        help="How many test scenarios should be generated in section 7.0"
-    )
-    
-    generate_separate_test_scenarios = st.checkbox(
-        "Generate enhanced test scenarios separately",
-        value=True,
-        help="Generate more comprehensive test scenarios using a dedicated model pass"
-    )
 
 # Processing files
 if uploaded_files:
@@ -415,7 +377,7 @@ if st.button("Generate BRD") and uploaded_files:
         st.subheader("Generated Business Requirements Document")
         
         # Create tabs for different sections
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Complete BRD", "Introduction & Analysis", "Requirements", "Test Scenarios", "Supporting Information"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Complete BRD"])
         
         with tab1:
             st.markdown(output)
