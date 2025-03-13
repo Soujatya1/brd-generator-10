@@ -58,7 +58,7 @@ def initialize_llm():
         4. Provide tables in a well-structured format, ensuring alignment and readability.
 
         Key Points:
-        1. Use the given format `{template_format}` strictly as the base structure for the BRD.
+        1. Use the given format `{brd_format}` strictly as the base structure for the BRD.
         2. Ensure all relevant information from the requirements is displayed under the corresponding section.
         3. Avoid including irrelevant or speculative information.
         4. Summarize lengthy content while preserving its meaning.
