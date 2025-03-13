@@ -39,36 +39,6 @@ def initialize_llm():
         prompt=PromptTemplate(
             input_variables=['requirements', 'tables', 'brd_format'],
             template="""
-            Create a comprehensive Business Requirements Document (BRD) based on the following details:
-            
-            Document Structure:
-            {brd_format}
-            
-            Input Document Content:
-            {requirements}
-            
-            Tables:
-            {tables}
-            
-            Output:
-            Generate a complete, well-structured Business Requirements Document.
-            """
-        )
-    )
-    return llm_chain
-
-@st.cache_resource
-def initialize_test_scenario_generator():
-    model = ChatGroq(
-        groq_api_key="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", 
-        model_name="Llama3-70b-8192"
-    )
-    
-    test_scenario_chain = LLMChain(
-        llm=model, 
-        prompt=PromptTemplate(
-            input_variables=['brd_content'],
-            template="""
             Create a Business Requirements Document (BRD) based on the following details:
 
         Document Structure:
@@ -95,6 +65,27 @@ def initialize_test_scenario_generator():
 
         Output:
         The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
+        """
+        )
+    )
+    return llm_chain
+
+@st.cache_resource
+def initialize_test_scenario_generator():
+    model = ChatGroq(
+        groq_api_key="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", 
+        model_name="Llama3-70b-8192"
+    )
+    
+    test_scenario_chain = LLMChain(
+        llm=model, 
+        prompt=PromptTemplate(
+            input_variables=['brd_content'],
+            template="""
+            Based on the following Business Requirements Document (BRD), generate detailed test scenarios for section 7.0 Test Scenarios:
+            
+            BRD Content:
+            {brd_content}
             
             Special Instructions for Test Scenarios Section:
             Based on the entire BRD content, generate at least 5 detailed test scenarios that would comprehensively validate the requirements. For each test scenario:
