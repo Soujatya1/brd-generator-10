@@ -45,7 +45,7 @@ def initialize_llm():
         {brd_format}
 
         Requirements:
-        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise and specific.
+        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure according to the {requirements}. Be concise and specific.
 
         Tables:
         If applicable, include the following tabular information extracted from the documents:
