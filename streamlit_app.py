@@ -10,23 +10,23 @@ import os
 import pdfplumber
 
 BRD_FORMAT = """
-1.0 Introduction
-    1.1 Purpose
-    1.2 To be process / High level solution
-2.0 Impact Analysis
-    2.1 System impacts – Primary and cross functional
-    2.2 Impacted Products
-    2.3 List of APIs required
-3.0 Process / Data Flow diagram / Figma
-4.0 Business / System Requirement
-    4.1 Application / Module Name
-    4.2 Application / Module Name
-5.0 MIS / DATA Requirement
-6.0 Communication Requirement
-7.0 Test Scenarios
-8.0 Questions / Suggestions
-9.0 Reference Document
-10.0 Appendix
+# 1.0 Introduction
+    ## 1.1 Purpose
+    ## 1.2 To be process / High level solution
+# 2.0 Impact Analysis
+    ## 2.1 System impacts – Primary and cross functional
+    ## 2.2 Impacted Products
+    ## 2.3 List of APIs required
+# 3.0 Process / Data Flow diagram / Figma
+# 4.0 Business / System Requirement
+    ## 4.1 Application / Module Name
+    ## 4.2 Application / Module Name
+# 5.0 MIS / DATA Requirement
+# 6.0 Communication Requirement
+# 7.0 Test Scenarios
+# 8.0 Questions / Suggestions
+# 9.0 Reference Document
+# 10.0 Appendix
 """
 
 @st.cache_resource
