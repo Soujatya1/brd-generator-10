@@ -4,11 +4,18 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from docx import Document
 from docx.shared import Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 import os
 import pdfplumber
 
 BRD_FORMAT = """
+Version History:
+[Version History Table]
+
+Sign-off Matrix:
+[Sign-off Matrix Table]
+
 1.0 Introduction
     1.1 Purpose
     1.2 To be process / High level solution
@@ -27,23 +34,6 @@ BRD_FORMAT = """
 9.0 Reference Document
 10.0 Appendix
 """
-
-def add_header_with_logo(doc, logo_bytes):
-    """Add a logo to the header of each page in the document"""
-    # Access the first section
-    section = doc.sections[0]
-    
-    # Access the header
-    header = section.header
-    
-    # Create a header paragraph
-    header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
-    
-    # Add the logo to the header from bytes
-    run = header_para.add_run()
-    # Create BytesIO object from the bytes
-    logo_stream = BytesIO(logo_bytes)
-    run.add_picture(logo_stream, width=Inches(0.5))  # Adjust width as needed
 
 @st.cache_resource
 def initialize_llm():
@@ -121,8 +111,22 @@ def initialize_test_scenario_generator():
 
 st.title("Business Requirements Document Generator")
 
-# Add logo upload section
-logo_file = st.file_uploader("Upload logo for document header (PNG):", type=['png'])
+# Create a section specifically for logo upload
+st.subheader("Document Logo")
+logo_file = st.file_uploader("Upload logo/icon for document (PNG):", type=['png'])
+
+# Display preview of uploaded logo if available
+if logo_file is not None:
+    st.image(logo_file, caption="Logo Preview", width=100)
+    st.success("Logo uploaded successfully! It will be added to the document header.")
+    # Store the logo in session state for later use
+    if 'logo_data' not in st.session_state:
+        st.session_state.logo_data = logo_file.getvalue()
+else:
+    st.info("Please upload a PNG logo/icon that will appear in the document header.")
+
+# Original file uploader for documents
+st.subheader("Requirement Documents")
 uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
 
 if 'extracted_data' not in st.session_state:
@@ -154,11 +158,26 @@ if uploaded_files:
         'tables': "\n\n".join(all_tables_as_text)
     }
 
+def add_header_with_logo(doc, logo_bytes):
+    """Add a logo to the header of each page in the document"""
+    # Access the first section
+    section = doc.sections[0]
+    
+    # Access the header
+    header = section.header
+    
+    # Create a header paragraph
+    header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+    
+    # Add the logo to the header from bytes
+    run = header_para.add_run()
+    # Create BytesIO object from the bytes
+    logo_stream = BytesIO(logo_bytes)
+    run.add_picture(logo_stream, width=Inches(0.5))  # Adjust width as needed
+
 if st.button("Generate BRD") and uploaded_files:
     if not st.session_state.extracted_data['requirements']:
         st.error("No content extracted from documents.")
-    elif not logo_file and st.warning("No logo uploaded. Document will be generated without a logo."):
-        pass  # Continue with generation but without logo
     else:
         st.write("Generating BRD...")
         llm_chain = initialize_llm()
@@ -181,7 +200,7 @@ if st.button("Generate BRD") and uploaded_files:
         st.subheader("Generated Business Requirements Document")
         st.markdown(output)
         
-        # Create Word document
+        # Create document with tables
         doc = Document()
         doc.add_heading('Business Requirements Document', level=0)
         
@@ -190,6 +209,52 @@ if st.button("Generate BRD") and uploaded_files:
             logo_bytes = logo_file.getvalue()
             add_header_with_logo(doc, logo_bytes)
         
+        # Add Version History table
+        doc.add_heading('Version History', level=1)
+        version_table = doc.add_table(rows=1, cols=5)
+        version_table.style = 'Table Grid'
+        hdr_cells = version_table.rows[0].cells
+        hdr_cells[0].text = 'Version'
+        hdr_cells[1].text = 'Date'
+        hdr_cells[2].text = 'Author'
+        hdr_cells[3].text = 'Change description'
+        hdr_cells[4].text = 'Review by'
+        
+        # Add initial version row
+        row_cells = version_table.add_row().cells
+        row_cells[0].text = '1.0'
+        row_cells[1].text = '27-Sep-2024'
+        row_cells[2].text = 'Mukul Jain'
+        row_cells[3].text = 'Initial draft'
+        row_cells[4].text = ''
+        
+        # Add empty rows for future versions
+        for _ in range(4):
+            version_table.add_row()
+        
+        # Add note about review
+        note_para = doc.add_paragraph('** Review by should be someone from IT function.')
+        note_para.style = 'Caption'
+        
+        # Add Sign-off Matrix table
+        doc.add_heading('Sign-off Matrix', level=1)
+        signoff_table = doc.add_table(rows=1, cols=5)
+        signoff_table.style = 'Table Grid'
+        hdr_cells = signoff_table.rows[0].cells
+        hdr_cells[0].text = 'Version'
+        hdr_cells[1].text = 'Sign-off Authority'
+        hdr_cells[2].text = 'Business Function'
+        hdr_cells[3].text = 'Sign-off Date'
+        hdr_cells[4].text = 'Email Confirmation'
+        
+        # Add empty rows for sign-offs
+        for _ in range(4):
+            signoff_table.add_row()
+        
+        # Add page break after tables
+        doc.add_page_break()
+        
+        # Continue with rest of document
         for section in output.split('\n#'):
             if not section.strip():
                 continue
