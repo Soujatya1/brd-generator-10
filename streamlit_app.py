@@ -105,21 +105,17 @@ def initialize_test_scenario_generator():
 
 st.title("Business Requirements Document Generator")
 
-# Create a section specifically for logo upload
 st.subheader("Document Logo")
 logo_file = st.file_uploader("Upload logo/icon for document (PNG):", type=['png'])
 
-# Display preview of uploaded logo if available
 if logo_file is not None:
     st.image(logo_file, caption="Logo Preview", width=100)
     st.success("Logo uploaded successfully! It will be added to the document header.")
-    # Store the logo in session state for later use
     if 'logo_data' not in st.session_state:
         st.session_state.logo_data = logo_file.getvalue()
 else:
     st.info("Please upload a PNG logo/icon that will appear in the document header.")
 
-# Original file uploader for documents
 st.subheader("Requirement Documents")
 uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
 
@@ -154,20 +150,15 @@ if uploaded_files:
 
 def add_header_with_logo(doc, logo_bytes):
     """Add a logo to the header of each page in the document"""
-    # Access the first section
     section = doc.sections[0]
     
-    # Access the header
     header = section.header
     
-    # Create a header paragraph
     header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
     
-    # Add the logo to the header from bytes
     run = header_para.add_run()
-    # Create BytesIO object from the bytes
     logo_stream = BytesIO(logo_bytes)
-    run.add_picture(logo_stream, width=Inches(1.0))  # Adjust width as needed
+    run.add_picture(logo_stream, width=Inches(1.0))
 
 if st.button("Generate BRD") and uploaded_files:
     if not st.session_state.extracted_data['requirements']:
@@ -194,16 +185,13 @@ if st.button("Generate BRD") and uploaded_files:
         st.subheader("Generated Business Requirements Document")
         st.markdown(output)
         
-        # Create document with tables
         doc = Document()
         doc.add_heading('Business Requirements Document', level=0)
         
-        # Add logo to header if uploaded
         if logo_file:
             logo_bytes = logo_file.getvalue()
             add_header_with_logo(doc, logo_bytes)
         
-        # Add Version History table
         doc.add_heading('Version History', level=1)
         version_table = doc.add_table(rows=1, cols=5)
         version_table.style = 'Table Grid'
@@ -214,13 +202,11 @@ if st.button("Generate BRD") and uploaded_files:
         hdr_cells[3].text = 'Change description'
         hdr_cells[4].text = 'Review by'
 
-        # Add empty rows for version tracking
         for _ in range(4):
             version_table.add_row()
 
         doc.add_paragraph('**Review by should be someone from IT function.**', style='Caption')
 
-        # Add Sign-off Matrix table
         doc.add_heading('Sign-off Matrix', level=1)
         signoff_table = doc.add_table(rows=1, cols=5)
         signoff_table.style = 'Table Grid'
@@ -231,21 +217,16 @@ if st.button("Generate BRD") and uploaded_files:
         hdr_cells[3].text = 'Sign-off Date'
         hdr_cells[4].text = 'Email Confirmation'
 
-        # Add empty rows for sign-off tracking
         for _ in range(4):
             signoff_table.add_row()
 
-        # Page break after Version & Sign-off Matrix
         doc.add_page_break()
 
-        # Add Table of Contents section
         doc.add_heading('Table of Contents', level=1)
 
-        # TOC Placeholder (Users can update in Word by pressing F9)
         toc_paragraph = doc.add_paragraph()
         toc_paragraph.bold = True
 
-        # Define TOC structure
         toc_entries = [
             "1.0 Introduction",
             "    1.1 Purpose",
@@ -266,17 +247,14 @@ if st.button("Generate BRD") and uploaded_files:
             "10.0 Appendix"
         ]
 
-        # Add TOC entries with appropriate heading styles
         for entry in toc_entries:
-            if entry.startswith("    "):  # Sub-sections
+            if entry.startswith("    "):
                 doc.add_paragraph(entry.strip(), style='Heading 3')
             else:
                 doc.add_paragraph(entry, style='Heading 2')
 
-        # Page break after TOC to start main content
         doc.add_page_break()
         
-        # Continue with rest of document
         for section in output.split('\n#'):
             if not section.strip():
                 continue
