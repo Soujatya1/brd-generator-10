@@ -149,7 +149,6 @@ if uploaded_files:
     }
 
 def add_header_with_logo(doc, logo_bytes):
-    """Add a logo to the header of each page in the document"""
     section = doc.sections[0]
     
     header = section.header
