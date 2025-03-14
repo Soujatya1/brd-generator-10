@@ -10,12 +10,6 @@ import os
 import pdfplumber
 
 BRD_FORMAT = """
-Version History:
-[Version History Table]
-
-Sign-off Matrix:
-[Sign-off Matrix Table]
-
 1.0 Introduction
     1.1 Purpose
     1.2 To be process / High level solution
