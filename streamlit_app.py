@@ -216,10 +216,10 @@ if st.button("Generate BRD") and uploaded_files:
         
         # Add initial version row
         row_cells = version_table.add_row().cells
-        row_cells[0].text = '1.0'
-        row_cells[1].text = '27-Sep-2024'
-        row_cells[2].text = 'Mukul Jain'
-        row_cells[3].text = 'Initial draft'
+        row_cells[0].text = ''
+        row_cells[1].text = ''
+        row_cells[2].text = ''
+        row_cells[3].text = ''
         row_cells[4].text = ''
         
         # Add empty rows for future versions
