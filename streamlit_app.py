@@ -167,7 +167,7 @@ def add_header_with_logo(doc, logo_bytes):
     run = header_para.add_run()
     # Create BytesIO object from the bytes
     logo_stream = BytesIO(logo_bytes)
-    run.add_picture(logo_stream, width=Inches(0.5))  # Adjust width as needed
+    run.add_picture(logo_stream, width=Inches(1.0))  # Adjust width as needed
 
 if st.button("Generate BRD") and uploaded_files:
     if not st.session_state.extracted_data['requirements']:
