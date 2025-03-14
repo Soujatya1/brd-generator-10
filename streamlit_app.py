@@ -3,6 +3,7 @@ from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from docx import Document
+from docx.shared import Inches
 from io import BytesIO
 import os
 import pdfplumber
@@ -26,6 +27,23 @@ BRD_FORMAT = """
 9.0 Reference Document
 10.0 Appendix
 """
+
+def add_header_with_logo(doc, logo_bytes):
+    """Add a logo to the header of each page in the document"""
+    # Access the first section
+    section = doc.sections[0]
+    
+    # Access the header
+    header = section.header
+    
+    # Create a header paragraph
+    header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+    
+    # Add the logo to the header from bytes
+    run = header_para.add_run()
+    # Create BytesIO object from the bytes
+    logo_stream = BytesIO(logo_bytes)
+    run.add_picture(logo_stream, width=Inches(0.5))  # Adjust width as needed
 
 @st.cache_resource
 def initialize_llm():
@@ -101,7 +119,14 @@ def initialize_test_scenario_generator():
     )
     return test_scenario_chain
 
+st.title("Business Requirements Document Generator")
+
+# Add logo upload section
+logo_file = st.file_uploader("Upload logo for document header (PNG):", type=['png'])
 uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
+
+if 'extracted_data' not in st.session_state:
+    st.session_state.extracted_data = {'requirements': '', 'tables': ''}
 
 if uploaded_files:
     combined_requirements = []
@@ -132,6 +157,8 @@ if uploaded_files:
 if st.button("Generate BRD") and uploaded_files:
     if not st.session_state.extracted_data['requirements']:
         st.error("No content extracted from documents.")
+    elif not logo_file and st.warning("No logo uploaded. Document will be generated without a logo."):
+        pass  # Continue with generation but without logo
     else:
         st.write("Generating BRD...")
         llm_chain = initialize_llm()
@@ -154,8 +181,14 @@ if st.button("Generate BRD") and uploaded_files:
         st.subheader("Generated Business Requirements Document")
         st.markdown(output)
         
+        # Create Word document
         doc = Document()
         doc.add_heading('Business Requirements Document', level=0)
+        
+        # Add logo to header if uploaded
+        if logo_file:
+            logo_bytes = logo_file.getvalue()
+            add_header_with_logo(doc, logo_bytes)
         
         for section in output.split('\n#'):
             if not section.strip():
