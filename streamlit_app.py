@@ -243,8 +243,7 @@ if st.button("Generate BRD") and uploaded_files:
 
         # TOC Placeholder (Users can update in Word by pressing F9)
         toc_paragraph = doc.add_paragraph()
-        toc_run = toc_paragraph.add_run("Click anywhere in this TOC and press F9 to update it.\n\n")
-        toc_run.bold = True
+        toc_paragraph.bold = True
 
         # Define TOC structure
         toc_entries = [
