@@ -202,6 +202,20 @@ if st.button("Generate BRD") and uploaded_files:
         if logo_file:
             logo_bytes = logo_file.getvalue()
             add_header_with_logo(doc, logo_bytes)
+
+        doc.add_page_break()
+        doc.add_heading('Table of Contents', level=1)
+
+        toc_paragraph = doc.add_paragraph()
+        toc_run = toc_paragraph.add_run("Click anywhere in this TOC and press F9 to update the table.\n\n")
+        toc_run.bold = True
+
+        # Insert TOC placeholder (Word will auto-generate when refreshed)
+        toc_paragraph = doc.add_paragraph()
+        toc_field = toc_paragraph.add_run()
+        toc_field.add_text("TOC Placeholder")
+        toc_field.font.bold = True
+        toc_field.add_break()
         
         # Add Version History table
         doc.add_heading('Version History', level=1)
