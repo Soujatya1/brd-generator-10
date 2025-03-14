@@ -202,20 +202,6 @@ if st.button("Generate BRD") and uploaded_files:
         if logo_file:
             logo_bytes = logo_file.getvalue()
             add_header_with_logo(doc, logo_bytes)
-
-        doc.add_page_break()
-        doc.add_heading('Table of Contents', level=1)
-
-        toc_paragraph = doc.add_paragraph()
-        toc_run = toc_paragraph.add_run("Click anywhere in this TOC and press F9 to update the table.\n\n")
-        toc_run.bold = True
-
-        # Insert TOC placeholder (Word will auto-generate when refreshed)
-        toc_paragraph = doc.add_paragraph()
-        toc_field = toc_paragraph.add_run()
-        toc_field.add_text("TOC Placeholder")
-        toc_field.font.bold = True
-        toc_field.add_break()
         
         # Add Version History table
         doc.add_heading('Version History', level=1)
@@ -227,23 +213,13 @@ if st.button("Generate BRD") and uploaded_files:
         hdr_cells[2].text = 'Author'
         hdr_cells[3].text = 'Change description'
         hdr_cells[4].text = 'Review by'
-        
-        # Add initial version row
-        row_cells = version_table.add_row().cells
-        row_cells[0].text = ''
-        row_cells[1].text = ''
-        row_cells[2].text = ''
-        row_cells[3].text = ''
-        row_cells[4].text = ''
-        
-        # Add empty rows for future versions
+
+        # Add empty rows for version tracking
         for _ in range(4):
             version_table.add_row()
-        
-        # Add note about review
-        note_para = doc.add_paragraph('** Review by should be someone from IT function.')
-        note_para.style = 'Caption'
-        
+
+        doc.add_paragraph('**Review by should be someone from IT function.**', style='Caption')
+
         # Add Sign-off Matrix table
         doc.add_heading('Sign-off Matrix', level=1)
         signoff_table = doc.add_table(rows=1, cols=5)
@@ -254,12 +230,51 @@ if st.button("Generate BRD") and uploaded_files:
         hdr_cells[2].text = 'Business Function'
         hdr_cells[3].text = 'Sign-off Date'
         hdr_cells[4].text = 'Email Confirmation'
-        
-        # Add empty rows for sign-offs
+
+        # Add empty rows for sign-off tracking
         for _ in range(4):
             signoff_table.add_row()
-        
-        # Add page break after tables
+
+        # Page break after Version & Sign-off Matrix
+        doc.add_page_break()
+
+        # Add Table of Contents section
+        doc.add_heading('Table of Contents', level=1)
+
+        # TOC Placeholder (Users can update in Word by pressing F9)
+        toc_paragraph = doc.add_paragraph()
+        toc_run = toc_paragraph.add_run("Click anywhere in this TOC and press F9 to update it.\n\n")
+        toc_run.bold = True
+
+        # Define TOC structure
+        toc_entries = [
+            "1.0 Introduction",
+            "    1.1 Purpose",
+            "    1.2 To be process / High level solution",
+            "2.0 Impact Analysis",
+            "    2.1 System impacts – Primary and cross functional",
+            "    2.2 Impacted Products",
+            "    2.3 List of APIs required",
+            "3.0 Process / Data Flow diagram / Figma",
+            "4.0 Business / System Requirement",
+            "    4.1 Application / Module Name",
+            "    4.2 Application / Module Name",
+            "5.0 MIS / DATA Requirement",
+            "6.0 Communication Requirement",
+            "7.0 Test Scenarios",
+            "8.0 Questions / Suggestions",
+            "9.0 Reference Document",
+            "10.0 Appendix"
+        ]
+
+        # Add TOC entries with appropriate heading styles
+        for entry in toc_entries:
+            if entry.startswith("    "):  # Sub-sections
+                doc.add_paragraph(entry.strip(), style='Heading 3')
+            else:
+                doc.add_paragraph(entry, style='Heading 2')
+
+        # Page break after TOC to start main content
         doc.add_page_break()
         
         # Continue with rest of document
