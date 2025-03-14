@@ -204,26 +204,24 @@ if st.button("Generate BRD") and uploaded_files:
             add_header_with_logo(doc, logo_bytes)
 
         def create_document_with_placeholder(logo_bytes):
-    """Create a Word document with a placeholder for the title on the first page."""
-    doc = Document()
+            doc = Document()
 
-    # Add title placeholder
-    title_para = doc.add_paragraph("Document Title: ")
-    title_run = title_para.add_run("________________________")  # Placeholder line
-    title_run.bold = True
-    title_para.alignment = 1  # Center align
+            title_para = doc.add_paragraph("Document Title: ")
+            title_run = title_para.add_run("________________________")  # Placeholder line
+            title_run.bold = True
+            title_para.alignment = 1  # Center align
 
-    doc.add_paragraph("\n")  # Add space after title placeholder
+            doc.add_paragraph("\n")  # Add space after title placeholder
 
     # Add header with logo
-    section = doc.sections[0]
-    header = section.header
-    header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
-    run = header_para.add_run()
-    logo_stream = BytesIO(logo_bytes)
-    run.add_picture(logo_stream, width=Inches(1.0))  # Adjusted size
+            section = doc.sections[0]
+            header = section.header
+            header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+            run = header_para.add_run()
+            logo_stream = BytesIO(logo_bytes)
+            run.add_picture(logo_stream, width=Inches(1.0))  # Adjusted size
 
-    return doc
+            return doc
         
         # Add Version History table
         doc.add_heading('Version History', level=1)
