@@ -8,6 +8,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 import os
 import pdfplumber
+import pandas as pd
+import extract_msg
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -103,6 +105,52 @@ def initialize_test_scenario_generator():
     )
     return test_scenario_chain
 
+def extract_tables_from_excel(excel_file):
+    """Extract tables from Excel file and return as formatted text"""
+    tables_text = []
+    
+    try:
+        # Read all sheets
+        excel_data = pd.read_excel(excel_file, sheet_name=None)
+        
+        # Process each sheet
+        for sheet_name, df in excel_data.items():
+            if not df.empty:
+                tables_text.append(f"Table from sheet '{sheet_name}':")
+                tables_text.append(df.to_string(index=False))
+                tables_text.append("\n")
+    except Exception as e:
+        st.error(f"Error processing Excel file: {str(e)}")
+    
+    return "\n".join(tables_text)
+
+def extract_content_from_msg(msg_file):
+    """Extract content from Outlook MSG file"""
+    try:
+        temp_file = BytesIO(msg_file.getvalue())
+        temp_file.name = msg_file.name
+        
+        msg = extract_msg.Message(temp_file)
+        
+        content = []
+        content.append(f"Subject: {msg.subject}")
+        content.append(f"From: {msg.sender}")
+        content.append(f"To: {msg.to}")
+        content.append(f"Date: {msg.date}")
+        content.append("\nBody:")
+        content.append(msg.body)
+        
+        # Check for attachments
+        if msg.attachments:
+            content.append("\nAttachments mentioned (not processed):")
+            for attachment in msg.attachments:
+                content.append(f"- {attachment.longFilename}")
+        
+        return "\n".join(content)
+    except Exception as e:
+        st.error(f"Error processing MSG file: {str(e)}")
+        return ""
+
 st.title("Business Requirements Document Generator")
 
 st.subheader("Document Logo")
@@ -117,7 +165,9 @@ else:
     st.info("Please upload a PNG logo/icon that will appear in the document header.")
 
 st.subheader("Requirement Documents")
-uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
+uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX/XLSX/MSG):", 
+                                 accept_multiple_files=True, 
+                                 type=['pdf', 'docx', 'xlsx', 'msg'])
 
 if 'extracted_data' not in st.session_state:
     st.session_state.extracted_data = {'requirements': '', 'tables': ''}
@@ -134,11 +184,40 @@ if uploaded_files:
             doc = Document(uploaded_file)
             text = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
             combined_requirements.append(text)
+            
+            # Extract tables from DOCX
+            for table in doc.tables:
+                table_text = []
+                for row in table.rows:
+                    row_text = [cell.text for cell in row.cells]
+                    table_text.append(" | ".join(row_text))
+                all_tables_as_text.append("\n".join(table_text))
         
         elif file_extension == ".pdf":
             with pdfplumber.open(uploaded_file) as pdf:
                 text = "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
                 combined_requirements.append(text)
+                
+                # Extract tables from PDF
+                for page in pdf.pages:
+                    tables = page.extract_tables()
+                    for table in tables:
+                        table_text = []
+                        for row in table:
+                            row_text = [str(cell) if cell else "" for cell in row]
+                            table_text.append(" | ".join(row_text))
+                        all_tables_as_text.append("\n".join(table_text))
+        
+        elif file_extension == ".xlsx":
+            excel_tables = extract_tables_from_excel(uploaded_file)
+            all_tables_as_text.append(excel_tables)
+            # Also add the tables as requirements text
+            combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_tables}")
+        
+        elif file_extension == ".msg":
+            msg_content = extract_content_from_msg(uploaded_file)
+            if msg_content:
+                combined_requirements.append(msg_content)
         
         else:
             st.warning(f"Unsupported file format: {uploaded_file.name}")
