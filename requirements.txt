@@ -8,3 +8,4 @@ python-docx
 PyPDF2
 scikit-learn
 pdfplumber
+extract_msg
