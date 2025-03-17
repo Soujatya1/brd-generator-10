@@ -110,10 +110,8 @@ def extract_tables_from_excel(excel_file):
     tables_text = []
     
     try:
-        # Read all sheets
         excel_data = pd.read_excel(excel_file, sheet_name=None)
         
-        # Process each sheet
         for sheet_name, df in excel_data.items():
             if not df.empty:
                 tables_text.append(f"Table from sheet '{sheet_name}':")
@@ -140,7 +138,6 @@ def extract_content_from_msg(msg_file):
         content.append("\nBody:")
         content.append(msg.body)
         
-        # Check for attachments
         if msg.attachments:
             content.append("\nAttachments mentioned (not processed):")
             for attachment in msg.attachments:
@@ -198,7 +195,6 @@ if uploaded_files:
                 text = "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
                 combined_requirements.append(text)
                 
-                # Extract tables from PDF
                 for page in pdf.pages:
                     tables = page.extract_tables()
                     for table in tables:
@@ -211,7 +207,6 @@ if uploaded_files:
         elif file_extension == ".xlsx":
             excel_tables = extract_tables_from_excel(uploaded_file)
             all_tables_as_text.append(excel_tables)
-            # Also add the tables as requirements text
             combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_tables}")
         
         elif file_extension == ".msg":
