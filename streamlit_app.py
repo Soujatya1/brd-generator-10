@@ -318,7 +318,8 @@ if st.button("Generate BRD") and uploaded_files:
             "7.0 Test Scenarios",
             "8.0 Questions / Suggestions",
             "9.0 Reference Document",
-            "10.0 Appendix"
+            "10.0 Appendix",
+            "11.0 Risk Evaluation"
         ]
 
         for entry in toc_entries:
