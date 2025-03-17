@@ -29,6 +29,7 @@ BRD_FORMAT = """
 ## 8.0 Questions / Suggestions
 ## 9.0 Reference Document
 ## 10.0 Appendix
+## 11.0 Risk Evaluation
 """
 
 @st.cache_resource
