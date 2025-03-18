@@ -129,7 +129,6 @@ def initialize_test_scenario_generator(api_provider, api_key):
     return test_scenario_chain
 
 def extract_tables_from_excel(excel_file):
-    """Extract tables from Excel file and return as formatted text"""
     tables_text = []
     
     try:
@@ -137,6 +136,10 @@ def extract_tables_from_excel(excel_file):
         
         for sheet_name, df in excel_data.items():
             if not df.empty:
+                df = df.dropna(how='all').dropna(axis=1, how='all')
+                
+                df = df.fillna("")
+                
                 tables_text.append(f"Table from sheet '{sheet_name}':")
                 tables_text.append(df.to_string(index=False))
                 tables_text.append("\n")
