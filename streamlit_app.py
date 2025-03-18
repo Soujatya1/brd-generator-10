@@ -157,7 +157,7 @@ st.title("Business Requirements Document Generator")
 
 # Add OpenAI API Key input at the top of the UI
 st.subheader("OpenAI API Key")
-api_key = st.text_input("Enter your OpenAI API Key:", help="Your API key will not be stored and is only used for this session")
+api_key = st.text_input("Enter your OpenAI API Key:",help="Your API key will not be stored and is only used for this session")
 
 st.subheader("Document Logo")
 logo_file = st.file_uploader("Upload logo/icon for document (PNG):", type=['png'])
