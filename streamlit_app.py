@@ -11,6 +11,9 @@ import os
 import pdfplumber
 import pandas as pd
 import extract_msg
+import uuid
+import re
+import copy
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -65,23 +68,23 @@ def initialize_llm(api_provider, api_key):
         Wherever you find the similar header, please pick all the information from the {requirements} files and put it into the BRD as per the format.
         
         Tables:
-        If applicable, include the following tabular information extracted from the documents:
         {tables}
+
+        IMPORTANT: DO NOT try to recreate or reformat tables. Instead, when a table should be included, insert a marker [[TABLE_ID:identifier]] in the exact location where the table should appear.
 
         Formatting:
         1. Use headings and subheadings for clear organization.
         2. Include bullet points or numbered lists where necessary for better readability.
         3. Clearly differentiate between functional and non-functional requirements.
-        4. Provide tables in a well-structured format, ensuring alignment and readability.
+        4. For tables, include the table marker [[TABLE_ID:identifier]] as provided in the tables section.
 
         Key Points:
         1. Use the given format `{brd_format}` strictly as the base structure for the BRD.
         2. Ensure all relevant information from the requirements is displayed under the corresponding section.
         3. Avoid including irrelevant or speculative information.
         4. Summarize lengthy content while preserving its meaning.
-        
-        IMPORTANT: Ensure that any content with the same headers between the {requirements} and {brd_format} should be perfectly mapped, even all the tabular format.
-        
+        5. Do not attempt to recreate tables - use the table markers exactly as provided.
+
         Output:
         The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
         """
@@ -130,46 +133,98 @@ def initialize_test_scenario_generator(api_provider, api_key):
     )
     return test_scenario_chain
 
+def normalize_header(header):
+    """Normalize header for better matching"""
+    return header.lower().strip().replace('/', ' ').replace('  ', ' ')
+
 def extract_content_from_docx(doc_file):
     doc = Document(doc_file)
     structured_content = []
     current_heading = "General"
+    original_tables = {}  # Store original tables for later use
     
     # Iterate through all elements in order
     for element in doc.element.body:
         if element.tag.endswith('p'):  # Paragraph
-            paragraph = doc.paragraphs[len(structured_content)]
-            text = paragraph.text.strip()
-            
-            if text:
-                # Check if paragraph is a heading
-                if paragraph.style.name.startswith('Heading'):
-                    current_heading = text
+            if len(structured_content) < len(doc.paragraphs):
+                paragraph = doc.paragraphs[len(structured_content)]
+                text = paragraph.text.strip()
                 
-                structured_content.append({
-                    'type': 'paragraph',
-                    'heading': current_heading,
-                    'content': text
-                })
+                if text:
+                    # Check if paragraph is a heading
+                    if paragraph.style.name.startswith('Heading'):
+                        current_heading = text
+                    
+                    structured_content.append({
+                        'type': 'paragraph',
+                        'heading': current_heading,
+                        'content': text
+                    })
         
         elif element.tag.endswith('tbl'):  # Table
             table_index = len([e for e in structured_content if e['type'] == 'table'])
-            table = doc.tables[table_index]
-            
-            table_content = []
-            for row in table.rows:
-                row_text = [cell.text.strip() for cell in row.cells]
-                table_content.append(" | ".join(row_text))
-            
-            structured_content.append({
-                'type': 'table',
-                'heading': current_heading,
-                'content': "\n".join(table_content)
-            })
+            if table_index < len(doc.tables):
+                table = doc.tables[table_index]
+                
+                # Generate a unique identifier for this table
+                table_id = f"table_{uuid.uuid4().hex[:8]}"
+                
+                # Store original table reference
+                original_tables[table_id] = table
+                
+                table_content = []
+                for row in table.rows:
+                    row_text = [cell.text.strip() for cell in row.cells]
+                    table_content.append(" | ".join(row_text))
+                
+                structured_content.append({
+                    'type': 'table',
+                    'heading': current_heading,
+                    'content': f"[[TABLE_ID:{table_id}]]\n" + "\n".join(table_content),
+                    'table_id': table_id
+                })
     
-    return structured_content
+    return structured_content, original_tables
+
+def extract_tables_from_excel(excel_file):
+    """Extract tables from Excel with appropriate identifiers"""
+    original_tables = {}
+    table_markers = []
+    
+    try:
+        excel_data = pd.read_excel(excel_file, sheet_name=None)
+        
+        for sheet_name, df in excel_data.items():
+            if not df.empty:
+                # Generate a unique identifier for this table
+                table_id = f"excel_{sheet_name}_{uuid.uuid4().hex[:8]}".replace(' ', '_')
+                
+                # Store original dataframe
+                original_tables[table_id] = df
+                
+                # Create text representation
+                table_content = [f"Excel Sheet: {sheet_name} ({df.shape[0]} rows × {df.shape[1]} columns)"]
+                table_content.append("| " + " | ".join(df.columns.tolist()) + " |")
+                table_content.append("| " + " | ".join(["---"] * len(df.columns)) + " |")
+                
+                # Add sample rows (limit to 5)
+                for _, row in df.head(5).iterrows():
+                    table_content.append("| " + " | ".join([str(val) for val in row]) + " |")
+                
+                if df.shape[0] > 5:
+                    table_content.append("| ... | " + " | ".join(["..."] * (len(df.columns)-1)) + " |")
+                
+                # Create the marker text
+                marker = f"[[TABLE_ID:{table_id}]]\n" + "\n".join(table_content)
+                table_markers.append(marker)
+    
+    except Exception as e:
+        st.error(f"Error processing Excel file: {str(e)}")
+    
+    return original_tables, table_markers
 
 def summarize_excel_data(excel_file):
+    """Generate text summary of Excel data (for LLM context)"""
     summaries = []
     
     try:
@@ -217,6 +272,39 @@ def extract_content_from_msg(msg_file):
         st.error(f"Error processing MSG file: {str(e)}")
         return ""
 
+def insert_table_into_doc(doc, table_to_insert, table_id):
+    """Insert preserved table into Word document"""
+    if isinstance(table_to_insert, pd.DataFrame):
+        # Convert pandas DataFrame to Word table
+        df = table_to_insert
+        rows, cols = df.shape
+        
+        # Add headers row
+        word_table = doc.add_table(rows=rows+1, cols=cols)
+        word_table.style = 'Table Grid'
+        
+        # Add header row
+        for col_idx, column_name in enumerate(df.columns):
+            word_table.cell(0, col_idx).text = str(column_name)
+        
+        # Add data rows
+        for row_idx, (_, row) in enumerate(df.iterrows()):
+            for col_idx, cell_value in enumerate(row):
+                word_table.cell(row_idx+1, col_idx).text = str(cell_value)
+        
+        return word_table
+    else:
+        # Copy existing Word table
+        new_table = doc.add_table(rows=len(table_to_insert.rows), cols=len(table_to_insert.rows[0].cells))
+        new_table.style = 'Table Grid'
+        
+        # Copy content cell by cell
+        for i, row in enumerate(table_to_insert.rows):
+            for j, cell in enumerate(row.cells):
+                new_table.cell(i, j).text = cell.text
+        
+        return new_table
+
 st.title("Business Requirements Document Generator")
 
 st.subheader("AI Model Selection")
@@ -244,18 +332,22 @@ uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX/XLSX/M
                                  type=['pdf', 'docx', 'xlsx', 'msg'])
 
 if 'extracted_data' not in st.session_state:
-    st.session_state.extracted_data = {'requirements': '', 'tables': ''}
+    st.session_state.extracted_data = {'requirements': '', 'tables': '', 'original_tables': {}}
 
 if uploaded_files:
     combined_requirements = []
     all_tables_as_text = []
+    all_original_tables = {}
     
     for uploaded_file in uploaded_files:
         file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
         st.write(f"Processing {uploaded_file.name}...")
         
         if file_extension == ".docx":
-            structured_content = extract_content_from_docx(uploaded_file)
+            structured_content, original_tables = extract_content_from_docx(uploaded_file)
+            
+            # Add original tables to collection
+            all_original_tables.update(original_tables)
     
             # Group content by headers
             organized_content = {}
@@ -295,9 +387,16 @@ if uploaded_files:
                         all_tables_as_text.append("\n".join(table_text))
         
         elif file_extension == ".xlsx":
-            excel_tables = summarize_excel_data(uploaded_file)
-            all_tables_as_text.append(excel_tables)
-            combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_tables}")
+            # Extract tables with their IDs for later insertion
+            excel_tables, table_markers = extract_tables_from_excel(uploaded_file)
+            
+            # Add to collection
+            all_original_tables.update(excel_tables)
+            all_tables_as_text.extend(table_markers)
+            
+            # Generate summary for LLM context
+            excel_summary = summarize_excel_data(uploaded_file)
+            combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_summary}")
         
         elif file_extension == ".msg":
             msg_content = extract_content_from_msg(uploaded_file)
@@ -309,7 +408,8 @@ if uploaded_files:
     
     st.session_state.extracted_data = {
         'requirements': "\n\n".join(combined_requirements),
-        'tables': "\n\n".join(all_tables_as_text)
+        'tables': "\n\n".join(all_tables_as_text),
+        'original_tables': all_original_tables
     }
 
 def add_header_with_logo(doc, logo_bytes):
@@ -349,7 +449,9 @@ if st.button("Generate BRD") and uploaded_files:
             st.success("BRD generated successfully!")
             
             st.subheader("Generated Business Requirements Document")
-            st.markdown(output)
+            # Replace table markers with placeholder text for display in Streamlit
+            display_output = re.sub(r'\[\[TABLE_ID:[a-zA-Z0-9_]+\]\]', '[TABLE WILL BE INSERTED HERE]', output)
+            st.markdown(display_output)
             
             doc = Document()
             doc.add_heading('Business Requirements Document', level=0)
@@ -422,7 +524,10 @@ if st.button("Generate BRD") and uploaded_files:
 
             doc.add_page_break()
             
-            for section in output.split('\n#'):
+            # Process the output and insert tables where needed
+            sections = output.split('\n#')
+            
+            for section in sections:
                 if not section.strip():
                     continue
                 
@@ -431,9 +536,52 @@ if st.button("Generate BRD") and uploaded_files:
                 heading_level = 1 if section.startswith('#') else 2
                 doc.add_heading(heading_text, level=heading_level)
                 
-                content = '\n'.join(lines[1:]).strip()
-                if content:
-                    doc.add_paragraph(content)
+                # Process remaining lines and look for table markers
+                remaining_content = '\n'.join(lines[1:]).strip()
+                
+                # Check for table markers
+                table_pattern = r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]'
+                matches = list(re.finditer(table_pattern, remaining_content))
+                
+                # Process content with table insertions
+                last_pos = 0
+                for match in matches:
+                    # Add text before the table marker
+                    pre_text = remaining_content[last_pos:match.start()].strip()
+                    if pre_text:
+                        doc.add_paragraph(pre_text)
+                    
+                    # Get table ID and insert the corresponding table
+                    table_id = match.group(1)
+                    if table_id in st.session_state.extracted_data['original_tables']:
+                        st.write(f"Inserting table {table_id}")
+                        table_to_insert = st.session_state.extracted_data['original_tables'][table_id]
+                        insert_table_into_doc(doc, table_to_insert, table_id)
+                    else:
+                        doc.add_paragraph(f"[TABLE {table_id} NOT FOUND]")
+                    
+                    last_pos = match.end()
+                
+                # Add any remaining text after the last table
+                remaining_text = remaining_content[last_pos:].strip()
+                if remaining_text:
+                    # Remove any table descriptions that might follow the marker
+                    # This assumes table descriptions are the lines following a marker until a blank line
+                    lines = remaining_text.split('\n')
+                    clean_lines = []
+                    skip_mode = False
+                    
+                    for line in lines:
+                        if '|' in line and skip_mode:
+                            continue
+                        elif not line.strip() and skip_mode:
+                            skip_mode = False
+                        elif not skip_mode:
+                            clean_lines.append(line)
+                    
+                    clean_text = '\n'.join(clean_lines)
+                    if clean_text.strip():
+                        doc.add_paragraph(clean_text)
             
             buffer = BytesIO()
             doc.save(buffer)
