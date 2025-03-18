@@ -70,7 +70,7 @@ def initialize_llm(api_provider, api_key):
 
         IMPORTANT: DO NOT try to recreate or reformat tables. Instead, when a table should be included, insert a marker [[TABLE_ID:identifier]] in the exact location where the table should appear.
 
-        In the BRD format, section: 4.0 Business / System Requirement, should contain the business process flows from the {requirements} which should be in a table format.
+        In the BRD format, section: 4.0 Business / System Requirement, should contain the business process flows from the {requirements} which should be in a table format as well as normal text pointers.
         
         Formatting:
         1. Use headings and subheadings for clear organization.
