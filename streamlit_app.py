@@ -1,5 +1,5 @@
 import streamlit as st
-from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from docx import Document
@@ -34,9 +34,9 @@ BRD_FORMAT = """
 
 @st.cache_resource
 def initialize_llm():
-    model = ChatGroq(
-        groq_api_key="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", 
-        model_name="Llama3-70b-8192"
+    model = ChatOpenAI(
+        openai_api_key=st.secrets["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"],
+        model_name="gpt-4o-2024-08-06"
     )
     
     llm_chain = LLMChain(
@@ -77,9 +77,9 @@ def initialize_llm():
 
 @st.cache_resource
 def initialize_test_scenario_generator():
-    model = ChatGroq(
-        groq_api_key="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", 
-        model_name="Llama3-70b-8192"
+    model = ChatOpenAI(
+        openai_api_key=st.secrets["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"],
+        model_name="gpt-4o-2024-08-06"
     )
     
     test_scenario_chain = LLMChain(
