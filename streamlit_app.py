@@ -61,8 +61,9 @@ def initialize_llm(api_provider, api_key):
         {brd_format}
 
         Requirements:
-        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure according to the {requirements}. Be concise and specific.
-
+        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD format according to the {requirements}. Be concise and specific.
+        Wherever you find the similar header, please pick all the information from the {requirements} files and put it into the BRD as per the format.
+        
         Tables:
         If applicable, include the following tabular information extracted from the documents:
         {tables}
