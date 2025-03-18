@@ -128,25 +128,27 @@ def initialize_test_scenario_generator(api_provider, api_key):
     )
     return test_scenario_chain
 
-def extract_tables_from_excel(excel_file):
-    tables_text = []
+def summarize_excel_data(excel_file):
+    summaries = []
     
     try:
         excel_data = pd.read_excel(excel_file, sheet_name=None)
         
         for sheet_name, df in excel_data.items():
             if not df.empty:
-                df = df.dropna(how='all').dropna(axis=1, how='all')
-                
-                df = df.fillna("")
-                
-                tables_text.append(f"Table from sheet '{sheet_name}':")
-                tables_text.append(df.to_string(index=False))
-                tables_text.append("\n")
+                summaries.append(f"Sheet '{sheet_name}':")
+                summaries.append(f"- Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
+                summaries.append(f"- Column names: {', '.join(df.columns.tolist())}")
+                numeric_cols = df.select_dtypes(include=['number']).columns
+                if not numeric_cols.empty:
+                    summaries.append("- Numeric columns summary:")
+                    for col in numeric_cols[:5]:  # Limit to first 5 numeric columns
+                        summaries.append(f"  {col}: min={df[col].min()}, max={df[col].max()}, avg={df[col].mean():.2f}")
+                summaries.append("\n")
     except Exception as e:
         st.error(f"Error processing Excel file: {str(e)}")
     
-    return "\n".join(tables_text)
+    return "\n".join(summaries)
 
 def extract_content_from_msg(msg_file):
     """Extract content from Outlook MSG file"""
