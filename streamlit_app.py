@@ -32,11 +32,16 @@ BRD_FORMAT = """
 ## 11.0 Risk Evaluation
 """
 
+api_key = st.text_input("Enter your OpenAI API Key", type="password")
+st.caption("Your API key should start with 'sk-' and will not be stored")
+
 @st.cache_resource
 def initialize_llm():
     model = ChatOpenAI(
-        openai_api_key=st.secrets["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"],
-        model_name="gpt-4o-2024-08-06"
+        openai_api_key=api_key,
+        model_name="gpt-4o-2024-08-06",
+        temperature=0.2,
+        top_p=0.2
     )
     
     llm_chain = LLMChain(
@@ -78,8 +83,10 @@ def initialize_llm():
 @st.cache_resource
 def initialize_test_scenario_generator():
     model = ChatOpenAI(
-        openai_api_key=st.secrets["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"],
-        model_name="gpt-4o-2024-08-06"
+        openai_api_key=api_key,
+        model_name="gpt-4o-2024-08-06",
+        temperature=0.2,
+        top_p=0.2
     )
     
     test_scenario_chain = LLMChain(
