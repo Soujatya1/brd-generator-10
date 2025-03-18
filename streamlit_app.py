@@ -128,6 +128,45 @@ def initialize_test_scenario_generator(api_provider, api_key):
     )
     return test_scenario_chain
 
+def extract_content_from_docx(doc_file):
+    doc = Document(doc_file)
+    structured_content = []
+    current_heading = "General"
+    
+    # Iterate through all elements in order
+    for element in doc.element.body:
+        if element.tag.endswith('p'):  # Paragraph
+            paragraph = doc.paragraphs[len(structured_content)]
+            text = paragraph.text.strip()
+            
+            if text:
+                # Check if paragraph is a heading
+                if paragraph.style.name.startswith('Heading'):
+                    current_heading = text
+                
+                structured_content.append({
+                    'type': 'paragraph',
+                    'heading': current_heading,
+                    'content': text
+                })
+        
+        elif element.tag.endswith('tbl'):  # Table
+            table_index = len([e for e in structured_content if e['type'] == 'table'])
+            table = doc.tables[table_index]
+            
+            table_content = []
+            for row in table.rows:
+                row_text = [cell.text.strip() for cell in row.cells]
+                table_content.append(" | ".join(row_text))
+            
+            structured_content.append({
+                'type': 'table',
+                'heading': current_heading,
+                'content': "\n".join(table_content)
+            })
+    
+    return structured_content
+
 def summarize_excel_data(excel_file):
     summaries = []
     
@@ -214,17 +253,30 @@ if uploaded_files:
         st.write(f"Processing {uploaded_file.name}...")
         
         if file_extension == ".docx":
-            doc = Document(uploaded_file)
-            text = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
-            combined_requirements.append(text)
-            
-            # Extract tables from DOCX
-            for table in doc.tables:
-                table_text = []
-                for row in table.rows:
-                    row_text = [cell.text for cell in row.cells]
-                    table_text.append(" | ".join(row_text))
-                all_tables_as_text.append("\n".join(table_text))
+            structured_content = extract_content_from_docx(uploaded_file)
+    
+            # Group content by headers
+            organized_content = {}
+            for item in structured_content:
+                heading = item['heading']
+                if heading not in organized_content:
+                    organized_content[heading] = {'paragraphs': [], 'tables': []}
+        
+                if item['type'] == 'paragraph':
+                    organized_content[heading]['paragraphs'].append(item['content'])
+                else:  # Table
+                    organized_content[heading]['tables'].append(item['content'])
+    
+            # Format content for each heading
+            for heading, content in organized_content.items():
+                section_text = [heading]
+                section_text.extend(content['paragraphs'])
+                combined_requirements.append("\n".join(section_text))
+        
+                if content['tables']:
+                    table_text = [f"Tables for section {heading}:"]
+                    table_text.extend(content['tables'])
+                    all_tables_as_text.append("\n".join(table_text))
         
         elif file_extension == ".pdf":
             with pdfplumber.open(uploaded_file) as pdf:
