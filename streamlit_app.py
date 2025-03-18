@@ -70,12 +70,14 @@ def initialize_llm(api_provider, api_key):
 
         IMPORTANT: DO NOT try to recreate or reformat tables. Instead, when a table should be included, insert a marker [[TABLE_ID:identifier]] in the exact location where the table should appear.
 
+        In the BRD format, section: 4.0 Business / System Requirement, should contain the business process flows from the {requirements} which should be in a table format.
+        
         Formatting:
         1. Use headings and subheadings for clear organization.
         2. Include bullet points or numbered lists where necessary for better readability.
         3. Clearly differentiate between functional and non-functional requirements.
         4. For tables, include the table marker [[TABLE_ID:identifier]] as provided in the tables section.
-
+        
         Key Points:
         1. Use the given format `{brd_format}` strictly as the base structure for the BRD.
         2. Ensure all relevant information from the requirements is displayed under the corresponding section.
