@@ -241,7 +241,7 @@ if uploaded_files:
                         all_tables_as_text.append("\n".join(table_text))
         
         elif file_extension == ".xlsx":
-            excel_tables = extract_tables_from_excel(uploaded_file)
+            excel_tables = summarize_excel_data(uploaded_file)
             all_tables_as_text.append(excel_tables)
             combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_tables}")
         
