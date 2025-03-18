@@ -1,5 +1,6 @@
 import streamlit as st
 from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from docx import Document
@@ -33,13 +34,21 @@ BRD_FORMAT = """
 """
 
 @st.cache_resource
-def initialize_llm(api_key):
-    model = ChatOpenAI(
-        openai_api_key=api_key,
-        model_name="gpt-4o-2024-08-06",
-        temperature=0.2,
-        top_p=0.2
-    )
+def initialize_llm(api_provider, api_key):
+    if api_provider == "OpenAI":
+        model = ChatOpenAI(
+            openai_api_key=api_key,
+            model_name="gpt-4o-2024-08-06",
+            temperature=0.2,
+            top_p=0.2
+        )
+    else:  # Groq
+        model = ChatGroq(
+            groq_api_key=api_key,
+            model_name="llama3-70b-8192",  # Use appropriate Groq model
+            temperature=0.2,
+            top_p=0.2
+        )
     
     llm_chain = LLMChain(
         llm=model, 
@@ -78,13 +87,21 @@ def initialize_llm(api_key):
     return llm_chain
 
 @st.cache_resource
-def initialize_test_scenario_generator(api_key):
-    model = ChatOpenAI(
-        openai_api_key=api_key,
-        model_name="gpt-4o-2024-08-06",
-        temperature=0.2,
-        top_p=0.2
-    )
+def initialize_test_scenario_generator(api_provider, api_key):
+    if api_provider == "OpenAI":
+        model = ChatOpenAI(
+            openai_api_key=api_key,
+            model_name="gpt-4o-2024-08-06",
+            temperature=0.2,
+            top_p=0.2
+        )
+    else:  # Groq
+        model = ChatGroq(
+            groq_api_key=api_key,
+            model_name="llama3-70b-8192",  # Use appropriate Groq model
+            temperature=0.2,
+            top_p=0.2
+        )
     
     test_scenario_chain = LLMChain(
         llm=model, 
@@ -155,9 +172,14 @@ def extract_content_from_msg(msg_file):
 
 st.title("Business Requirements Document Generator")
 
-# Add OpenAI API Key input at the top of the UI
-st.subheader("OpenAI API Key")
-api_key = st.text_input("Enter your OpenAI API Key:",help="Your API key will not be stored and is only used for this session")
+# Add API selection and API Key input at the top of the UI
+st.subheader("AI Model Selection")
+api_provider = st.radio("Select API Provider:", ["OpenAI", "Groq"])
+
+if api_provider == "OpenAI":
+    api_key = st.text_input("Enter your OpenAI API Key:", help="Your API key will not be stored and is only used for this session")
+else:
+    api_key = st.text_input("Enter your Groq API Key:", help="Your API key will not be stored and is only used for this session")
 
 st.subheader("Document Logo")
 logo_file = st.file_uploader("Upload logo/icon for document (PNG):", type=['png'])
@@ -244,13 +266,13 @@ def add_header_with_logo(doc, logo_bytes):
 
 if st.button("Generate BRD") and uploaded_files:
     if not api_key:
-        st.error("Please enter your OpenAI API Key.")
+        st.error(f"Please enter your {api_provider} API Key.")
     elif not st.session_state.extracted_data['requirements']:
         st.error("No content extracted from documents.")
     else:
-        st.write("Generating BRD...")
+        st.write(f"Generating BRD using {api_provider} API...")
         try:
-            llm_chain = initialize_llm(api_key)
+            llm_chain = initialize_llm(api_provider, api_key)
             
             prompt_input = {
                 "requirements": st.session_state.extracted_data['requirements'],
@@ -260,7 +282,7 @@ if st.button("Generate BRD") and uploaded_files:
             
             output = llm_chain.run(prompt_input)
             
-            test_scenario_generator = initialize_test_scenario_generator(api_key)
+            test_scenario_generator = initialize_test_scenario_generator(api_provider, api_key)
             test_scenarios = test_scenario_generator.run({"brd_content": output})
             
             output = output.replace("7.0 Test Scenarios", "7.0 Test Scenarios\n" + test_scenarios)
@@ -366,4 +388,4 @@ if st.button("Generate BRD") and uploaded_files:
             )
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
-            st.info("This might be due to an invalid API key or connection issues. Please check your API key and try again.")
+            st.info(f"This might be due to an invalid {api_provider} API key or connection issues. Please check your API key and try again.")
