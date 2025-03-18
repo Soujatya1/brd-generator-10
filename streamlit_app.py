@@ -32,11 +32,8 @@ BRD_FORMAT = """
 ## 11.0 Risk Evaluation
 """
 
-api_key = st.text_input("Enter your OpenAI API Key", type="password")
-st.caption("Your API key should start with 'sk-' and will not be stored")
-
 @st.cache_resource
-def initialize_llm():
+def initialize_llm(api_key):
     model = ChatOpenAI(
         openai_api_key=api_key,
         model_name="gpt-4o-2024-08-06",
@@ -81,7 +78,7 @@ def initialize_llm():
     return llm_chain
 
 @st.cache_resource
-def initialize_test_scenario_generator():
+def initialize_test_scenario_generator(api_key):
     model = ChatOpenAI(
         openai_api_key=api_key,
         model_name="gpt-4o-2024-08-06",
@@ -157,6 +154,10 @@ def extract_content_from_msg(msg_file):
         return ""
 
 st.title("Business Requirements Document Generator")
+
+# Add OpenAI API Key input at the top of the UI
+st.subheader("OpenAI API Key")
+api_key = st.text_input("Enter your OpenAI API Key:", help="Your API key will not be stored and is only used for this session")
 
 st.subheader("Document Logo")
 logo_file = st.file_uploader("Upload logo/icon for document (PNG):", type=['png'])
@@ -242,121 +243,127 @@ def add_header_with_logo(doc, logo_bytes):
     run.add_picture(logo_stream, width=Inches(1.5))
 
 if st.button("Generate BRD") and uploaded_files:
-    if not st.session_state.extracted_data['requirements']:
+    if not api_key:
+        st.error("Please enter your OpenAI API Key.")
+    elif not st.session_state.extracted_data['requirements']:
         st.error("No content extracted from documents.")
     else:
         st.write("Generating BRD...")
-        llm_chain = initialize_llm()
-        
-        prompt_input = {
-            "requirements": st.session_state.extracted_data['requirements'],
-            "tables": st.session_state.extracted_data['tables'],
-            "brd_format": BRD_FORMAT
-        }
-        
-        output = llm_chain.run(prompt_input)
-        
-        test_scenario_generator = initialize_test_scenario_generator()
-        test_scenarios = test_scenario_generator.run({"brd_content": output})
-        
-        output = output.replace("7.0 Test Scenarios", "7.0 Test Scenarios\n" + test_scenarios)
-        
-        st.success("BRD generated successfully!")
-        
-        st.subheader("Generated Business Requirements Document")
-        st.markdown(output)
-        
-        doc = Document()
-        doc.add_heading('Business Requirements Document', level=0)
-        
-        if logo_file:
-            logo_bytes = logo_file.getvalue()
-            add_header_with_logo(doc, logo_bytes)
-        
-        doc.add_heading('Version History', level=1)
-        version_table = doc.add_table(rows=1, cols=5)
-        version_table.style = 'Table Grid'
-        hdr_cells = version_table.rows[0].cells
-        hdr_cells[0].text = 'Version'
-        hdr_cells[1].text = 'Date'
-        hdr_cells[2].text = 'Author'
-        hdr_cells[3].text = 'Change description'
-        hdr_cells[4].text = 'Review by'
-
-        for _ in range(4):
-            version_table.add_row()
-
-        doc.add_paragraph('**Review by should be someone from IT function.**', style='Caption')
-
-        doc.add_heading('Sign-off Matrix', level=1)
-        signoff_table = doc.add_table(rows=1, cols=5)
-        signoff_table.style = 'Table Grid'
-        hdr_cells = signoff_table.rows[0].cells
-        hdr_cells[0].text = 'Version'
-        hdr_cells[1].text = 'Sign-off Authority'
-        hdr_cells[2].text = 'Business Function'
-        hdr_cells[3].text = 'Sign-off Date'
-        hdr_cells[4].text = 'Email Confirmation'
-
-        for _ in range(4):
-            signoff_table.add_row()
-
-        doc.add_page_break()
-
-        doc.add_heading('Table of Contents', level=1)
-
-        toc_paragraph = doc.add_paragraph()
-        toc_paragraph.bold = True
-
-        toc_entries = [
-            "1.0 Introduction",
-            "    1.1 Purpose",
-            "    1.2 To be process / High level solution",
-            "2.0 Impact Analysis",
-            "    2.1 System impacts – Primary and cross functional",
-            "    2.2 Impacted Products",
-            "    2.3 List of APIs required",
-            "3.0 Process / Data Flow diagram / Figma",
-            "4.0 Business / System Requirement",
-            "    4.1 Application / Module Name",
-            "    4.2 Application / Module Name",
-            "5.0 MIS / DATA Requirement",
-            "6.0 Communication Requirement",
-            "7.0 Test Scenarios",
-            "8.0 Questions / Suggestions",
-            "9.0 Reference Document",
-            "10.0 Appendix",
-            "11.0 Risk Evaluation"
-        ]
-
-        for entry in toc_entries:
-            if entry.startswith("    "):
-                doc.add_paragraph(entry.strip(), style='Heading 3')
-            else:
-                doc.add_paragraph(entry, style='Heading 2')
-
-        doc.add_page_break()
-        
-        for section in output.split('\n#'):
-            if not section.strip():
-                continue
+        try:
+            llm_chain = initialize_llm(api_key)
             
-            lines = section.strip().split('\n')
-            heading_text = lines[0].lstrip('#').strip()
-            heading_level = 1 if section.startswith('#') else 2
-            doc.add_heading(heading_text, level=heading_level)
+            prompt_input = {
+                "requirements": st.session_state.extracted_data['requirements'],
+                "tables": st.session_state.extracted_data['tables'],
+                "brd_format": BRD_FORMAT
+            }
             
-            content = '\n'.join(lines[1:]).strip()
-            if content:
-                doc.add_paragraph(content)
-        
-        buffer = BytesIO()
-        doc.save(buffer)
-        buffer.seek(0)
-        
-        st.download_button(
-            label="Download BRD as Word document",
-            data=buffer,
-            file_name="Business_Requirements_Document.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+            output = llm_chain.run(prompt_input)
+            
+            test_scenario_generator = initialize_test_scenario_generator(api_key)
+            test_scenarios = test_scenario_generator.run({"brd_content": output})
+            
+            output = output.replace("7.0 Test Scenarios", "7.0 Test Scenarios\n" + test_scenarios)
+            
+            st.success("BRD generated successfully!")
+            
+            st.subheader("Generated Business Requirements Document")
+            st.markdown(output)
+            
+            doc = Document()
+            doc.add_heading('Business Requirements Document', level=0)
+            
+            if logo_file:
+                logo_bytes = logo_file.getvalue()
+                add_header_with_logo(doc, logo_bytes)
+            
+            doc.add_heading('Version History', level=1)
+            version_table = doc.add_table(rows=1, cols=5)
+            version_table.style = 'Table Grid'
+            hdr_cells = version_table.rows[0].cells
+            hdr_cells[0].text = 'Version'
+            hdr_cells[1].text = 'Date'
+            hdr_cells[2].text = 'Author'
+            hdr_cells[3].text = 'Change description'
+            hdr_cells[4].text = 'Review by'
+
+            for _ in range(4):
+                version_table.add_row()
+
+            doc.add_paragraph('**Review by should be someone from IT function.**', style='Caption')
+
+            doc.add_heading('Sign-off Matrix', level=1)
+            signoff_table = doc.add_table(rows=1, cols=5)
+            signoff_table.style = 'Table Grid'
+            hdr_cells = signoff_table.rows[0].cells
+            hdr_cells[0].text = 'Version'
+            hdr_cells[1].text = 'Sign-off Authority'
+            hdr_cells[2].text = 'Business Function'
+            hdr_cells[3].text = 'Sign-off Date'
+            hdr_cells[4].text = 'Email Confirmation'
+
+            for _ in range(4):
+                signoff_table.add_row()
+
+            doc.add_page_break()
+
+            doc.add_heading('Table of Contents', level=1)
+
+            toc_paragraph = doc.add_paragraph()
+            toc_paragraph.bold = True
+
+            toc_entries = [
+                "1.0 Introduction",
+                "    1.1 Purpose",
+                "    1.2 To be process / High level solution",
+                "2.0 Impact Analysis",
+                "    2.1 System impacts – Primary and cross functional",
+                "    2.2 Impacted Products",
+                "    2.3 List of APIs required",
+                "3.0 Process / Data Flow diagram / Figma",
+                "4.0 Business / System Requirement",
+                "    4.1 Application / Module Name",
+                "    4.2 Application / Module Name",
+                "5.0 MIS / DATA Requirement",
+                "6.0 Communication Requirement",
+                "7.0 Test Scenarios",
+                "8.0 Questions / Suggestions",
+                "9.0 Reference Document",
+                "10.0 Appendix",
+                "11.0 Risk Evaluation"
+            ]
+
+            for entry in toc_entries:
+                if entry.startswith("    "):
+                    doc.add_paragraph(entry.strip(), style='Heading 3')
+                else:
+                    doc.add_paragraph(entry, style='Heading 2')
+
+            doc.add_page_break()
+            
+            for section in output.split('\n#'):
+                if not section.strip():
+                    continue
+                
+                lines = section.strip().split('\n')
+                heading_text = lines[0].lstrip('#').strip()
+                heading_level = 1 if section.startswith('#') else 2
+                doc.add_heading(heading_text, level=heading_level)
+                
+                content = '\n'.join(lines[1:]).strip()
+                if content:
+                    doc.add_paragraph(content)
+            
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+            
+            st.download_button(
+                label="Download BRD as Word document",
+                data=buffer,
+                file_name="Business_Requirements_Document.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
+            st.info("This might be due to an invalid API key or connection issues. Please check your API key and try again.")
