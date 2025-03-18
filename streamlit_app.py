@@ -79,7 +79,9 @@ def initialize_llm(api_provider, api_key):
         2. Ensure all relevant information from the requirements is displayed under the corresponding section.
         3. Avoid including irrelevant or speculative information.
         4. Summarize lengthy content while preserving its meaning.
-
+        
+        IMPORTANT: Ensure that any content with the same headers between the {requirements} and {brd_format} should be perfectly mapped, even all the tabular format.
+        
         Output:
         The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
         """
