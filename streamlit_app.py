@@ -25,8 +25,6 @@ BRD_FORMAT = """
     ## 2.3 List of APIs required
 ## 3.0 Process / Data Flow diagram / Figma
 ## 4.0 Business / System Requirement
-    ## 4.1 Application / Module Name
-    ## 4.2 Application / Module Name
 ## 5.0 MIS / DATA Requirement
 ## 6.0 Communication Requirement
 ## 7.0 Test Scenarios
@@ -505,8 +503,6 @@ if st.button("Generate BRD") and uploaded_files:
                 "    2.3 List of APIs required",
                 "3.0 Process / Data Flow diagram / Figma",
                 "4.0 Business / System Requirement",
-                "    4.1 Application / Module Name",
-                "    4.2 Application / Module Name",
                 "5.0 MIS / DATA Requirement",
                 "6.0 Communication Requirement",
                 "7.0 Test Scenarios",
