@@ -42,10 +42,10 @@ def initialize_llm(api_provider, api_key):
             temperature=0.2,
             top_p=0.2
         )
-    else:  # Groq
+    else:
         model = ChatGroq(
             groq_api_key=api_key,
-            model_name="llama3-70b-8192",  # Use appropriate Groq model
+            model_name="llama3-70b-8192",
             temperature=0.2,
             top_p=0.2
         )
@@ -91,7 +91,7 @@ def initialize_test_scenario_generator(api_provider, api_key):
     if api_provider == "OpenAI":
         model = ChatOpenAI(
             openai_api_key=api_key,
-            model_name="gpt-4o-2024-08-06",
+            model_name="gpt-3.5-turbo",
             temperature=0.2,
             top_p=0.2
         )
@@ -172,7 +172,6 @@ def extract_content_from_msg(msg_file):
 
 st.title("Business Requirements Document Generator")
 
-# Add API selection and API Key input at the top of the UI
 st.subheader("AI Model Selection")
 api_provider = st.radio("Select API Provider:", ["OpenAI", "Groq"])
 
