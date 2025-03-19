@@ -101,10 +101,10 @@ def initialize_test_scenario_generator(api_provider, api_key):
             temperature=0.2,
             top_p=0.2
         )
-    else:  # Groq
+    else:
         model = ChatGroq(
             groq_api_key=api_key,
-            model_name="llama3-70b-8192",  # Use appropriate Groq model
+            model_name="llama3-70b-8192",
             temperature=0.2,
             top_p=0.2
         )
@@ -141,17 +141,15 @@ def extract_content_from_docx(doc_file):
     doc = Document(doc_file)
     structured_content = []
     current_heading = "General"
-    original_tables = {}  # Store original tables for later use
+    original_tables = {}
     
-    # Iterate through all elements in order
     for element in doc.element.body:
-        if element.tag.endswith('p'):  # Paragraph
+        if element.tag.endswith('p'):
             if len(structured_content) < len(doc.paragraphs):
                 paragraph = doc.paragraphs[len(structured_content)]
                 text = paragraph.text.strip()
                 
                 if text:
-                    # Check if paragraph is a heading
                     if paragraph.style.name.startswith('Heading'):
                         current_heading = text
                     
@@ -161,15 +159,13 @@ def extract_content_from_docx(doc_file):
                         'content': text
                     })
         
-        elif element.tag.endswith('tbl'):  # Table
+        elif element.tag.endswith('tbl'):
             table_index = len([e for e in structured_content if e['type'] == 'table'])
             if table_index < len(doc.tables):
                 table = doc.tables[table_index]
                 
-                # Generate a unique identifier for this table
                 table_id = f"table_{uuid.uuid4().hex[:8]}"
                 
-                # Store original table reference
                 original_tables[table_id] = table
                 
                 table_content = []
@@ -196,25 +192,20 @@ def extract_tables_from_excel(excel_file):
         
         for sheet_name, df in excel_data.items():
             if not df.empty:
-                # Generate a unique identifier for this table
                 table_id = f"excel_{sheet_name}_{uuid.uuid4().hex[:8]}".replace(' ', '_')
                 
-                # Store original dataframe
                 original_tables[table_id] = df
                 
-                # Create text representation
                 table_content = [f"Excel Sheet: {sheet_name} ({df.shape[0]} rows × {df.shape[1]} columns)"]
                 table_content.append("| " + " | ".join(df.columns.tolist()) + " |")
                 table_content.append("| " + " | ".join(["---"] * len(df.columns)) + " |")
                 
-                # Add sample rows (limit to 5)
                 for _, row in df.head(5).iterrows():
                     table_content.append("| " + " | ".join([str(val) for val in row]) + " |")
                 
                 if df.shape[0] > 5:
                     table_content.append("| ... | " + " | ".join(["..."] * (len(df.columns)-1)) + " |")
                 
-                # Create the marker text
                 marker = f"[[TABLE_ID:{table_id}]]\n" + "\n".join(table_content)
                 table_markers.append(marker)
     
@@ -238,7 +229,7 @@ def summarize_excel_data(excel_file):
                 numeric_cols = df.select_dtypes(include=['number']).columns
                 if not numeric_cols.empty:
                     summaries.append("- Numeric columns summary:")
-                    for col in numeric_cols[:5]:  # Limit to first 5 numeric columns
+                    for col in numeric_cols[:5]:
                         summaries.append(f"  {col}: min={df[col].min()}, max={df[col].max()}, avg={df[col].mean():.2f}")
                 summaries.append("\n")
     except Exception as e:
@@ -275,30 +266,24 @@ def extract_content_from_msg(msg_file):
 def insert_table_into_doc(doc, table_to_insert, table_id):
     """Insert preserved table into Word document"""
     if isinstance(table_to_insert, pd.DataFrame):
-        # Convert pandas DataFrame to Word table
         df = table_to_insert
         rows, cols = df.shape
         
-        # Add headers row
         word_table = doc.add_table(rows=rows+1, cols=cols)
         word_table.style = 'Table Grid'
         
-        # Add header row
         for col_idx, column_name in enumerate(df.columns):
             word_table.cell(0, col_idx).text = str(column_name)
         
-        # Add data rows
         for row_idx, (_, row) in enumerate(df.iterrows()):
             for col_idx, cell_value in enumerate(row):
                 word_table.cell(row_idx+1, col_idx).text = str(cell_value)
         
         return word_table
     else:
-        # Copy existing Word table
         new_table = doc.add_table(rows=len(table_to_insert.rows), cols=len(table_to_insert.rows[0].cells))
         new_table.style = 'Table Grid'
         
-        # Copy content cell by cell
         for i, row in enumerate(table_to_insert.rows):
             for j, cell in enumerate(row.cells):
                 new_table.cell(i, j).text = cell.text
@@ -361,7 +346,6 @@ if uploaded_files:
                 else:  # Table
                     organized_content[heading]['tables'].append(item['content'])
     
-            # Format content for each heading
             for heading, content in organized_content.items():
                 section_text = [heading]
                 section_text.extend(content['paragraphs'])
@@ -387,14 +371,11 @@ if uploaded_files:
                         all_tables_as_text.append("\n".join(table_text))
         
         elif file_extension == ".xlsx":
-            # Extract tables with their IDs for later insertion
             excel_tables, table_markers = extract_tables_from_excel(uploaded_file)
             
-            # Add to collection
             all_original_tables.update(excel_tables)
             all_tables_as_text.extend(table_markers)
             
-            # Generate summary for LLM context
             excel_summary = summarize_excel_data(uploaded_file)
             combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_summary}")
         
@@ -449,7 +430,6 @@ if st.button("Generate BRD") and uploaded_files:
             st.success("BRD generated successfully!")
             
             st.subheader("Generated Business Requirements Document")
-            # Replace table markers with placeholder text for display in Streamlit
             display_output = re.sub(r'\[\[TABLE_ID:[a-zA-Z0-9_]+\]\]', '[TABLE WILL BE INSERTED HERE]', output)
             st.markdown(display_output)
             
@@ -522,7 +502,6 @@ if st.button("Generate BRD") and uploaded_files:
 
             doc.add_page_break()
             
-            # Process the output and insert tables where needed
             sections = output.split('\n#')
             
             for section in sections:
@@ -534,22 +513,17 @@ if st.button("Generate BRD") and uploaded_files:
                 heading_level = 1 if section.startswith('#') else 2
                 doc.add_heading(heading_text, level=heading_level)
                 
-                # Process remaining lines and look for table markers
                 remaining_content = '\n'.join(lines[1:]).strip()
                 
-                # Check for table markers
                 table_pattern = r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]'
                 matches = list(re.finditer(table_pattern, remaining_content))
                 
-                # Process content with table insertions
                 last_pos = 0
                 for match in matches:
-                    # Add text before the table marker
                     pre_text = remaining_content[last_pos:match.start()].strip()
                     if pre_text:
                         doc.add_paragraph(pre_text)
                     
-                    # Get table ID and insert the corresponding table
                     table_id = match.group(1)
                     if table_id in st.session_state.extracted_data['original_tables']:
                         st.write(f"Inserting table {table_id}")
@@ -560,11 +534,9 @@ if st.button("Generate BRD") and uploaded_files:
                     
                     last_pos = match.end()
                 
-                # Add any remaining text after the last table
                 remaining_text = remaining_content[last_pos:].strip()
                 if remaining_text:
-                    # Remove any table descriptions that might follow the marker
-                    # This assumes table descriptions are the lines following a marker until a blank line
+                    
                     lines = remaining_text.split('\n')
                     clean_lines = []
                     skip_mode = False
