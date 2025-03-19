@@ -134,7 +134,6 @@ def initialize_test_scenario_generator(api_provider, api_key):
     return test_scenario_chain
 
 def normalize_header(header):
-    """Normalize header for better matching"""
     return header.lower().strip().replace('/', ' ').replace('  ', ' ')
 
 def extract_content_from_docx(doc_file):
@@ -183,7 +182,6 @@ def extract_content_from_docx(doc_file):
     return structured_content, original_tables
 
 def extract_tables_from_excel(excel_file):
-    """Extract tables from Excel with appropriate identifiers"""
     original_tables = {}
     table_markers = []
     
@@ -215,7 +213,6 @@ def extract_tables_from_excel(excel_file):
     return original_tables, table_markers
 
 def summarize_excel_data(excel_file):
-    """Generate text summary of Excel data (for LLM context)"""
     summaries = []
     
     try:
@@ -264,7 +261,6 @@ def extract_content_from_msg(msg_file):
         return ""
 
 def insert_table_into_doc(doc, table_to_insert, table_id):
-    """Insert preserved table into Word document"""
     if isinstance(table_to_insert, pd.DataFrame):
         df = table_to_insert
         rows, cols = df.shape
@@ -331,10 +327,8 @@ if uploaded_files:
         if file_extension == ".docx":
             structured_content, original_tables = extract_content_from_docx(uploaded_file)
             
-            # Add original tables to collection
             all_original_tables.update(original_tables)
     
-            # Group content by headers
             organized_content = {}
             for item in structured_content:
                 heading = item['heading']
@@ -343,7 +337,7 @@ if uploaded_files:
         
                 if item['type'] == 'paragraph':
                     organized_content[heading]['paragraphs'].append(item['content'])
-                else:  # Table
+                else:
                     organized_content[heading]['tables'].append(item['content'])
     
             for heading, content in organized_content.items():
