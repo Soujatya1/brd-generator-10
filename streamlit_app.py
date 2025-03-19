@@ -56,38 +56,44 @@ def initialize_llm(api_provider, api_key):
         prompt=PromptTemplate(
             input_variables=['requirements', 'tables', 'brd_format'],
             template="""
-            Create a Business Requirements Document (BRD) based on the following details:
+Create a Business Requirements Document (BRD) based on the following details:
 
-        Document Structure:
-        {brd_format}
+Document Structure:
+{brd_format}
 
-        Requirements:
-        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD format according to the {requirements}. Be concise and specific.
-        Wherever you find the similar header, please pick all the information from the {requirements} files and put it into the BRD as per the format.
-        
-        Tables:
-        {tables}
+Requirements:
+The input contains content from multiple document types (DOCX, PDF, XLSX, MSG). 
+IMPORTANT: Analyze ALL document types EQUALLY and extract relevant information from each.
+Do not prioritize Excel content over other document types.
+Ensure information from all document types is represented in the final BRD.
 
-        IMPORTANT: DO NOT try to recreate or reformat tables. Instead, when a table should be included, insert a marker [[TABLE_ID:identifier]] in the exact location where the table should appear.
+Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD format according to the {requirements}. Be concise and specific.
+Wherever you find similar headers across document types, consolidate the information appropriately in the BRD.
 
-        In the BRD format, section: 4.0 Business / System Requirement, should contain the business process flows from the {requirements} which should be in a table format as well as normal text pointers.
-        
-        Formatting:
-        1. Use headings and subheadings for clear organization.
-        2. Include bullet points or numbered lists where necessary for better readability.
-        3. Clearly differentiate between functional and non-functional requirements.
-        4. For tables, include the table marker [[TABLE_ID:identifier]] as provided in the tables section.
-        
-        Key Points:
-        1. Use the given format `{brd_format}` strictly as the base structure for the BRD.
-        2. Ensure all relevant information from the requirements is displayed under the corresponding section.
-        3. Avoid including irrelevant or speculative information.
-        4. Summarize lengthy content while preserving its meaning.
-        5. Do not attempt to recreate tables - use the table markers exactly as provided.
+Tables:
+{tables}
 
-        Output:
-        The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
-        """
+IMPORTANT: DO NOT try to recreate or reformat tables. Instead, when a table should be included, insert a marker [[TABLE_ID:identifier]] in the exact location where the table should appear.
+
+In the BRD format, section: 4.0 Business / System Requirement, should contain the business process flows from all document types which should be in a table format as well as normal text pointers.
+
+Formatting:
+1. Use headings and subheadings for clear organization.
+2. Include bullet points or numbered lists where necessary for better readability.
+3. Clearly differentiate between functional and non-functional requirements.
+4. For tables, include the table marker [[TABLE_ID:identifier]] as provided in the tables section.
+
+Key Points:
+1. Use the given format `{brd_format}` strictly as the base structure for the BRD.
+2. Ensure all relevant information from ALL document types is displayed under the corresponding section.
+3. Avoid including irrelevant or speculative information.
+4. Summarize lengthy content while preserving its meaning.
+5. Do not attempt to recreate tables - use the table markers exactly as provided.
+6. Maintain balance between different document types - do not prioritize Excel over other formats.
+
+Output:
+The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
+"""
         )
     )
     return llm_chain
