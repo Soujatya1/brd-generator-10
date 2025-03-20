@@ -235,26 +235,23 @@ def summarize_excel_data(excel_file):
     return "\n".join(summaries)
 
 def extract_content_from_msg(msg_file):
-    """Extract content from Outlook MSG file"""
+    """
+    Extract only the text content from Outlook MSG file and convert to simple text
+    to reduce token usage
+    """
     try:
         temp_file = BytesIO(msg_file.getvalue())
         temp_file.name = msg_file.name
         
         msg = extract_msg.Message(temp_file)
         
+        # Just extract the essential text content
         content = []
-        content.append(f"Subject: {msg.subject}")
-        content.append(f"From: {msg.sender}")
-        content.append(f"To: {msg.to}")
-        content.append(f"Date: {msg.date}")
-        content.append("\nBody:")
+        content.append(f"Email Subject: {msg.subject}")
+        content.append(f"Email Body:")
         content.append(msg.body)
         
-        if msg.attachments:
-            content.append("\nAttachments mentioned (not processed):")
-            for attachment in msg.attachments:
-                content.append(f"- {attachment.longFilename}")
-        
+        # Skip attachment processing and metadata to save tokens
         return "\n".join(content)
     except Exception as e:
         st.error(f"Error processing MSG file: {str(e)}")
