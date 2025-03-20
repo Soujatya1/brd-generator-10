@@ -234,25 +234,41 @@ def summarize_excel_data(excel_file):
     
     return "\n".join(summaries)
 
-def extract_content_from_msg(msg_file):
-    """
-    Extract only the text content from Outlook MSG file and convert to simple text
-    to reduce token usage
-    """
+def extract_content_from_msg(msg_file, save_as_txt=True):
+    """Extract content from Outlook MSG file and optionally save as TXT"""
     try:
         temp_file = BytesIO(msg_file.getvalue())
         temp_file.name = msg_file.name
         
         msg = extract_msg.Message(temp_file)
         
-        # Just extract the essential text content
         content = []
-        content.append(f"Email Subject: {msg.subject}")
-        content.append(f"Email Body:")
+        content.append(f"Subject: {msg.subject}")
+        content.append(f"From: {msg.sender}")
+        content.append(f"To: {msg.to}")
+        content.append(f"Date: {msg.date}")
+        content.append("\nBody:")
         content.append(msg.body)
         
-        # Skip attachment processing and metadata to save tokens
-        return "\n".join(content)
+        if msg.attachments:
+            content.append("\nAttachments mentioned (not processed):")
+            for attachment in msg.attachments:
+                content.append(f"- {attachment.longFilename}")
+        
+        content_text = "\n".join(content)
+        
+        # Save as text file if requested
+        if save_as_txt:
+            txt_filename = os.path.splitext(msg_file.name)[0] + ".txt"
+            temp_txt_path = os.path.join("/tmp", txt_filename)
+            with open(temp_txt_path, "w", encoding="utf-8") as txt_file:
+                txt_file.write(content_text)
+            st.success(f"MSG content saved as text file: {txt_filename}")
+            
+            # You could return the path to make it available for further processing
+            return content_text, temp_txt_path
+        
+        return content_text
     except Exception as e:
         st.error(f"Error processing MSG file: {str(e)}")
         return ""
@@ -371,9 +387,10 @@ if uploaded_files:
             combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_summary}")
         
         elif file_extension == ".msg":
-            msg_content = extract_content_from_msg(uploaded_file)
+            msg_content, txt_path = extract_content_from_msg(uploaded_file, save_as_txt=True)
             if msg_content:
                 combined_requirements.append(msg_content)
+                st.info(f"MSG content converted to text file at: {txt_path}")
         
         else:
             st.warning(f"Unsupported file format: {uploaded_file.name}")
