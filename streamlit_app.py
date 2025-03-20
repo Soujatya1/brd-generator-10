@@ -383,7 +383,7 @@ if uploaded_files:
                 st.session_state.msg_content[txt_filename] = msg_content
         
                 # Show a success message
-                st.success(f"Email extracted and saved as: {txt_filename}")
+                st.success(f"Email body extracted and saved as: {txt_filename}")
         
                 # Display the content in a collapsible section
                 with st.expander(f"View content of {txt_filename}"):
