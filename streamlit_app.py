@@ -251,10 +251,9 @@ def extract_content_from_msg(msg_file, save_as_txt=True):
             temp_txt_path = os.path.join("/tmp", txt_filename)
             with open(temp_txt_path, "w", encoding="utf-8") as txt_file:
                 txt_file.write(body_content)
-            st.success(f"Email body saved as text file: {txt_filename}")
             
-            # Return both the content and the path
-            return body_content, temp_txt_path
+            # Return both the content and the filename
+            return body_content, txt_filename
         
         return body_content
     except Exception as e:
