@@ -388,8 +388,8 @@ if uploaded_files:
                 with st.expander(f"View content of {txt_filename}"):
                     st.text_area("Email Body", msg_content, height=300, key=f"txt_{txt_filename}")
         
-                else:
-                    st.warning(f"Unsupported file format: {uploaded_file.name}")
+            else:
+                st.warning(f"Unsupported file format: {uploaded_file.name}")
     
     st.session_state.extracted_data = {
         'requirements': "\n\n".join(combined_requirements),
