@@ -374,13 +374,22 @@ if uploaded_files:
             combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_summary}")
         
         elif file_extension == ".msg":
-            msg_content, txt_path = extract_content_from_msg(uploaded_file, save_as_txt=True)
+            msg_content, txt_filename = extract_content_from_msg(uploaded_file, save_as_txt=True)
             if msg_content:
                 combined_requirements.append(msg_content)
-                st.info(f"MSG content converted to text file at: {txt_path}")
         
-        else:
-            st.warning(f"Unsupported file format: {uploaded_file.name}")
+                # Store the content in session state with the filename as key
+                st.session_state.msg_content[txt_filename] = msg_content
+        
+                # Show a success message
+                st.success(f"Email extracted and saved as: {txt_filename}")
+        
+                # Display the content in a collapsible section
+                with st.expander(f"View content of {txt_filename}"):
+                    st.text_area("Email Body", msg_content, height=300, key=f"txt_{txt_filename}")
+        
+                else:
+                    st.warning(f"Unsupported file format: {uploaded_file.name}")
     
     st.session_state.extracted_data = {
         'requirements': "\n\n".join(combined_requirements),
