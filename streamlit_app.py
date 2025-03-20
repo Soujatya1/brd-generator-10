@@ -235,40 +235,28 @@ def summarize_excel_data(excel_file):
     return "\n".join(summaries)
 
 def extract_content_from_msg(msg_file, save_as_txt=True):
-    """Extract content from Outlook MSG file and optionally save as TXT"""
+    """Extract only the body content from Outlook MSG file and optionally save as TXT"""
     try:
         temp_file = BytesIO(msg_file.getvalue())
         temp_file.name = msg_file.name
         
         msg = extract_msg.Message(temp_file)
         
-        content = []
-        content.append(f"Subject: {msg.subject}")
-        content.append(f"From: {msg.sender}")
-        content.append(f"To: {msg.to}")
-        content.append(f"Date: {msg.date}")
-        content.append("\nBody:")
-        content.append(msg.body)
-        
-        if msg.attachments:
-            content.append("\nAttachments mentioned (not processed):")
-            for attachment in msg.attachments:
-                content.append(f"- {attachment.longFilename}")
-        
-        content_text = "\n".join(content)
+        # Extract only the body content
+        body_content = msg.body
         
         # Save as text file if requested
         if save_as_txt:
             txt_filename = os.path.splitext(msg_file.name)[0] + ".txt"
             temp_txt_path = os.path.join("/tmp", txt_filename)
             with open(temp_txt_path, "w", encoding="utf-8") as txt_file:
-                txt_file.write(content_text)
-            st.success(f"MSG content saved as text file: {txt_filename}")
+                txt_file.write(body_content)
+            st.success(f"Email body saved as text file: {txt_filename}")
             
-            # You could return the path to make it available for further processing
-            return content_text, temp_txt_path
+            # Return both the content and the path
+            return body_content, temp_txt_path
         
-        return content_text
+        return body_content
     except Exception as e:
         st.error(f"Error processing MSG file: {str(e)}")
         return ""
