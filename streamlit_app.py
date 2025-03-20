@@ -242,43 +242,38 @@ def extract_content_from_msg(msg_file, save_as_txt=True):
         
         msg = extract_msg.Message(temp_file)
         
-        # Extract only the body content, ignoring headers
         body_content = msg.body
         
-        # Clean the body content by removing headers
-        # Remove common email header patterns
         cleaned_body = body_content
         
-        # Remove "From:" line
         cleaned_body = re.sub(r'^From:.*?\n', '', cleaned_body, flags=re.MULTILINE)
         
-        # Remove "To:" line
         cleaned_body = re.sub(r'^To:.*?\n', '', cleaned_body, flags=re.MULTILINE)
         
-        # Remove "Cc:" line
         cleaned_body = re.sub(r'^Cc:.*?\n', '', cleaned_body, flags=re.MULTILINE)
         
-        # Remove "Subject:" line
         cleaned_body = re.sub(r'^Subject:.*?\n', '', cleaned_body, flags=re.MULTILINE)
         
-        # Remove "Sent:" or "Date:" line
         cleaned_body = re.sub(r'^(Sent|Date):.*?\n', '', cleaned_body, flags=re.MULTILINE)
         
-        # Remove any email disclaimer or footer (often starts with a line of underscores or hyphens)
         cleaned_body = re.sub(r'_{10,}[\s\S]*$', '', cleaned_body)
         cleaned_body = re.sub(r'-{10,}[\s\S]*$', '', cleaned_body)
         
-        # Remove any empty lines at the beginning
-        cleaned_body = cleaned_body.lstrip('\n')
+        balic_disclaimer = "DISCLAIMER: This email communication/message, including any attachments, may contain proprietary"
+        if balic_disclaimer in cleaned_body:
+            cleaned_body = cleaned_body.split(balic_disclaimer)[0]
         
-        # Save as text file if requested
+        disclaimer_pattern = r'DISCLAIMER: This email communication/message[\s\S]*?customercare@bajajallianz\.co\.in'
+        cleaned_body = re.sub(disclaimer_pattern, '', cleaned_body)
+        
+        cleaned_body = cleaned_body.strip()
+        
         if save_as_txt:
             txt_filename = os.path.splitext(msg_file.name)[0] + ".txt"
             temp_txt_path = os.path.join("/tmp", txt_filename)
             with open(temp_txt_path, "w", encoding="utf-8") as txt_file:
                 txt_file.write(cleaned_body)
             
-            # Return both the content and the filename
             return cleaned_body, txt_filename
         
         return cleaned_body
