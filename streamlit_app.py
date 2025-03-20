@@ -372,7 +372,8 @@ if uploaded_files:
             
             excel_summary = summarize_excel_data(uploaded_file)
             combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_summary}")
-        
+        if 'msg_content' not in st.session_state:
+            st.session_state.msg_content = {}
         elif file_extension == ".msg":
             msg_content, txt_filename = extract_content_from_msg(uploaded_file, save_as_txt=True)
             if msg_content:
