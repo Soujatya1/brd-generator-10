@@ -235,7 +235,6 @@ def summarize_excel_data(excel_file):
     return "\n".join(summaries)
 
 def extract_content_from_msg(msg_file, save_as_txt=True):
-    """Extract only the body content from Outlook MSG file and optionally save as TXT"""
     try:
         temp_file = BytesIO(msg_file.getvalue())
         temp_file.name = msg_file.name
@@ -400,13 +399,10 @@ if uploaded_files:
             if msg_content:
                 combined_requirements.append(msg_content)
         
-                # Store the content in session state with the filename as key
                 st.session_state.msg_content[txt_filename] = msg_content
         
-                # Show a success message
                 st.success(f"Email body extracted and saved as: {txt_filename}")
         
-                # Display the content in a collapsible section
                 with st.expander(f"View content of {txt_filename}"):
                     st.text_area("Email Body", msg_content, height=300, key=f"txt_{txt_filename}")
         
