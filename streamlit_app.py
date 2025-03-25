@@ -67,7 +67,22 @@ def initialize_llm(api_provider, api_key):
         
         Tables:
         {tables}
+        
+        IMPORTANT INSTRUCTIONS FOR TABLES:
+        1. In section 4.2 (Impacted Products), ALWAYS include a comprehensive table listing:
+           - Product Name
+           - Impact Level (High/Medium/Low)
+           - Specific Changes Required
+           - Estimated Effort for Changes
 
+        2. In section 4.3 (List of APIs required), ALWAYS include a detailed table with columns:
+           - API Name
+           - Endpoint
+           - HTTP Method
+           - Required Parameters
+           - Response Format
+           - Authentication Method
+           
         IMPORTANT: DO NOT try to recreate or reformat tables. Instead, when a table should be included, insert a marker [[TABLE_ID:identifier]] in the exact location where the table should appear.
 
         In the BRD format, section: 4.0 Business / System Requirement, should contain the business process flows from the {requirements} which should be in a table format as well as textual data.
@@ -284,7 +299,6 @@ def insert_table_into_doc(doc, table_to_insert, table_id, max_rows=50):
     if isinstance(table_to_insert, pd.DataFrame):
         df = table_to_insert
         
-        # Limit rows to prevent performance issues
         if df.shape[0] > max_rows:
             df = df.head(max_rows)
         
@@ -293,24 +307,23 @@ def insert_table_into_doc(doc, table_to_insert, table_id, max_rows=50):
         word_table = doc.add_table(rows=rows+1, cols=cols)
         word_table.style = 'Table Grid'
         
-        # Use a faster method for adding column headers
         for col_idx, column_name in enumerate(df.columns):
             word_table.cell(0, col_idx).text = str(column_name)
         
-        # Use iterrows() which is faster than itertuples()
         for row_idx, (_, row) in enumerate(df.iterrows(), start=1):
             for col_idx, cell_value in enumerate(row):
-                word_table.cell(row_idx, col_idx).text = str(cell_value)
+                display_value = '-' if pd.isna(cell_value) else str(cell_value)
+                word_table.cell(row_idx, col_idx).text = display_value
         
         return word_table
     else:
-        # Existing method for docx tables
         new_table = doc.add_table(rows=len(table_to_insert.rows), cols=len(table_to_insert.rows[0].cells))
         new_table.style = 'Table Grid'
         
         for i, row in enumerate(table_to_insert.rows):
             for j, cell in enumerate(row.cells):
-                new_table.cell(i, j).text = cell.text
+                cell_text = cell.text.replace('nan', '-') if cell.text == 'nan' else cell.text
+                new_table.cell(i, j).text = cell_text
         
         return new_table
 
