@@ -39,7 +39,7 @@ def initialize_llm(api_provider, api_key):
     if api_provider == "OpenAI":
         model = ChatOpenAI(
             openai_api_key=api_key,
-            model_name="gpt-4.5-preview",
+            model_name="gpt-3.5-turbo-16k",
             temperature=0.2,
             top_p=0.2
         )
