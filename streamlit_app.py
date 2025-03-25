@@ -280,23 +280,31 @@ def extract_content_from_msg(msg_file, save_as_txt=True):
         st.error(f"Error processing MSG file: {str(e)}")
         return ""
 
-def insert_table_into_doc(doc, table_to_insert, table_id):
+def insert_table_into_doc(doc, table_to_insert, table_id, max_rows=50):
     if isinstance(table_to_insert, pd.DataFrame):
         df = table_to_insert
+        
+        # Limit rows to prevent performance issues
+        if df.shape[0] > max_rows:
+            df = df.head(max_rows)
+        
         rows, cols = df.shape
         
         word_table = doc.add_table(rows=rows+1, cols=cols)
         word_table.style = 'Table Grid'
         
+        # Use a faster method for adding column headers
         for col_idx, column_name in enumerate(df.columns):
             word_table.cell(0, col_idx).text = str(column_name)
         
-        for row_idx, (_, row) in enumerate(df.iterrows()):
+        # Use iterrows() which is faster than itertuples()
+        for row_idx, (_, row) in enumerate(df.iterrows(), start=1):
             for col_idx, cell_value in enumerate(row):
-                word_table.cell(row_idx+1, col_idx).text = str(cell_value)
+                word_table.cell(row_idx, col_idx).text = str(cell_value)
         
         return word_table
     else:
+        # Existing method for docx tables
         new_table = doc.add_table(rows=len(table_to_insert.rows), cols=len(table_to_insert.rows[0].cells))
         new_table.style = 'Table Grid'
         
