@@ -67,38 +67,23 @@ def initialize_llm(api_provider, api_key):
         
         Tables:
         {tables}
-        
-        IMPORTANT INSTRUCTIONS FOR TABLES:
-        1. In section 4.2 (Impacted Products), ALWAYS include a comprehensive table listing:
-           - Product Name
-           - Impact Level (High/Medium/Low)
-           - Specific Changes Required
-           - Estimated Effort for Changes
-
-        2. In section 4.3 (List of APIs required), ALWAYS include a detailed table with columns:
-           - API Name
-           - Endpoint
-           - HTTP Method
-           - Required Parameters
-           - Response Format
-           - Authentication Method
            
         IMPORTANT: DO NOT try to recreate or reformat tables. Instead, when a table should be included, insert a marker [[TABLE_ID:identifier]] in the exact location where the table should appear.
 
         In the BRD format, section: 4.0 Business / System Requirement, should contain the business process flows from the {requirements} which should be in a table format as well as textual data.
         
         Formatting:
-        1. Use headings and subheadings for clear organization.
-        2. Include bullet points or numbered lists where necessary for better readability.
-        3. Clearly differentiate between functional and non-functional requirements.
-        4. For tables, include the table marker [[TABLE_ID:identifier]] as provided in the tables section.
+        1. Use headings and subheadings for clear organization
+        2. Include bullet points or numbered lists where necessary for better readability
+        3. Clearly differentiate between functional and non-functional requirements, and insert tables as required
+        4. For tables, include the table marker [[TABLE_ID:identifier]] as provided in the tables section
         
         Key Points:
-        1. Use the given format `{brd_format}` strictly as the base structure for the BRD.
-        2. Ensure all relevant information from the requirements is displayed under the corresponding section.
-        3. Avoid including irrelevant or speculative information.
-        4. Summarize lengthy content while preserving its meaning.
-        5. Do not attempt to recreate tables - use the table markers exactly as provided.
+        1. Use the given format `{brd_format}` strictly as the base structure for the BRD
+        2. Ensure all relevant information from the requirements is displayed under the corresponding section
+        3. Avoid including irrelevant or speculative information
+        4. Summarize lengthy content while preserving its meaning
+        5. Do not attempt to recreate tables - use the table markers exactly as provided
 
         Output:
         The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
