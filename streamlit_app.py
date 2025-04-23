@@ -84,6 +84,7 @@ def initialize_llm(api_provider, api_key):
         3. Avoid including irrelevant or speculative information
         4. Summarize lengthy content while preserving its meaning
         5. Do not attempt to recreate tables - use the table markers exactly as provided
+        6. IMPORTANT: For section 7.0 Test Scenarios, only include a placeholder text "[[TEST_SCENARIOS_PLACEHOLDER]]" instead of copying content from input documents. This section will be generated separately.
 
         Output:
         The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
@@ -120,7 +121,7 @@ def initialize_test_scenario_generator(api_provider, api_key):
             {brd_content}
             
             Special Instructions for Test Scenarios Section:
-            Based on the entire BRD content, generate at least 5 detailed test scenarios that would comprehensively validate the requirements. For each test scenario:
+            Based on the entire BRD content, generate at least 5 detailed test scenarios in a single tabular format that would comprehensively validate the requirements. For each test scenario:
             - Provide a clear test ID and descriptive name
             - Include test objective/purpose
             - List detailed test steps
