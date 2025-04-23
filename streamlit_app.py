@@ -121,7 +121,7 @@ def initialize_test_scenario_generator(api_provider, api_key):
             {brd_content}
             
             Special Instructions for Test Scenarios Section:
-            Based on the entire BRD content, generate at least 5 detailed test scenarios in a single tabular format that would comprehensively validate the requirements. For each test scenario:
+            Based on the entire BRD content, generate at least 5 detailed test scenarios in a tabular format that would comprehensively validate the requirements. For each test scenario:
             - Provide a clear test ID and descriptive name
             - Include test objective/purpose
             - List detailed test steps
@@ -129,10 +129,74 @@ def initialize_test_scenario_generator(api_provider, api_key):
             - Specify test data requirements if applicable
             - Indicate whether it's a positive or negative test case
             - Note any dependencies or prerequisites
+            
+            Format your response as follows:
+            1. First, create a paragraph or two introducing the test scenarios and their purpose.
+            2. Then include a marker [[TEST_SCENARIO_TABLE:start]] to indicate where the table starts.
+            3. Format the test scenarios as a properly formatted markdown table with the following columns:
+               | Test ID | Test Name | Objective | Test Steps | Expected Results | Test Data | Type | Dependencies |
+               |---------|-----------|-----------|------------|-----------------|-----------|------|--------------|
+               | TS-001  | ...       | ...       | ...        | ...             | ...       | ...  | ...          |
+            4. End the table with a marker [[TEST_SCENARIO_TABLE:end]]
+            5. Add any concluding remarks after the table.
+            
+            This specific format will ensure the content is properly converted to a Word table in the final document.
             """
         )
     )
     return test_scenario_chain
+
+def process_test_scenarios(output, doc):
+    # Find test scenario table markers
+    table_start_pattern = r'\[\[TEST_SCENARIO_TABLE:start\]\]'
+    table_end_pattern = r'\[\[TEST_SCENARIO_TABLE:end\]\]'
+    
+    start_match = re.search(table_start_pattern, output)
+    end_match = re.search(table_end_pattern, output)
+    
+    if start_match and end_match:
+        # Extract the text before the table
+        pre_text = output[:start_match.start()].strip()
+        if pre_text:
+            doc.add_paragraph(pre_text)
+        
+        # Extract the table content
+        table_content = output[start_match.end():end_match.start()].strip()
+        table_rows = [row.strip() for row in table_content.split('\n') if row.strip() and '|' in row]
+        
+        if len(table_rows) >= 2:  # Header row + at least one data row
+            # Extract column count from header row
+            header_row = table_rows[0]
+            columns = [col.strip() for col in header_row.split('|') if col.strip()]
+            col_count = len(columns)
+            
+            # Create the table in Word
+            test_table = doc.add_table(rows=len(table_rows)-1, cols=col_count)
+            test_table.style = 'Table Grid'
+            
+            # Add header row
+            header_cells = test_table.rows[0].cells
+            for i, header in enumerate(columns):
+                header_cells[i].text = header
+            
+            # Skip the separator row and add data rows
+            data_rows = [row for row in table_rows[2:] if not all(c == '-' or c == '|' or c.isspace() for c in row)]
+            for i, row in enumerate(data_rows):
+                cells = [cell.strip() for cell in row.split('|') if cell.strip()]
+                row_cells = test_table.rows[i+1].cells if i+1 < len(test_table.rows) else test_table.add_row().cells
+                for j, cell_content in enumerate(cells):
+                    if j < col_count:
+                        row_cells[j].text = cell_content
+        
+        # Extract the text after the table
+        post_text = output[end_match.end():].strip()
+        if post_text:
+            doc.add_paragraph(post_text)
+    else:
+        # If no proper table markers are found, just add the content as paragraphs
+        doc.add_paragraph(output)
+    
+    return doc
 
 def normalize_header(header):
     return header.lower().strip().replace('/', ' ').replace('  ', ' ')
@@ -449,17 +513,22 @@ if st.button("Generate BRD") and uploaded_files:
                 "brd_format": BRD_FORMAT
             }
             
+            # Generate the main BRD content
             output = llm_chain.run(prompt_input)
             
+            # Generate test scenarios as a separate step
             test_scenario_generator = initialize_test_scenario_generator(api_provider, api_key)
             test_scenarios = test_scenario_generator.run({"brd_content": output})
             
-            output = output.replace("7.0 Test Scenarios", "7.0 Test Scenarios\n" + test_scenarios)
+            # Create a new output with a placeholder for test scenarios that we'll process separately
+            test_scenario_placeholder = "[[TEST_SCENARIOS_SECTION]]"
+            final_output = output.replace("[[TEST_SCENARIOS_PLACEHOLDER]]", test_scenario_placeholder)
             
             st.success("BRD generated successfully!")
             
             st.subheader("Generated Business Requirements Document")
-            display_output = re.sub(r'\[\[TABLE_ID:[a-zA-Z0-9_]+\]\]', '[TABLE WILL BE INSERTED HERE]', output)
+            display_output = re.sub(r'\[\[TABLE_ID:[a-zA-Z0-9_]+\]\]', '[TABLE WILL BE INSERTED HERE]', final_output)
+            display_output = display_output.replace(test_scenario_placeholder, "[TEST SCENARIOS WILL BE INSERTED HERE]")
             st.markdown(display_output)
             
             doc = Document()
@@ -543,6 +612,22 @@ if st.button("Generate BRD") and uploaded_files:
                 doc.add_heading(heading_text, level=heading_level)
                 
                 remaining_content = '\n'.join(lines[1:]).strip()
+
+                if test_scenario_placeholder in remaining_content:
+                    # Replace the placeholder with actual formatted test scenarios
+                    pre_test = remaining_content.split(test_scenario_placeholder)[0].strip()
+                    post_test = remaining_content.split(test_scenario_placeholder)[1].strip()
+                    
+                    if pre_test:
+                        doc.add_paragraph(pre_test)
+                    
+                    # Process and add test scenarios as a proper table
+                    doc = process_test_scenarios(test_scenarios, doc)
+                    
+                    if post_test:
+                        doc.add_paragraph(post_test)
+                    
+                    continue
                 
                 table_pattern = r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]'
                 matches = list(re.finditer(table_pattern, remaining_content))
