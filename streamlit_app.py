@@ -130,17 +130,17 @@ def initialize_test_scenario_generator(api_provider, api_key):
             - Indicate whether it's a positive or negative test case
             - Note any dependencies or prerequisites
             
-            Format your response as follows:
+            Format your response EXACTLY as follows:
             1. First, create a paragraph or two introducing the test scenarios and their purpose.
-            2. Then include a marker [[TEST_SCENARIO_TABLE:start]] to indicate where the table starts.
+            2. Then include EXACTLY this marker: [[TEST_SCENARIO_TABLE:start]]
             3. Format the test scenarios as a properly formatted markdown table with the following columns:
                | Test ID | Test Name | Objective | Test Steps | Expected Results | Test Data | Type | Dependencies |
                |---------|-----------|-----------|------------|-----------------|-----------|------|--------------|
                | TS-001  | ...       | ...       | ...        | ...             | ...       | ...  | ...          |
-            4. End the table with a marker [[TEST_SCENARIO_TABLE:end]]
+            4. End the table with EXACTLY this marker: [[TEST_SCENARIO_TABLE:end]]
             5. Add any concluding remarks after the table.
             
-            This specific format will ensure the content is properly converted to a Word table in the final document.
+            IMPORTANT: Ensure the [[TEST_SCENARIO_TABLE:start]] and [[TEST_SCENARIO_TABLE:end]] markers appear exactly as shown, with no extra whitespace or characters.
             """
         )
     )
@@ -171,22 +171,31 @@ def process_test_scenarios(output, doc):
             col_count = len(columns)
             
             # Create the table in Word
-            test_table = doc.add_table(rows=len(table_rows)-1, cols=col_count)
+            test_table = doc.add_table(rows=1, cols=col_count)  # Start with just the header row
             test_table.style = 'Table Grid'
             
             # Add header row
             header_cells = test_table.rows[0].cells
             for i, header in enumerate(columns):
-                header_cells[i].text = header
+                if i < len(header_cells):
+                    header_cells[i].text = header
+                    # Make header bold
+                    for paragraph in header_cells[i].paragraphs:
+                        for run in paragraph.runs:
+                            run.bold = True
             
             # Skip the separator row and add data rows
             data_rows = [row for row in table_rows[2:] if not all(c == '-' or c == '|' or c.isspace() for c in row)]
-            for i, row in enumerate(data_rows):
+            for row in data_rows:
                 cells = [cell.strip() for cell in row.split('|') if cell.strip()]
-                row_cells = test_table.rows[i+1].cells if i+1 < len(test_table.rows) else test_table.add_row().cells
-                for j, cell_content in enumerate(cells):
-                    if j < col_count:
-                        row_cells[j].text = cell_content
+                if cells:  # Make sure we have data
+                    row_cells = test_table.add_row().cells
+                    for j, cell_content in enumerate(cells):
+                        if j < col_count:
+                            row_cells[j].text = cell_content
+        else:
+            # If we couldn't parse the table properly, just add it as text
+            doc.add_paragraph(table_content)
         
         # Extract the text after the table
         post_text = output[end_match.end():].strip()
@@ -194,6 +203,7 @@ def process_test_scenarios(output, doc):
             doc.add_paragraph(post_text)
     else:
         # If no proper table markers are found, just add the content as paragraphs
+        st.warning("Test scenario table markers not found. Adding content as regular paragraphs.")
         doc.add_paragraph(output)
     
     return doc
@@ -520,8 +530,8 @@ if st.button("Generate BRD") and uploaded_files:
             test_scenario_generator = initialize_test_scenario_generator(api_provider, api_key)
             test_scenarios = test_scenario_generator.run({"brd_content": output})
             
-            # Create a new output with a placeholder for test scenarios that we'll process separately
-            test_scenario_placeholder = "[[TEST_SCENARIOS_SECTION]]"
+            # Use an easily identifiable placeholder
+            test_scenario_placeholder = "[[TEST_SCENARIOS_PLACEHOLDER]]"
             final_output = output.replace("[[TEST_SCENARIOS_PLACEHOLDER]]", test_scenario_placeholder)
             
             st.success("BRD generated successfully!")
@@ -530,6 +540,10 @@ if st.button("Generate BRD") and uploaded_files:
             display_output = re.sub(r'\[\[TABLE_ID:[a-zA-Z0-9_]+\]\]', '[TABLE WILL BE INSERTED HERE]', final_output)
             display_output = display_output.replace(test_scenario_placeholder, "[TEST SCENARIOS WILL BE INSERTED HERE]")
             st.markdown(display_output)
+            
+            # For debugging - show the test scenarios content
+            with st.expander("View Generated Test Scenarios"):
+                st.text(test_scenarios)
             
             doc = Document()
             doc.add_heading('Business Requirements Document', level=0)
@@ -600,7 +614,8 @@ if st.button("Generate BRD") and uploaded_files:
 
             doc.add_page_break()
             
-            sections = output.split('\n#')
+            # Fix 4: Improved section processing logic
+            sections = final_output.split('\n#')
             
             for section in sections:
                 if not section.strip():
@@ -609,26 +624,35 @@ if st.button("Generate BRD") and uploaded_files:
                 lines = section.strip().split('\n')
                 heading_text = lines[0].lstrip('#').strip()
                 heading_level = 1 if section.startswith('#') else 2
+                
+                # Add section heading
                 doc.add_heading(heading_text, level=heading_level)
                 
                 remaining_content = '\n'.join(lines[1:]).strip()
-
-                if test_scenario_placeholder in remaining_content:
-                    # Replace the placeholder with actual formatted test scenarios
-                    pre_test = remaining_content.split(test_scenario_placeholder)[0].strip()
-                    post_test = remaining_content.split(test_scenario_placeholder)[1].strip()
+                
+                # Handle test scenarios section specially
+                if "7.0 Test Scenarios" in heading_text or heading_text.startswith("7.0"):
+                    # Process test scenarios content
+                    doc = process_test_scenarios(test_scenarios, doc)
+                    continue  # Skip further processing for this section
+                elif test_scenario_placeholder in remaining_content:
+                    # Split content at placeholder
+                    parts = remaining_content.split(test_scenario_placeholder)
                     
-                    if pre_test:
-                        doc.add_paragraph(pre_test)
+                    # Add content before placeholder
+                    if parts[0].strip():
+                        doc.add_paragraph(parts[0].strip())
                     
-                    # Process and add test scenarios as a proper table
+                    # Process test scenarios
                     doc = process_test_scenarios(test_scenarios, doc)
                     
-                    if post_test:
-                        doc.add_paragraph(post_test)
+                    # Add content after placeholder if any
+                    if len(parts) > 1 and parts[1].strip():
+                        doc.add_paragraph(parts[1].strip())
                     
                     continue
                 
+                # Handle tables in the content
                 table_pattern = r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]'
                 matches = list(re.finditer(table_pattern, remaining_content))
                 
@@ -650,7 +674,6 @@ if st.button("Generate BRD") and uploaded_files:
                 
                 remaining_text = remaining_content[last_pos:].strip()
                 if remaining_text:
-                    
                     lines = remaining_text.split('\n')
                     clean_lines = []
                     skip_mode = False
