@@ -124,7 +124,7 @@ def initialize_test_scenario_generator(api_provider, api_key):
             Based on the entire BRD content, generate at least 5 detailed test scenarios in a tabular format that would comprehensively validate the requirements. For each test scenario:
             - Provide a clear test ID and descriptive name
             - Include test objective/purpose
-            - List detailed test steps
+            - List detailed test steps as per serial numbers
             - Define expected results/acceptance criteria
             - Specify test data requirements if applicable
             - Indicate whether it's a positive or negative test case
@@ -134,9 +134,9 @@ def initialize_test_scenario_generator(api_provider, api_key):
             1. First, create a paragraph or two introducing the test scenarios and their purpose.
             2. Then include EXACTLY this marker: [[TEST_SCENARIO_TABLE:start]]
             3. Format the test scenarios as a properly formatted markdown table with the following columns:
-               | Test ID | Test Name | Objective | Test Steps | Expected Results | Test Data | Type | Dependencies |
-               |---------|-----------|-----------|------------|-----------------|-----------|------|--------------|
-               | TS-001  | ...       | ...       | ...        | ...             | ...       | ...  | ...          |
+               | Test ID | Test Name | Objective | Test Steps | Expected Results | Test Data | Type |
+               |---------|-----------|-----------|------------|-----------------|-----------|------|
+               | TS-001  | ...       | ...       | ...        | ...             | ...       | ...  |
             4. End the table with EXACTLY this marker: [[TEST_SCENARIO_TABLE:end]]
             5. Add any concluding remarks after the table.
             
