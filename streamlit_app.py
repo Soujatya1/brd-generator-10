@@ -546,11 +546,14 @@ if st.button("Generate BRD") and uploaded_files:
                 st.text(test_scenarios)
             
             doc = Document()
-            doc.add_heading('Business Requirements Document', level=0)
+            title_heading = doc.add_heading('Business Requirements Document', level=0)
+            title_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
             if logo_file:
                 logo_bytes = logo_file.getvalue()
                 add_header_with_logo(doc, logo_bytes)
+
+            doc.add_page_break()
             
             doc.add_heading('Version History', level=1)
             version_table = doc.add_table(rows=1, cols=5)
