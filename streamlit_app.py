@@ -546,6 +546,8 @@ if st.button("Generate BRD") and uploaded_files:
                 st.text(test_scenarios)
             
             doc = Document()
+            for _ in range(12):
+                doc.add_paragraph()
             title_heading = doc.add_heading('Business Requirements Document', level=0)
             title_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
