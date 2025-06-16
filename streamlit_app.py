@@ -368,6 +368,10 @@ def insert_table_into_doc(doc, table_to_insert, table_id, max_rows=50):
         word_table.style = 'Table Grid'
         
         for col_idx, column_name in enumerate(df.columns):
+            if str(column_name).startswith('Unnamed'):
+                column_display_name = "Insert Column Name"
+            else:
+                column_display_name = str(column_name)
             word_table.cell(0, col_idx).text = str(column_name)
         
         for row_idx, (_, row) in enumerate(df.iterrows(), start=1):
@@ -570,7 +574,7 @@ if st.button("Generate BRD") and uploaded_files:
             for _ in range(4):
                 version_table.add_row()
 
-            doc.add_paragraph('**Review by should be someone from IT function.**', style='Caption')
+            doc.add_paragraph('**To be reviewed and filled in by IT Team.**', style='Caption')
 
             doc.add_heading('Sign-off Matrix', level=1)
             signoff_table = doc.add_table(rows=1, cols=5)
