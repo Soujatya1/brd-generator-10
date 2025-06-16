@@ -266,6 +266,8 @@ def extract_tables_from_excel(excel_file):
         for sheet_name, df in excel_data.items():
             if not df.empty:
                 table_id = f"excel_{sheet_name}_{uuid.uuid4().hex[:8]}".replace(' ', '_')
+                df.columns = ["Inset Column Name" if str(col).startswith('Unnamed') else str(col)
+                              for col in df.columns]
                 
                 original_tables[table_id] = df
                 
