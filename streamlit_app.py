@@ -411,6 +411,7 @@ def create_clickable_toc(doc):
     instructions = [
         "Press Ctrl+A to select all, then F9 to update all fields in the document."
     ]
+    return bookmark_mapping
 
 def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
     """Add a hyperlink to a paragraph with proper styling"""
@@ -748,6 +749,8 @@ def create_word_document(content, logo_data=None):
     
     # Create clickable table of contents
     bookmark_mapping = create_clickable_toc(doc)
+    if bookmark_mapping is None:
+        bookmark_mapping = {}
     
     doc.add_page_break()
     
