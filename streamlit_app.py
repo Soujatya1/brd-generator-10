@@ -14,6 +14,8 @@ import extract_msg
 import uuid
 import re
 import copy
+from docx.oxml.shared import qn
+from docx.oxml import OxmlElement
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -516,6 +518,68 @@ def add_header_with_logo(doc, logo_bytes):
     logo_stream = BytesIO(logo_bytes)
     run.add_picture(logo_stream, width=Inches(1.5))
 
+def add_hyperlink(paragraph, text, bookmark_name):
+    """Add a hyperlink to a bookmark within the document"""
+    part = paragraph.part
+    r_id = part.relate_to('', "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=False)
+    
+    # Create hyperlink element
+    hyperlink = OxmlElement('w:hyperlink')
+    hyperlink.set(qn('w:anchor'), bookmark_name)
+    
+    # Create run element
+    run = OxmlElement('w:r')
+    rPr = OxmlElement('w:rPr')
+    
+    # Add hyperlink styling
+    color = OxmlElement('w:color')
+    color.set(qn('w:val'), '0000FF')
+    rPr.append(color)
+    
+    u = OxmlElement('w:u')
+    u.set(qn('w:val'), 'single')
+    rPr.append(u)
+    
+    run.append(rPr)
+    run.text = text
+    hyperlink.append(run)
+    
+    paragraph._p.append(hyperlink)
+    return hyperlink
+
+def add_page_reference(paragraph, bookmark_name):
+    """Add a page number reference to a bookmark"""
+    fldChar1 = OxmlElement('w:fldChar')
+    fldChar1.set(qn('w:fldCharType'), 'begin')
+    
+    instrText = OxmlElement('w:instrText')
+    instrText.set(qn('xml:space'), 'preserve')
+    instrText.text = f'PAGEREF {bookmark_name} \\h'
+    
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'end')
+    
+    run = paragraph.add_run()
+    run._r.append(fldChar1)
+    run._r.append(instrText)
+    run._r.append(fldChar2)
+    
+    return run
+
+def add_bookmark(paragraph, bookmark_name):
+    """Add a bookmark to a paragraph"""
+    run = paragraph.runs[0] if paragraph.runs else paragraph.add_run()
+    
+    bookmark_start = OxmlElement('w:bookmarkStart')
+    bookmark_start.set(qn('w:id'), str(hash(bookmark_name) % 1000000))
+    bookmark_start.set(qn('w:name'), bookmark_name)
+    
+    bookmark_end = OxmlElement('w:bookmarkEnd')
+    bookmark_end.set(qn('w:id'), str(hash(bookmark_name) % 1000000))
+    
+    run._r.insert(0, bookmark_start)
+    run._r.append(bookmark_end)
+
 if st.button("Generate BRD") and uploaded_files:
     if not api_key:
         st.error(f"Please enter your {api_provider} API Key.")
@@ -602,33 +666,65 @@ if st.button("Generate BRD") and uploaded_files:
             toc_paragraph.bold = True
 
             toc_entries = [
-                "1.0 Introduction",
-                "    1.1 Purpose",
-                "    1.2 To be process / High level solution",
-                "2.0 Impact Analysis",
-                "    2.1 System impacts – Primary and cross functional",
-                "    2.2 Impacted Products",
-                "    2.3 List of APIs required",
-                "3.0 Process / Data Flow diagram / Figma",
-                "4.0 Business / System Requirement",
-                "5.0 MIS / DATA Requirement",
-                "6.0 Communication Requirement",
-                "7.0 Test Scenarios",
-                "8.0 Questions / Suggestions",
-                "9.0 Reference Document",
-                "10.0 Appendix",
-                "11.0 Risk Evaluation"
+                ("1.0 Introduction", "intro"),
+                ("    1.1 Purpose", "purpose"),
+                ("    1.2 To be process / High level solution", "process"),
+                ("2.0 Impact Analysis", "impact"),
+                ("    2.1 System impacts – Primary and cross functional", "system_impacts"),
+                ("    2.2 Impacted Products", "impacted_products"),
+                ("    2.3 List of APIs required", "apis"),
+                ("3.0 Process / Data Flow diagram / Figma", "process_flow"),
+                ("4.0 Business / System Requirement", "business_req"),
+                ("5.0 MIS / DATA Requirement", "mis_req"),
+                ("6.0 Communication Requirement", "comm_req"),
+                ("7.0 Test Scenarios", "test_scenarios"),
+                ("8.0 Questions / Suggestions", "questions"),
+                ("9.0 Reference Document", "reference"),
+                ("10.0 Appendix", "appendix"),
+                ("11.0 Risk Evaluation", "risk_eval")
             ]
 
-            for entry in toc_entries:
-                if entry.startswith("    "):
-                    doc.add_paragraph(entry.strip(), style='Heading 3')
+            for entry_text, bookmark_name in toc_entries:
+                toc_paragraph = doc.add_paragraph()
+                
+                if entry_text.startswith("    "):
+                    # Sub-heading style
+                    toc_paragraph.style = 'Heading 3'
+                    clean_text = entry_text.strip()
                 else:
-                    doc.add_paragraph(entry, style='Heading 2')
+                    # Main heading style
+                    toc_paragraph.style = 'Heading 2'
+                    clean_text = entry_text
+                # Create hyperlink to bookmark
+                hyperlink = add_hyperlink(toc_paragraph, clean_text, bookmark_name)
+                
+                # Add page number with right alignment
+                toc_paragraph.paragraph_format.tab_stops.add_tab_stop(Inches(6.0), alignment=WD_TAB_ALIGNMENT.RIGHT, leader=WD_TAB_LEADER.DOTS)
+                run = toc_paragraph.add_run('\t')
+                page_ref = add_page_reference(toc_paragraph, bookmark_name)
 
             doc.add_page_break()
             
             # Fix 4: Improved section processing logic
+            bookmark_mapping = {
+                "1.0 Introduction": "intro",
+                "1.1 Purpose": "purpose", 
+                "1.2 To be process / High level solution": "process",
+                "2.0 Impact Analysis": "impact",
+                "2.1 System impacts – Primary and cross functional": "system_impacts",
+                "2.2 Impacted Products": "impacted_products", 
+                "2.3 List of APIs required": "apis",
+                "3.0 Process / Data Flow diagram / Figma": "process_flow",
+                "4.0 Business / System Requirement": "business_req",
+                "5.0 MIS / DATA Requirement": "mis_req",
+                "6.0 Communication Requirement": "comm_req",
+                "7.0 Test Scenarios": "test_scenarios",
+                "8.0 Questions / Suggestions": "questions",
+                "9.0 Reference Document": "reference",
+                "10.0 Appendix": "appendix",
+                "11.0 Risk Evaluation": "risk_eval"
+            }
+            
             sections = final_output.split('\n#')
             
             for section in sections:
@@ -639,14 +735,20 @@ if st.button("Generate BRD") and uploaded_files:
                 heading_text = lines[0].lstrip('#').strip()
                 heading_level = 1 if section.startswith('#') else 2
                 
-                # Add section heading
-                doc.add_heading(heading_text, level=heading_level)
+                # Add section heading with bookmark
+                heading_paragraph = doc.add_heading(heading_text, level=heading_level)
                 
+                # Add bookmark if heading matches our mapping
+                for heading_key, bookmark_name in bookmark_mapping.items():
+                    if heading_key in heading_text or heading_text.startswith(heading_key.split()[0]):
+                        add_bookmark(heading_paragraph, bookmark_name)
+                        break
+                
+                # Rest of the section processing remains the same...
                 remaining_content = '\n'.join(lines[1:]).strip()
                 
                 # Handle test scenarios section specially
                 if "7.0 Test Scenarios" in heading_text or heading_text.startswith("7.0"):
-                    # Process test scenarios content
                     doc = process_test_scenarios(test_scenarios, doc)
                     continue  # Skip further processing for this section
                 elif test_scenario_placeholder in remaining_content:
