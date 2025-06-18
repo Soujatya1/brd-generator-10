@@ -194,53 +194,39 @@ def initialize_llm(api_provider, api_key):
             template="""
             Create a Business Requirements Document (BRD) based on the following details:
 
-            Document Structure To Follow:
-            {brd_format}
+        Document Structure To Follow:
+        {brd_format}
 
-            SOURCE REQUIREMENTS:
-            {requirements}
-            
-            Tables:
-            {tables}
+        SOURCE REQUIREMENTS:
+        {requirements}
+        
+        Tables:
+        {tables}
            
-            INSTRUCTIONS:
-            1. Create a BRD following the exact structure provided in the document format above
-            2. Map content from the source requirements to the appropriate BRD sections
-            3. If you find content that matches a BRD section header, include ALL relevant information from that section
-            4. Be comprehensive but concise - include all important details without unnecessary verbosity
+        INSTRUCTIONS:
+1. Create a BRD following the exact structure provided in the document format above
+2. Map content from the source requirements to the appropriate BRD sections
+3. If you find content that matches a BRD section header, include ALL relevant information from that section
+4. Be comprehensive but concise - include all important details without unnecessary verbosity
 
-            TABLE HANDLING - CRITICAL INSTRUCTIONS:
-            - Each table has a marker like [[TABLE_ID:identifier]] and may include [Original Section: section_name]
-            - PRESERVE THE ORIGINAL CONTEXT: If a table shows [Original Section: X], place it in the BRD section that best matches X
-            - DISTRIBUTE TABLES APPROPRIATELY across different sections based on their content and original context
-            - DO NOT place all tables in one section (especially MIS/DATA Requirement)
-            - Section mapping guidelines:
-              * Business/System Requirements (4.0): Process flows, functional requirements, business rules tables
-              * Impact Analysis (2.0): System impact tables, product impact tables, API lists
-              * MIS/DATA Requirement (5.0): ONLY data structure tables, reporting tables, data flow tables
-              * Communication Requirement (6.0): Communication matrix tables, notification tables
-              * Other sections: Place tables based on their actual content relevance
-            
-            SPECIFIC SECTION REQUIREMENTS:
-            - Section 4.0 (Business/System Requirements): Include business process flows, functional requirements, and process-related tables
-            - Section 7.0 (Test Scenarios): Only include the placeholder "[[TEST_SCENARIOS_PLACEHOLDER]]" - this will be generated separately
-            - Section 2.0 (Impact Analysis): Include system impact tables, API requirement tables
-            - Section 5.0 (MIS/DATA Requirement): ONLY include tables specifically related to data structures, reporting requirements, or data flows
+TABLE HANDLING:
+- When tables should be included, use the marker [[TABLE_ID:identifier]] exactly as provided in the tables section
+- Do NOT recreate or reformat tables - only use the provided markers
+- Place table markers in the most appropriate location within each section
 
-            OUTPUT FORMAT:
-            - Use proper markdown heading structure (## for main sections, ### for subsections)
-            - Include bullet points and numbered lists for clarity
-            - Maintain professional business document tone
-            - Ensure each section has relevant content or clearly state if information is not available
-            - CRITICAL: Distribute tables across appropriate sections, not just one section
+SPECIFIC SECTION REQUIREMENTS:
+- Section 4.0 (Business/System Requirements): Include business process flows, functional requirements, and any process-related tables
+- Section 7.0 (Test Scenarios): Only include the placeholder "[[TEST_SCENARIOS_PLACEHOLDER]]" - this will be generated separately
 
-            IMPORTANT: 
-            1. FOR ALL SECTIONS, INCLUDE THE MOST ACCURATE INFORMATION AS PER THE UPLOADED DOCUMENTS
-            2. DO NOT place all tables under MIS/DATA Requirement - distribute them appropriately
-            3. Consider the original section context when placing tables
-            4. Each table should be placed in the section where it adds the most value
+OUTPUT FORMAT:
+- Use proper markdown heading structure (## for main sections, ### for subsections)
+- Include bullet points and numbered lists for clarity
+- Maintain professional business document tone
+- Ensure each section has relevant content or clearly state if information is not available
 
-            Generate the complete BRD now:"""
+IMPORTANT: FOR ALL THE SECTIONS MENTIONED, PLEASE INCLUDE THE MOST ACCURATE INFORMATION AS PER THE UPLOADED DOCUMENTS, DO NOT MENTION GENERIC INFORMATION
+
+Generate the complete BRD now:"""
         )
     )
     return llm_chain
@@ -297,68 +283,6 @@ def initialize_test_scenario_generator(api_provider, api_key):
         )
     )
     return test_scenario_chain
-
-def analyze_table_content_for_section(table_content, original_section=""):
-    """
-    Analyze table content to suggest the most appropriate BRD section
-    """
-    content_lower = table_content.lower()
-    original_lower = original_section.lower()
-    
-    # Keywords for different sections
-    section_keywords = {
-        'impact_analysis': ['system', 'impact', 'affected', 'dependency', 'api', 'service', 'integration', 'cross-functional'],
-        'business_requirements': ['process', 'workflow', 'business rule', 'requirement', 'function', 'user story', 'acceptance criteria'],
-        'mis_data': ['data', 'field', 'column', 'database', 'table structure', 'report', 'analytics', 'metric'],
-        'communication': ['notification', 'email', 'sms', 'communication', 'alert', 'message', 'recipient'],
-        'test_scenarios': ['test', 'scenario', 'validation', 'verify', 'expected result', 'test case'],
-        'risk_evaluation': ['risk', 'evaluation', 'assessment']
-    }
-    
-    # Score each section based on keyword matches
-    section_scores = {}
-    for section, keywords in section_keywords.items():
-        score = sum(1 for keyword in keywords if keyword in content_lower)
-        if original_section and any(keyword in original_lower for keyword in keywords):
-            score += 2  # Bonus for original section context
-        section_scores[section] = score
-    
-    # Find the section with highest score
-    best_section = max(section_scores, key=section_scores.get)
-    
-    # Map to BRD section numbers
-    section_mapping = {
-        'impact_analysis': '2.0 Impact Analysis',
-        'business_requirements': '4.0 Business / System Requirement',
-        'mis_data': '5.0 MIS / DATA Requirement', 
-        'communication': '6.0 Communication Requirement',
-        'test_scenarios': '7.0 Test Scenarios',
-        'appendix': '10.0 Appendix'
-    }
-    
-    return section_mapping.get(best_section, '10.0 Appendix')
-
-def create_table_metadata(structured_content):
-    """
-    Create enhanced metadata for tables including suggested sections
-    """
-    table_metadata = {}
-    
-    for item in structured_content:
-        if item['type'] == 'table' and 'table_id' in item:
-            table_id = item['table_id']
-            suggested_section = analyze_table_content_for_section(
-                item['content'], 
-                item.get('original_section', '')
-            )
-            
-            table_metadata[table_id] = {
-                'original_section': item.get('original_section', ''),
-                'suggested_section': suggested_section,
-                'content_preview': item['content'][:200] + '...' if len(item['content']) > 200 else item['content']
-            }
-    
-    return table_metadata
 
 def process_test_scenarios(output, doc):
     # Find test scenario table markers
@@ -452,27 +376,20 @@ def extract_content_from_docx(doc_file):
             if table_index < len(doc.tables):
                 table = doc.tables[table_index]
                 
-                # Create table ID with section context
-                section_safe = re.sub(r'[^a-zA-Z0-9]', '_', current_heading.lower())
-                table_id = f"table_{section_safe}_{uuid.uuid4().hex[:8]}"
+                table_id = f"table_{uuid.uuid4().hex[:8]}"
                 
                 original_tables[table_id] = table
                 
-                # Extract table content with metadata
                 table_content = []
                 for row in table.rows:
                     row_text = [cell.text.strip() for cell in row.cells]
                     table_content.append(" | ".join(row_text))
                 
-                # Include section information in the table marker
-                table_marker = f"[[TABLE_ID:{table_id}]] [Original Section: {current_heading}]"
-                
                 structured_content.append({
                     'type': 'table',
                     'heading': current_heading,
-                    'content': f"{table_marker}\n" + "\n".join(table_content),
-                    'table_id': table_id,
-                    'original_section': current_heading  # Add this metadata
+                    'content': f"[[TABLE_ID:{table_id}]]\n" + "\n".join(table_content),
+                    'table_id': table_id
                 })
     
     return structured_content, original_tables
@@ -894,10 +811,6 @@ if st.button("Generate BRD") and uploaded_files:
                         # Process content
                         content_lines = lines[1:]
                         i = 0
-
-                        if "7.0 Test Scenarios" in heading_text or heading_text.startswith("7.0"):
-                            doc = process_test_scenarios(test_scenarios, doc)
-                            continue
                         
                         while i < len(content_lines):
                             line = content_lines[i].strip()
@@ -911,6 +824,11 @@ if st.button("Generate BRD") and uploaded_files:
                                 i += 1
                                 continue
                             
+                            # Handle test scenarios placeholder
+                            if "7.0 Test Scenarios" in heading_text or heading_text.startswith("7.0"):
+                            # Process test scenarios content
+                                doc = process_test_scenarios(test_scenarios, doc)
+                                continue
                             
                             # Handle regular content
                             if line:
