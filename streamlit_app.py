@@ -15,6 +15,8 @@ import pdfplumber
 import pandas as pd
 import extract_msg
 import re
+from docx.shared import RGBColor
+from docx.enum.text import WD_BREAK
 
 BRD_FORMAT = """
 ## 1.0 Introduction
