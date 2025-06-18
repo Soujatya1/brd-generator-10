@@ -260,7 +260,7 @@ def initialize_sequential_chains(api_provider, api_key):
     return [chain1, chain2, chain3, chain4]
 
 def generate_brd_sequentially(chains, requirements):
-    """Generate BRD using sequential chains"""
+    """Generate BRD using sequential chains - FIXED VERSION"""
     
     # Check if content is too large and needs chunking
     req_chunks = chunk_requirements(requirements)
@@ -268,41 +268,37 @@ def generate_brd_sequentially(chains, requirements):
     if len(req_chunks) > 1:
         st.info(f"Large content detected. Processing in {len(req_chunks)} chunks...")
     
-    all_sections = []
+    # Process all chunks together to create ONE BRD
+    combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
     
-    for chunk_idx, req_chunk in enumerate(req_chunks):
-        st.write(f"Processing chunk {chunk_idx + 1}/{len(req_chunks)}...")
-        
-        # Initialize variables for sequential processing
-        previous_content = ""
-        chunk_sections = []
-        
-        # Process each chain sequentially
-        for i, chain in enumerate(chains):
-            try:
-                if i == 0:  # First chain doesn't need previous content
-                    result = chain.run(requirements=req_chunk)
-                else:
-                    result = chain.run(previous_content=previous_content, requirements=req_chunk)
-                
-                chunk_sections.append(result)
-                previous_content += "\n\n" + result
-                
-                st.write(f"✓ Completed section group {i+1}/4")
-                
-            except Exception as e:
-                st.error(f"Error in chain {i+1}: {str(e)}")
-                # Continue with next chain even if one fails
-                chunk_sections.append(f"## Error in section group {i+1}\nError processing this section: {str(e)}")
-        
-        all_sections.extend(chunk_sections)
+    # Initialize variables for sequential processing
+    previous_content = ""
+    final_sections = []
     
-    # Combine all sections
-    final_brd = "\n\n".join(all_sections)
+    # Process each chain sequentially with ALL content
+    for i, chain in enumerate(chains):
+        try:
+            if i == 0:  # First chain doesn't need previous content
+                result = chain.run(requirements=combined_requirements)
+            else:
+                result = chain.run(previous_content=previous_content, requirements=combined_requirements)
+            
+            final_sections.append(result)
+            previous_content += "\n\n" + result
+            
+            st.write(f"✓ Completed section group {i+1}/4")
+            
+        except Exception as e:
+            st.error(f"Error in chain {i+1}: {str(e)}")
+            # Continue with next chain even if one fails
+            final_sections.append(f"## Error in section group {i+1}\nError processing this section: {str(e)}")
+    
+    # Combine all sections into ONE final BRD
+    final_brd = "\n\n".join(final_sections)
     return final_brd
 
-def create_fallback_chain(api_provider, api_key):
-    """Fallback to original single chain if sequential fails"""
+def create_fallback_chain_fixed(api_provider, api_key):
+    """Fallback to original single chain if sequential fails - FIXED VERSION"""
     
     if api_provider == "OpenAI":
         model = ChatOpenAI(
@@ -329,21 +325,21 @@ def create_fallback_chain(api_provider, api_key):
             DOCUMENT STRUCTURE TO FOLLOW:
             {brd_format}
 
-            SOURCE REQUIREMENTS:
+            SOURCE REQUIREMENTS (May contain multiple documents separated by "=== DOCUMENT BREAK ==="):
             {requirements}
 
-            CRITICAL INSTRUCTIONS FOR TABLE HANDLING:
+            CRITICAL INSTRUCTIONS:
+            - Create ONE comprehensive BRD that consolidates information from ALL source documents
+            - When you see "=== DOCUMENT BREAK ===" it indicates content from multiple files
+            - Merge and consolidate information from all sources into each section
             - When you encounter "TABLE:" sections in the requirements, PRESERVE them in the BRD output
             - Format all tables using markdown table syntax with pipes (|)
-            - Include ALL table data from the source requirements
+            - Include ALL relevant table data from the source requirements
             
-            Generate a complete BRD following the structure provided. Use markdown formatting and include comprehensive content for each section.
+            Generate a complete BRD following the structure provided. Use markdown formatting and include comprehensive content for each section that combines information from all source documents.
             """
         )
     )
-
-# [Include all the existing helper functions: add_hyperlink, add_bookmark, create_clickable_toc, etc.]
-# [These remain the same as in your original code]
 
 def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
     """Add a hyperlink to a paragraph"""
@@ -772,6 +768,9 @@ if st.button("Generate BRD") and uploaded_files:
                     continue
                 
                 combined_requirements.append(content)
+
+                file_content = f"=== SOURCE FILE: {uploaded_file.name} ===\n\n{content}"
+                combined_requirements.append(file_content)
             
             all_requirements = "\n\n".join(combined_requirements)
             
