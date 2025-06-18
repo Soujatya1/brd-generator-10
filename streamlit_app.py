@@ -58,37 +58,37 @@ def initialize_llm(api_provider, api_key):
             template="""
             Create a Business Requirements Document (BRD) based on the following details:
 
-        Document Structure:
+        Document Structure To Follow:
         {brd_format}
 
-        Requirements:
-        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD format according to the {requirements}. Be concise and specific.
-        Wherever you find the similar header, please pick all the information from the {requirements} files and put it into the BRD as per the format.
+        SOURCE REQUIREMENTS:
+        {requirements}
         
         Tables:
         {tables}
            
-        IMPORTANT: DO NOT try to recreate or reformat tables. Instead, when a table should be included, insert a marker [[TABLE_ID:identifier]] in the exact location where the table should appear.
+        INSTRUCTIONS:
+1. Create a BRD following the exact structure provided in the document format above
+2. Map content from the source requirements to the appropriate BRD sections
+3. If you find content that matches a BRD section header, include ALL relevant information from that section
+4. Be comprehensive but concise - include all important details without unnecessary verbosity
 
-        In the BRD format, section: 4.0 Business / System Requirement, should contain the business process flows from the {requirements} which should be in a table format as well as textual data.
-        
-        Formatting:
-        1. Use headings and subheadings for clear organization
-        2. Include bullet points or numbered lists where necessary for better readability
-        3. Clearly differentiate between functional and non-functional requirements, and insert tables as required
-        4. For tables, include the table marker [[TABLE_ID:identifier]] as provided in the tables section
-        
-        Key Points:
-        1. Use the given format `{brd_format}` strictly as the base structure for the BRD
-        2. Ensure all relevant information from the requirements is displayed under the corresponding section
-        3. Avoid including irrelevant or speculative information
-        4. Summarize lengthy content while preserving its meaning
-        5. Do not attempt to recreate tables - use the table markers exactly as provided
-        6. IMPORTANT: For section 7.0 Test Scenarios, only include a placeholder text "[[TEST_SCENARIOS_PLACEHOLDER]]" instead of copying content from input documents. This section will be generated separately.
+TABLE HANDLING:
+- When tables should be included, use the marker [[TABLE_ID:identifier]] exactly as provided in the tables section
+- Do NOT recreate or reformat tables - only use the provided markers
+- Place table markers in the most appropriate location within each section
 
-        Output:
-        The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
-        """
+SPECIFIC SECTION REQUIREMENTS:
+- Section 4.0 (Business/System Requirements): Include business process flows, functional requirements, and any process-related tables
+- Section 7.0 (Test Scenarios): Only include the placeholder "[[TEST_SCENARIOS_PLACEHOLDER]]" - this will be generated separately
+
+OUTPUT FORMAT:
+- Use proper markdown heading structure (## for main sections, ### for subsections)
+- Include bullet points and numbered lists for clarity
+- Maintain professional business document tone
+- Ensure each section has relevant content or clearly state if information is not available
+
+Generate the complete BRD now:"""
         )
     )
     return llm_chain
