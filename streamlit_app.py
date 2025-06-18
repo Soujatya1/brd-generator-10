@@ -158,8 +158,8 @@ SECTION_TEMPLATES = {
     
     ## 11.0 Risk Evaluation
     - Identified risks and mitigation strategies
-    - Dependencies and constraints
     - Timeline and technical risks
+    - If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same
     
     IMPORTANT:
     - Use markdown formatting (## for main sections, ### for subsections)
