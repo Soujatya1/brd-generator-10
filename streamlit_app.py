@@ -754,54 +754,65 @@ def create_word_document(content, logo_data=None):
     # Process BRD content with table support
     sections = content.split('##')
     
-    for section in sections:
+    introduction_started = False
+
+    for i, section in enumerate(sections):
         if section.strip():
             lines = section.strip().split('\n')
             if lines:
-                # Extract heading
+            # Extract heading
                 heading_line = lines[0].strip()
-                
-                # Find the appropriate bookmark name for this heading
+            
+            # Find the appropriate bookmark name for this heading
                 bookmark_name = None
                 for bookmark, heading_text in bookmark_mapping.items():
                     if heading_line.lower().replace('#', '').strip() in heading_text.lower():
                         bookmark_name = bookmark
                         break
-                
+            
                 if heading_line.startswith('###'):
                     level = 2
                     heading_text = heading_line.replace('###', '').strip()
                 else:
                     level = 1
                     heading_text = heading_line.replace('##', '').strip()
-                
-                # Add section heading with bookmark
+            
+                # Check if this is the Introduction section to start tracking
+                section_name_lower = heading_text.lower()
+                if 'introduction' in section_name_lower or section_name_lower.startswith('1.0'):
+                    introduction_started = True
+            
+            # Add page break before new main sections (level 1), but ONLY before Introduction starts
+                if level == 1 and i > 0 and not introduction_started:
+                    doc.add_page_break()
+            
+            # Add section heading with bookmark
                 if bookmark_name:
                     add_section_with_bookmark(doc, heading_text, bookmark_name, level)
                 else:
                     doc.add_heading(heading_text, level)
+            
+            # Process content with table detection
+                j = 1
+                while j < len(lines):
+                    line = lines[j].strip()
                 
-                # Process content with table detection
-                i = 1
-                while i < len(lines):
-                    line = lines[i].strip()
-                    
-                    # Check if this line starts a markdown table
+                # Check if this line starts a markdown table
                     if line and '|' in line and line.count('|') >= 2:
-                        # Collect all table lines
+                    # Collect all table lines
                         table_lines = []
-                        while i < len(lines) and lines[i].strip() and '|' in lines[i]:
-                            table_lines.append(lines[i].strip())
-                            i += 1
-                        
-                        # Parse and create table
+                        while j < len(lines) and lines[j].strip() and '|' in lines[j]:
+                            table_lines.append(lines[j].strip())
+                            j += 1
+                    
+                    # Parse and create table
                         if table_lines:
                             table_data = parse_markdown_table('\n'.join(table_lines))
                             if table_data:
                                 create_table_in_doc(doc, table_data)
                         continue
-                    
-                    # Regular content processing
+                
+                # Regular content processing
                     if line:
                         if line.startswith('- ') or line.startswith('* '):
                             doc.add_paragraph(line[2:].strip(), style='List Bullet')
@@ -809,8 +820,8 @@ def create_word_document(content, logo_data=None):
                             doc.add_paragraph(re.sub(r'^\d+\.\s*', '', line), style='List Number')
                         else:
                             doc.add_paragraph(line)
-                    
-                    i += 1
+                
+                    j += 1
     
     return doc
 
