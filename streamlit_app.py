@@ -351,7 +351,11 @@ def create_clickable_toc(doc):
         ("10.0 Appendix", "appendix"),
         ("11.0 Risk Evaluation", "risk_evaluation")
     ]
-    
+
+    bookmark_mapping = {}
+    for entry_text, bookmark_name in toc_entries:
+        bookmark_mapping[bookmark_name] = entry_text
+        
     for entry_text, bookmark_name in toc_entries:
         toc_paragraph = doc.add_paragraph()
         
