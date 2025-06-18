@@ -396,7 +396,7 @@ def create_clickable_toc(doc):
         page_run._r.append(fldChar_end)
         
         # Add placeholder text that will be replaced when field updates
-        page_run.add_text("1")  # Placeholder page number
+        page_run.add_text(" ")  # Placeholder page number
     
     # Add comprehensive note about updating TOC
     doc.add_paragraph()  # Empty line
