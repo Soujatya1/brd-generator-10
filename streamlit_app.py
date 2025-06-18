@@ -676,7 +676,8 @@ if st.button("Generate BRD") and uploaded_files:
             
             # Use an easily identifiable placeholder
             test_scenario_placeholder = "[[TEST_SCENARIOS_PLACEHOLDER]]"
-            final_output = output.replace("[[TEST_SCENARIOS_PLACEHOLDER]]", test_scenario_placeholder)
+            final_output = re.sub(r'[•\-\*]\s*\[\[TEST_SCENARIOS_PLACEHOLDER\]\]', "[[TEST_SCENARIOS_PLACEHOLDER]]", output)
+            final_output = re.sub(r'\s*\[\[TEST_SCENARIOS_PLACEHOLDER\]\]\s*', "[[TEST_SCENARIOS_PLACEHOLDER]]", final_output)
             
             st.success("BRD generated successfully!")
             
