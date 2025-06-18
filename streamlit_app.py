@@ -145,6 +145,57 @@ def add_section_with_bookmark(doc, heading_text, bookmark_name, level=1):
     add_bookmark(heading, bookmark_name)
     return heading
 
+def create_table_in_doc(doc, table_data):
+    """Create a table in the Word document from table data"""
+    if not table_data or len(table_data) < 2:
+        return None
+    
+    # Create table with proper dimensions
+    table = doc.add_table(rows=len(table_data), cols=len(table_data[0]))
+    table.style = 'Table Grid'
+    
+    # Add header row styling
+    for i, cell_text in enumerate(table_data[0]):
+        cell = table.rows[0].cells[i]
+        cell.text = str(cell_text) if cell_text else ""
+        # Make header bold
+        for paragraph in cell.paragraphs:
+            for run in paragraph.runs:
+                run.bold = True
+    
+    # Add data rows
+    for row_idx, row_data in enumerate(table_data[1:], 1):
+        for col_idx, cell_text in enumerate(row_data):
+            if row_idx < len(table.rows) and col_idx < len(table.rows[row_idx].cells):
+                table.rows[row_idx].cells[col_idx].text = str(cell_text) if cell_text else ""
+    
+    return table
+
+def parse_markdown_table(table_text):
+    """Parse markdown table format into structured data"""
+    lines = [line.strip() for line in table_text.split('\n') if line.strip()]
+    
+    if len(lines) < 2:
+        return None
+    
+    # Remove separator line (usually second line with | --- | --- |)
+    if len(lines) >= 2 and '---' in lines[1]:
+        lines.pop(1)
+    
+    table_data = []
+    for line in lines:
+        if line.startswith('|') and line.endswith('|'):
+            # Remove leading and trailing |
+            line = line[1:-1]
+            cells = [cell.strip() for cell in line.split('|')]
+            table_data.append(cells)
+        else:
+            # Handle lines without proper markdown table format
+            cells = [cell.strip() for cell in line.split('|')]
+            table_data.append(cells)
+    
+    return table_data if table_data else None
+
 @st.cache_resource
 def initialize_llm(api_provider, api_key):
     if api_provider == "OpenAI":
@@ -175,6 +226,19 @@ def initialize_llm(api_provider, api_key):
             SOURCE REQUIREMENTS:
             {requirements}
 
+            CRITICAL INSTRUCTIONS FOR TABLE HANDLING:
+            - When you encounter "TABLE:" sections in the requirements, PRESERVE them in the BRD output
+            - Format all tables using markdown table syntax with pipes (|)
+            - Example format:
+            | Header 1 | Header 2 | Header 3 |
+            | -------- | -------- | -------- |
+            | Row 1 Col 1 | Row 1 Col 2 | Row 1 Col 3 |
+            | Row 2 Col 1 | Row 2 Col 2 | Row 2 Col 3 |
+            
+            - Include ALL table data from the source requirements
+            - Place tables in the most appropriate BRD sections based on their content
+            - Add a brief description before each table explaining its purpose
+
             DETAILED INSTRUCTIONS:
 
             **1.0 Introduction**
@@ -195,11 +259,13 @@ def initialize_llm(api_provider, api_key):
             - Business rules and logic
             - User stories or use cases
             - Performance, security, and compliance requirements
+            - **Include any requirement tables from source documents here**
 
             **5.0 MIS / DATA Requirement**
             - Data requirements and specifications
             - Reporting needs, analytics requirements
             - Data sources and destinations
+            - **Include any data specification tables from source documents here**
 
             **6.0 Communication Requirement**
             - Stakeholder communication needs
@@ -209,6 +275,10 @@ def initialize_llm(api_provider, api_key):
             **7.0 Test Scenarios**
             - Generate at least 5 detailed test scenarios in a table format
             - Include: Test ID, Test Name, Objective, Test Steps, Expected Results, Test Data, Type
+            - Format as markdown table:
+            | Test ID | Test Name | Objective | Test Steps | Expected Results | Test Data | Type |
+            | ------- | --------- | --------- | ---------- | ---------------- | --------- | ---- |
+            | TC001 | [Test Name] | [Objective] | [Steps] | [Results] | [Data] | [Type] |
 
             **8.0 Questions / Suggestions**
             - Open questions from the source documents
@@ -223,6 +293,7 @@ def initialize_llm(api_provider, api_key):
             **10.0 Appendix**
             - Supporting information
             - Detailed technical specifications
+            - **Include any supporting tables from source documents here**
 
             **11.0 Risk Evaluation**
             - Identified risks and mitigation strategies
@@ -231,11 +302,13 @@ def initialize_llm(api_provider, api_key):
 
             OUTPUT REQUIREMENTS:
             - Use markdown formatting (## for main sections, ### for subsections)
+            - ALWAYS preserve and include tables using proper markdown table format
             - Include comprehensive content for each section
             - Maintain professional business document tone
             - If information is not available for a section, state "Not applicable based on provided requirements"
+            - When including tables, add a brief description of what the table contains
 
-            Generate the complete BRD now:"""
+            Generate the complete BRD now, ensuring ALL tables from the source requirements are included:"""
         )
     )
     return llm_chain
@@ -248,13 +321,15 @@ def extract_content_from_docx(doc_file):
         if paragraph.text.strip():
             content.append(paragraph.text.strip())
     
-    # Extract tables
+    # Extract tables with better formatting
     for table in doc.tables:
         table_content = []
         for row in table.rows:
             row_text = [cell.text.strip() for cell in row.cells]
             table_content.append(" | ".join(row_text))
-        content.append("TABLE:\n" + "\n".join(table_content))
+        if table_content:
+            content.append("TABLE:")
+            content.append("\n".join(table_content))
     
     return "\n".join(content)
 
@@ -265,14 +340,17 @@ def extract_content_from_pdf(pdf_file):
             if page.extract_text():
                 content.append(page.extract_text())
             
-            # Extract tables
+            # Extract tables with better formatting
             tables = page.extract_tables()
             for table in tables:
-                table_text = []
-                for row in table:
-                    row_text = [str(cell) if cell else "" for cell in row]
-                    table_text.append(" | ".join(row_text))
-                content.append("TABLE:\n" + "\n".join(table_text))
+                if table:
+                    table_text = []
+                    for row in table:
+                        row_text = [str(cell) if cell else "" for cell in row]
+                        table_text.append(" | ".join(row_text))
+                    if table_text:
+                        content.append("TABLE:")
+                        content.append("\n".join(table_text))
     
     return "\n".join(content)
 
@@ -288,11 +366,12 @@ def extract_content_from_excel(excel_file):
                 content.append(f"Columns: {', '.join(df.columns.tolist())}")
                 
                 # Add table representation
+                content.append("TABLE:")
                 table_lines = []
                 table_lines.append(" | ".join(df.columns.tolist()))
-                for _, row in df.head(10).iterrows():  # First 10 rows
+                for _, row in df.iterrows():
                     table_lines.append(" | ".join([str(val) for val in row]))
-                content.append("TABLE:\n" + "\n".join(table_lines))
+                content.append("\n".join(table_lines))
     
     except Exception as e:
         st.error(f"Error processing Excel file: {str(e)}")
@@ -373,7 +452,7 @@ def create_word_document(content, logo_data=None):
     
     doc.add_page_break()
     
-    # Process BRD content
+    # Process BRD content with table support
     sections = content.split('##')
     
     for section in sections:
@@ -403,9 +482,27 @@ def create_word_document(content, logo_data=None):
                 else:
                     doc.add_heading(heading_text, level)
                 
-                # Process content
-                for line in lines[1:]:
-                    line = line.strip()
+                # Process content with table detection
+                i = 1
+                while i < len(lines):
+                    line = lines[i].strip()
+                    
+                    # Check if this line starts a markdown table
+                    if line and '|' in line and line.count('|') >= 2:
+                        # Collect all table lines
+                        table_lines = []
+                        while i < len(lines) and lines[i].strip() and '|' in lines[i]:
+                            table_lines.append(lines[i].strip())
+                            i += 1
+                        
+                        # Parse and create table
+                        if table_lines:
+                            table_data = parse_markdown_table('\n'.join(table_lines))
+                            if table_data:
+                                create_table_in_doc(doc, table_data)
+                        continue
+                    
+                    # Regular content processing
                     if line:
                         if line.startswith('- ') or line.startswith('* '):
                             doc.add_paragraph(line[2:].strip(), style='List Bullet')
@@ -413,6 +510,8 @@ def create_word_document(content, logo_data=None):
                             doc.add_paragraph(re.sub(r'^\d+\.\s*', '', line), style='List Number')
                         else:
                             doc.add_paragraph(line)
+                    
+                    i += 1
     
     return doc
 
