@@ -69,7 +69,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - If tables are present in requirements, preserve them using markdown table format
     - Include comprehensive content for each section
-    - If information is not available, state "Not applicable based on provided requirements"
+    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, only then build upon the context from previous sections
     """,
     
     "process_requirements": """
@@ -97,7 +97,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
-    - Build upon the context from previous sections
+    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, only then build upon the context from previous sections
     """,
     
     "data_communication": """
@@ -125,7 +125,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
-    - Build upon the context from previous sections
+    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, only then build upon the context from previous sections
     """,
     
     "testing_final": """
@@ -168,7 +168,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, else build upon the context from previous sections
+    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, only then build upon the context from previous sections
     """
 }
 
