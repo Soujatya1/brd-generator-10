@@ -72,6 +72,7 @@ def initialize_llm(api_provider, api_key):
 2. Map content from the source requirements to the appropriate BRD sections
 3. If you find content that matches a BRD section header, include ALL relevant information from that section
 4. Be comprehensive but concise - include all important details without unnecessary verbosity
+5. No two or more tables should be appended under a single section
 
 TABLE HANDLING:
 - When tables should be included, use the marker [[TABLE_ID:identifier]] exactly as provided in the tables section
