@@ -278,14 +278,13 @@ def initialize_llm(api_provider, api_key):
             TABLE HANDLING:
             - Use table markers [[TABLE_ID:identifier]] exactly as provided
             - Place tables in the most contextually appropriate section
-            - If a table could fit multiple sections, prioritize: Section 4.0 > Section 5.0 > Section 3.0 > Section 10.0
 
             OUTPUT REQUIREMENTS:
             - Use markdown formatting (## for main sections, ### for subsections)
             - Include comprehensive content for each section
             - Maintain professional business document tone
             - Ensure logical flow and coherence between sections
-            - If information is not available for a section, state: "Information not available in source documents"
+            - If information is not available for a section, leave it BLANK
 
             CRITICAL: Analyze the entire source document content holistically before writing. Understand the business context, then systematically extract and organize information according to the BRD structure.
 
