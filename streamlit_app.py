@@ -682,95 +682,172 @@ if st.button("Generate BRD") and uploaded_files:
             
             st.subheader("Generated Business Requirements Document")
             display_output = re.sub(r'\[\[TABLE_ID:[a-zA-Z0-9_]+\]\]', '[TABLE WILL BE INSERTED HERE]', final_output)
+            display_output = display_output.replace(test_scenario_placeholder, "[TEST SCENARIOS WILL BE INSERTED HERE]")
             st.markdown(display_output)
+            
+            # For debugging - show the test scenarios content
+            with st.expander("View Generated Test Scenarios"):
+                st.text(test_scenarios)
             
             # Create Word document
             doc = Document()
             
-            # Add logo to header if provided
-            if logo_file is not None:
-                add_header_with_logo(doc, st.session_state.logo_data)
+            # Add spacing before title
+            for _ in range(12):
+                doc.add_paragraph()
             
             # Add title
             title = doc.add_heading('Business Requirements Document', 0)
             title.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
-            # Create clickable table of contents
-            bookmark_mapping = create_clickable_toc(doc)
+            # Add logo to header if provided
+            if logo_file is not None:
+                logo_bytes = logo_file.getvalue()
+                add_header_with_logo(doc, logo_bytes)
             
-            # Add page break after TOC
+            # Add page break
             doc.add_page_break()
             
-            # Process each section of the BRD
-            sections = final_output.split('##')
+            # Add Version History section
+            doc.add_heading('Version History', level=1)
+            version_table = doc.add_table(rows=1, cols=5)
+            version_table.style = 'Table Grid'
+            hdr_cells = version_table.rows[0].cells
+            hdr_cells[0].text = 'Version'
+            hdr_cells[1].text = 'Date'
+            hdr_cells[2].text = 'Author'
+            hdr_cells[3].text = 'Change description'
+            hdr_cells[4].text = 'Review by'
+
+            for _ in range(4):
+                version_table.add_row()
+
+            doc.add_paragraph('**To be reviewed and filled in by IT Team.**', style='Caption')
+
+            # Add Sign-off Matrix section
+            doc.add_heading('Sign-off Matrix', level=1)
+            signoff_table = doc.add_table(rows=1, cols=5)
+            signoff_table.style = 'Table Grid'
+            hdr_cells = signoff_table.rows[0].cells
+            hdr_cells[0].text = 'Version'
+            hdr_cells[1].text = 'Sign-off Authority'
+            hdr_cells[2].text = 'Business Function'
+            hdr_cells[3].text = 'Sign-off Date'
+            hdr_cells[4].text = 'Email Confirmation'
+
+            for _ in range(4):
+                signoff_table.add_row()
+
+            doc.add_page_break()
+
+            # Add Table of Contents
+            doc.add_heading('Table of Contents', level=1)
+
+            toc_paragraph = doc.add_paragraph()
+            toc_paragraph.bold = True
+
+            toc_entries = [
+                "1.0 Introduction",
+                "    1.1 Purpose",
+                "    1.2 To be process / High level solution",
+                "2.0 Impact Analysis",
+                "    2.1 System impacts – Primary and cross functional",
+                "    2.2 Impacted Products",
+                "    2.3 List of APIs required",
+                "3.0 Process / Data Flow diagram / Figma",
+                "4.0 Business / System Requirement",
+                "5.0 MIS / DATA Requirement",
+                "6.0 Communication Requirement",
+                "7.0 Test Scenarios",
+                "8.0 Questions / Suggestions",
+                "9.0 Reference Document",
+                "10.0 Appendix",
+                "11.0 Risk Evaluation"
+            ]
+
+            for entry in toc_entries:
+                if entry.startswith("    "):
+                    doc.add_paragraph(entry.strip(), style='Heading 3')
+                else:
+                    doc.add_paragraph(entry, style='Heading 2')
+
+            doc.add_page_break()
+            
+            # Process each section of the BRD - Improved section processing logic
+            sections = final_output.split('\n#')
             
             for section in sections:
-                if section.strip():
-                    lines = section.strip().split('\n')
-                    if lines:
-                        # Extract heading
-                        heading_line = lines[0].strip()
-                        
-                        # Find the appropriate bookmark name for this heading
-                        bookmark_name = None
-                        for bookmark, heading_text in bookmark_mapping.items():
-                            if heading_line.lower().replace('#', '').strip() in heading_text.lower():
-                                bookmark_name = bookmark
-                                break
-                        
-                        # Determine heading level
-                        if heading_line.startswith('###'):
-                            level = 2
-                            heading_text = heading_line.replace('###', '').strip()
-                        else:
-                            level = 1
-                            heading_text = heading_line.replace('##', '').strip()
-                        
-                        # Add section heading with bookmark
-                        if bookmark_name:
-                            add_section_with_bookmark(doc, heading_text, bookmark_name, level)
-                        else:
-                            doc.add_heading(heading_text, level)
-                        
-                        # Process content
-                        content_lines = lines[1:]
-                        i = 0
-                        
-                        while i < len(content_lines):
-                            line = content_lines[i].strip()
-                            
-                            # Handle table markers
-                            table_match = re.search(r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]', line)
-                            if table_match:
-                                table_id = table_match.group(1)
-                                if table_id in st.session_state.extracted_data['original_tables']:
-                                    insert_table_into_doc(doc, st.session_state.extracted_data['original_tables'][table_id], table_id)
-                                i += 1
-                                continue
-                            
-                            # Handle test scenarios placeholder
-                            if line == test_scenario_placeholder:
-                                process_test_scenarios(test_scenarios, doc)
-                                i += 1
-                                continue
-                            
-                            # Handle regular content
-                            if line:
-                                # Handle bullet points
-                                if line.startswith('- ') or line.startswith('* '):
-                                    bullet_content = line[2:].strip()
-                                    para = doc.add_paragraph(bullet_content, style='List Bullet')
-                                
-                                # Handle numbered lists
-                                elif re.match(r'^\d+\.', line):
-                                    numbered_content = re.sub(r'^\d+\.\s*', '', line)
-                                    para = doc.add_paragraph(numbered_content, style='List Number')
-                                
-                                # Handle regular paragraphs
-                                else:
-                                    para = doc.add_paragraph(line)
-                            
-                            i += 1
+                if not section.strip():
+                    continue
+                
+                lines = section.strip().split('\n')
+                heading_text = lines[0].lstrip('#').strip()
+                heading_level = 1 if section.startswith('#') else 2
+                
+                # Add section heading
+                doc.add_heading(heading_text, level=heading_level)
+                
+                remaining_content = '\n'.join(lines[1:]).strip()
+                
+                # Handle test scenarios section specially
+                if "7.0 Test Scenarios" in heading_text or heading_text.startswith("7.0"):
+                    # Process test scenarios content
+                    doc = process_test_scenarios(test_scenarios, doc)
+                    continue  # Skip further processing for this section
+                elif test_scenario_placeholder in remaining_content:
+                    # Split content at placeholder
+                    parts = remaining_content.split(test_scenario_placeholder)
+                    
+                    # Add content before placeholder
+                    if parts[0].strip():
+                        doc.add_paragraph(parts[0].strip())
+                    
+                    # Process test scenarios
+                    doc = process_test_scenarios(test_scenarios, doc)
+                    
+                    # Add content after placeholder if any
+                    if len(parts) > 1 and parts[1].strip():
+                        doc.add_paragraph(parts[1].strip())
+                    
+                    continue
+                
+                # Handle tables in the content
+                table_pattern = r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]'
+                matches = list(re.finditer(table_pattern, remaining_content))
+                
+                last_pos = 0
+                for match in matches:
+                    pre_text = remaining_content[last_pos:match.start()].strip()
+                    if pre_text:
+                        doc.add_paragraph(pre_text)
+                    
+                    table_id = match.group(1)
+                    if table_id in st.session_state.extracted_data['original_tables']:
+                        st.write(f"Inserting table {table_id}")
+                        table_to_insert = st.session_state.extracted_data['original_tables'][table_id]
+                        insert_table_into_doc(doc, table_to_insert, table_id)
+                    else:
+                        doc.add_paragraph(f"[TABLE {table_id} NOT FOUND]")
+                    
+                    last_pos = match.end()
+                
+                remaining_text = remaining_content[last_pos:].strip()
+                if remaining_text:
+                    lines = remaining_text.split('\n')
+                    clean_lines = []
+                    skip_mode = False
+                    
+                    for line in lines:
+                        if '|' in line and skip_mode:
+                            continue
+                        elif not line.strip() and skip_mode:
+                            skip_mode = False
+                        elif not skip_mode:
+                            clean_lines.append(line)
+                    
+                    clean_text = '\n'.join(clean_lines)
+                    if clean_text.strip():
+                        doc.add_paragraph(clean_text)
             
             # Save document to BytesIO
             doc_buffer = BytesIO()
@@ -815,39 +892,3 @@ if st.session_state.extracted_data['requirements']:
         if st.session_state.extracted_data['tables']:
             st.subheader("Extracted Tables")
             st.text_area("Tables", st.session_state.extracted_data['tables'], height=200, key="tables_review")
-
-# Help section
-with st.expander("Help & Instructions"):
-    st.markdown("""
-    ### How to Use the BRD Generator:
-    
-    1. **Select API Provider**: Choose between OpenAI or Groq
-    2. **Enter API Key**: Provide your API key for the selected provider
-    3. **Upload Logo**: Optional PNG logo for document header
-    4. **Upload Documents**: Upload your requirement documents (PDF, DOCX, XLSX, MSG)
-    5. **Generate BRD**: Click the button to generate your Business Requirements Document
-    6. **Download**: Download the generated Word document with clickable table of contents
-    
-    ### Supported File Types:
-    - **PDF**: Text extraction from PDF documents
-    - **DOCX**: Full document structure with tables and formatting
-    - **XLSX**: Excel spreadsheets converted to tables
-    - **MSG**: Outlook email files with body text extraction
-    
-    ### Features:
-    - Clickable table of contents with page references
-    - Automatic table insertion from source documents
-    - AI-generated test scenarios
-    - Professional document formatting
-    - Logo insertion in document header
-    
-    ### Tips:
-    - Ensure your documents contain clear section headings
-    - Include relevant tables and data for better BRD generation
-    - Review extracted content before generating the BRD
-    - Right-click the TOC in Word and select "Update Field" to refresh page numbers
-    """)
-
-# Footer
-st.markdown("---")
-st.markdown("**Business Requirements Document Generator** - Powered by AI")
