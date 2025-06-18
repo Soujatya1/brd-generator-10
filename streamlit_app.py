@@ -17,6 +17,7 @@ import copy
 from docx.oxml.shared import qn
 from docx.oxml import OxmlElement
 from docx.enum.text import WD_TAB_ALIGNMENT, WD_ALIGN_PARAGRAPH, WD_TAB_LEADER
+import tempfile
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -488,6 +489,8 @@ if uploaded_files:
         if 'msg_content' not in st.session_state:
             st.session_state.msg_content = {}
         elif file_extension == ".msg":
+            if 'msg_content' not in st.session_state:
+                st.session_state.msg_content = {}
             msg_content, txt_filename = extract_content_from_msg(uploaded_file, save_as_txt=True)
             if msg_content:
                 combined_requirements.append(msg_content)
