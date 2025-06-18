@@ -16,7 +16,7 @@ import re
 import copy
 from docx.oxml.shared import qn
 from docx.oxml import OxmlElement
-from docx.enum.text import WD_TAB_ALIGNMENT, WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_TAB_ALIGNMENT, WD_ALIGN_PARAGRAPH, WD_TAB_LEADER
 
 BRD_FORMAT = """
 ## 1.0 Introduction
