@@ -2,7 +2,7 @@ import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain.chains import LLMChain, SimpleSequentialChain
 from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -34,6 +34,316 @@ BRD_FORMAT = """
 ## 10.0 Appendix
 ## 11.0 Risk Evaluation
 """
+
+# Section-wise templates for sequential processing
+SECTION_TEMPLATES = {
+    "intro_impact": """
+    You are a Business Analyst expert creating sections 1.0-2.0 of a comprehensive Business Requirements Document (BRD).
+    
+    SOURCE REQUIREMENTS:
+    {requirements}
+    
+    Create ONLY the following sections with detailed content:
+    
+    ## 1.0 Introduction
+    ### 1.1 Purpose
+    Extract and elaborate on the business purpose, objectives, goals, or problem statement from the requirements.
+    
+    ### 1.2 To be process / High level solution
+    Provide solution overview, high-level approach, or process descriptions based on the requirements.
+    
+    ## 2.0 Impact Analysis
+    ### 2.1 System impacts – Primary and cross functional
+    Identify affected systems, integrations, dependencies, upstream/downstream impacts.
+    
+    ### 2.2 Impacted Products
+    List specific products, services, or business lines affected.
+    
+    ### 2.3 List of APIs required
+    Extract API names, endpoints, integrations, web services, or technical interfaces.
+    
+    IMPORTANT: 
+    - Use markdown formatting (## for main sections, ### for subsections)
+    - If tables are present in requirements, preserve them using markdown table format
+    - Include comprehensive content for each section
+    - If information is not available, state "Not applicable based on provided requirements"
+    """,
+    
+    "process_requirements": """
+    You are a Business Analyst expert creating sections 3.0-4.0 of a comprehensive Business Requirements Document (BRD).
+    
+    Previous sections context: {previous_content}
+    
+    SOURCE REQUIREMENTS:
+    {requirements}
+    
+    Create ONLY the following sections with detailed content:
+    
+    ## 3.0 Process / Data Flow diagram / Figma
+    Look for process flows, workflow descriptions, data movement, user journeys, or references to diagrams.
+    Include step-by-step processes, decision points, data transformations.
+    
+    ## 4.0 Business / System Requirement
+    - Functional requirements (what the system should do)
+    - Business rules and logic
+    - User stories or use cases
+    - Performance, security, and compliance requirements
+    - Include any requirement tables from source documents here
+    
+    IMPORTANT:
+    - Use markdown formatting (## for main sections, ### for subsections)
+    - Preserve any tables using markdown table format with pipes (|)
+    - Include comprehensive content for each section
+    - Build upon the context from previous sections
+    """,
+    
+    "data_communication": """
+    You are a Business Analyst expert creating sections 5.0-6.0 of a comprehensive Business Requirements Document (BRD).
+    
+    Previous sections context: {previous_content}
+    
+    SOURCE REQUIREMENTS:
+    {requirements}
+    
+    Create ONLY the following sections with detailed content:
+    
+    ## 5.0 MIS / DATA Requirement
+    - Data requirements and specifications
+    - Reporting needs, analytics requirements
+    - Data sources and destinations
+    - Include any data specification tables from source documents here
+    
+    ## 6.0 Communication Requirement
+    - Stakeholder communication needs
+    - Notification requirements
+    - Email templates or communication workflows
+    
+    IMPORTANT:
+    - Use markdown formatting (## for main sections, ### for subsections)
+    - Preserve any tables using markdown table format with pipes (|)
+    - Include comprehensive content for each section
+    - Build upon the context from previous sections
+    """,
+    
+    "testing_final": """
+    You are a Business Analyst expert creating sections 7.0-11.0 of a comprehensive Business Requirements Document (BRD).
+    
+    Previous sections context: {previous_content}
+    
+    SOURCE REQUIREMENTS:
+    {requirements}
+    
+    Create ONLY the following sections with detailed content:
+    
+    ## 7.0 Test Scenarios
+    Generate at least 5 detailed test scenarios in a table format:
+    | Test ID | Test Name | Objective | Test Steps | Expected Results | Test Data | Type |
+    | ------- | --------- | --------- | ---------- | ---------------- | --------- | ---- |
+    | TC001 | [Test Name] | [Objective] | [Steps] | [Results] | [Data] | [Type] |
+    
+    ## 8.0 Questions / Suggestions
+    - Open questions from the source documents
+    - Assumptions that need validation
+    - Suggestions for improvement
+    
+    ## 9.0 Reference Document
+    - Source documents mentioned
+    - Related policies or procedures
+    - External references or standards
+    
+    ## 10.0 Appendix
+    - Supporting information
+    - Detailed technical specifications
+    - Include any supporting tables from source documents here
+    
+    ## 11.0 Risk Evaluation
+    - Identified risks and mitigation strategies
+    - Dependencies and constraints
+    - Timeline and technical risks
+    
+    IMPORTANT:
+    - Use markdown formatting (## for main sections, ### for subsections)
+    - Preserve any tables using markdown table format with pipes (|)
+    - Include comprehensive content for each section
+    - Build upon the context from previous sections
+    """
+}
+
+def estimate_content_size(text):
+    """Rough estimation of content size (characters as proxy for tokens)"""
+    return len(text)
+
+def chunk_requirements(requirements, max_chunk_size=8000):
+    """Split requirements into smaller chunks if too large"""
+    if estimate_content_size(requirements) <= max_chunk_size:
+        return [requirements]
+    
+    # Split by sections or paragraphs
+    sections = requirements.split('\n\n')
+    chunks = []
+    current_chunk = ""
+    
+    for section in sections:
+        if estimate_content_size(current_chunk + section) > max_chunk_size and current_chunk:
+            chunks.append(current_chunk.strip())
+            current_chunk = section
+        else:
+            current_chunk += "\n\n" + section if current_chunk else section
+    
+    if current_chunk:
+        chunks.append(current_chunk.strip())
+    
+    return chunks
+
+@st.cache_resource
+def initialize_sequential_chains(api_provider, api_key):
+    """Initialize the sequential chain for BRD generation"""
+    
+    if api_provider == "OpenAI":
+        model = ChatOpenAI(
+            openai_api_key=api_key,
+            model_name="gpt-3.5-turbo-16k",
+            temperature=0.2,
+            top_p=0.2
+        )
+    else:
+        model = ChatGroq(
+            groq_api_key=api_key,
+            model_name="llama3-70b-8192",
+            temperature=0.2,
+            top_p=0.2
+        )
+    
+    # Create individual chains for each section group
+    chains = []
+    
+    # Chain 1: Introduction and Impact Analysis
+    chain1 = LLMChain(
+        llm=model,
+        prompt=PromptTemplate(
+            input_variables=['requirements'],
+            template=SECTION_TEMPLATES["intro_impact"]
+        ),
+        output_key="intro_impact_sections"
+    )
+    
+    # Chain 2: Process and Business Requirements
+    chain2 = LLMChain(
+        llm=model,
+        prompt=PromptTemplate(
+            input_variables=['previous_content', 'requirements'],
+            template=SECTION_TEMPLATES["process_requirements"]
+        ),
+        output_key="process_requirements_sections"
+    )
+    
+    # Chain 3: Data and Communication Requirements
+    chain3 = LLMChain(
+        llm=model,
+        prompt=PromptTemplate(
+            input_variables=['previous_content', 'requirements'],
+            template=SECTION_TEMPLATES["data_communication"]
+        ),
+        output_key="data_communication_sections"
+    )
+    
+    # Chain 4: Testing and Final sections
+    chain4 = LLMChain(
+        llm=model,
+        prompt=PromptTemplate(
+            input_variables=['previous_content', 'requirements'],
+            template=SECTION_TEMPLATES["testing_final"]
+        ),
+        output_key="testing_final_sections"
+    )
+    
+    return [chain1, chain2, chain3, chain4]
+
+def generate_brd_sequentially(chains, requirements):
+    """Generate BRD using sequential chains"""
+    
+    # Check if content is too large and needs chunking
+    req_chunks = chunk_requirements(requirements)
+    
+    if len(req_chunks) > 1:
+        st.info(f"Large content detected. Processing in {len(req_chunks)} chunks...")
+    
+    all_sections = []
+    
+    for chunk_idx, req_chunk in enumerate(req_chunks):
+        st.write(f"Processing chunk {chunk_idx + 1}/{len(req_chunks)}...")
+        
+        # Initialize variables for sequential processing
+        previous_content = ""
+        chunk_sections = []
+        
+        # Process each chain sequentially
+        for i, chain in enumerate(chains):
+            try:
+                if i == 0:  # First chain doesn't need previous content
+                    result = chain.run(requirements=req_chunk)
+                else:
+                    result = chain.run(previous_content=previous_content, requirements=req_chunk)
+                
+                chunk_sections.append(result)
+                previous_content += "\n\n" + result
+                
+                st.write(f"✓ Completed section group {i+1}/4")
+                
+            except Exception as e:
+                st.error(f"Error in chain {i+1}: {str(e)}")
+                # Continue with next chain even if one fails
+                chunk_sections.append(f"## Error in section group {i+1}\nError processing this section: {str(e)}")
+        
+        all_sections.extend(chunk_sections)
+    
+    # Combine all sections
+    final_brd = "\n\n".join(all_sections)
+    return final_brd
+
+def create_fallback_chain(api_provider, api_key):
+    """Fallback to original single chain if sequential fails"""
+    
+    if api_provider == "OpenAI":
+        model = ChatOpenAI(
+            openai_api_key=api_key,
+            model_name="gpt-3.5-turbo-16k",
+            temperature=0.2,
+            top_p=0.2
+        )
+    else:
+        model = ChatGroq(
+            groq_api_key=api_key,
+            model_name="llama3-70b-8192",
+            temperature=0.2,
+            top_p=0.2
+        )
+    
+    return LLMChain(
+        llm=model, 
+        prompt=PromptTemplate(
+            input_variables=['requirements', 'brd_format'],
+            template="""
+            You are a Business Analyst expert creating a comprehensive Business Requirements Document (BRD). 
+            
+            DOCUMENT STRUCTURE TO FOLLOW:
+            {brd_format}
+
+            SOURCE REQUIREMENTS:
+            {requirements}
+
+            CRITICAL INSTRUCTIONS FOR TABLE HANDLING:
+            - When you encounter "TABLE:" sections in the requirements, PRESERVE them in the BRD output
+            - Format all tables using markdown table syntax with pipes (|)
+            - Include ALL table data from the source requirements
+            
+            Generate a complete BRD following the structure provided. Use markdown formatting and include comprehensive content for each section.
+            """
+        )
+    )
+
+# [Include all the existing helper functions: add_hyperlink, add_bookmark, create_clickable_toc, etc.]
+# [These remain the same as in your original code]
 
 def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
     """Add a hyperlink to a paragraph"""
@@ -196,122 +506,8 @@ def parse_markdown_table(table_text):
     
     return table_data if table_data else None
 
-@st.cache_resource
-def initialize_llm(api_provider, api_key):
-    if api_provider == "OpenAI":
-        model = ChatOpenAI(
-            openai_api_key=api_key,
-            model_name="gpt-3.5-turbo-16k",
-            temperature=0.2,
-            top_p=0.2
-        )
-    else:
-        model = ChatGroq(
-            groq_api_key=api_key,
-            model_name="llama3-70b-8192",
-            temperature=0.2,
-            top_p=0.2
-        )
-    
-    llm_chain = LLMChain(
-        llm=model, 
-        prompt=PromptTemplate(
-            input_variables=['requirements', 'brd_format'],
-            template="""
-            You are a Business Analyst expert creating a comprehensive Business Requirements Document (BRD). 
-            
-            DOCUMENT STRUCTURE TO FOLLOW:
-            {brd_format}
-
-            SOURCE REQUIREMENTS:
-            {requirements}
-
-            CRITICAL INSTRUCTIONS FOR TABLE HANDLING:
-            - When you encounter "TABLE:" sections in the requirements, PRESERVE them in the BRD output
-            - Format all tables using markdown table syntax with pipes (|)
-            - Example format:
-            | Header 1 | Header 2 | Header 3 |
-            | -------- | -------- | -------- |
-            | Row 1 Col 1 | Row 1 Col 2 | Row 1 Col 3 |
-            | Row 2 Col 1 | Row 2 Col 2 | Row 2 Col 3 |
-            
-            - Include ALL table data from the source requirements
-            - Place tables in the most appropriate BRD sections based on their content
-            - Add a brief description before each table explaining its purpose
-
-            DETAILED INSTRUCTIONS:
-
-            **1.0 Introduction**
-            - 1.1 Purpose: Extract the business purpose, objectives, goals, or problem statement
-            - 1.2 To be process / High level solution: Look for solution overview, high-level approach, or process descriptions
-
-            **2.0 Impact Analysis**
-            - 2.1 System impacts: Identify affected systems, integrations, dependencies, upstream/downstream impacts
-            - 2.2 Impacted Products: List specific products, services, or business lines affected
-            - 2.3 List of APIs required: Extract API names, endpoints, integrations, web services, or technical interfaces
-
-            **3.0 Process / Data Flow diagram / Figma**
-            - Look for: Process flows, workflow descriptions, data movement, user journeys, or references to diagrams
-            - Include: Step-by-step processes, decision points, data transformations
-
-            **4.0 Business / System Requirement**
-            - Functional requirements (what the system should do)
-            - Business rules and logic
-            - User stories or use cases
-            - Performance, security, and compliance requirements
-            - **Include any requirement tables from source documents here**
-
-            **5.0 MIS / DATA Requirement**
-            - Data requirements and specifications
-            - Reporting needs, analytics requirements
-            - Data sources and destinations
-            - **Include any data specification tables from source documents here**
-
-            **6.0 Communication Requirement**
-            - Stakeholder communication needs
-            - Notification requirements
-            - Email templates or communication workflows
-
-            **7.0 Test Scenarios**
-            - Generate at least 5 detailed test scenarios in a table format
-            - Include: Test ID, Test Name, Objective, Test Steps, Expected Results, Test Data, Type
-            - Format as markdown table:
-            | Test ID | Test Name | Objective | Test Steps | Expected Results | Test Data | Type |
-            | ------- | --------- | --------- | ---------- | ---------------- | --------- | ---- |
-            | TC001 | [Test Name] | [Objective] | [Steps] | [Results] | [Data] | [Type] |
-
-            **8.0 Questions / Suggestions**
-            - Open questions from the source documents
-            - Assumptions that need validation
-            - Suggestions for improvement
-
-            **9.0 Reference Document**
-            - Source documents mentioned
-            - Related policies or procedures
-            - External references or standards
-
-            **10.0 Appendix**
-            - Supporting information
-            - Detailed technical specifications
-            - **Include any supporting tables from source documents here**
-
-            **11.0 Risk Evaluation**
-            - Identified risks and mitigation strategies
-            - Dependencies and constraints
-            - Timeline and technical risks
-
-            OUTPUT REQUIREMENTS:
-            - Use markdown formatting (## for main sections, ### for subsections)
-            - ALWAYS preserve and include tables using proper markdown table format
-            - Include comprehensive content for each section
-            - Maintain professional business document tone
-            - If information is not available for a section, state "Not applicable based on provided requirements"
-            - When including tables, add a brief description of what the table contains
-
-            Generate the complete BRD now, ensuring ALL tables from the source requirements are included:"""
-        )
-    )
-    return llm_chain
+# [Include all other existing helper functions: extract_content_from_docx, extract_content_from_pdf, etc.]
+# [These remain the same as in your original code]
 
 def extract_content_from_docx(doc_file):
     doc = Document(doc_file)
@@ -515,8 +711,11 @@ def create_word_document(content, logo_data=None):
     
     return doc
 
-# Streamlit UI
+# Enhanced Streamlit UI
 st.title("Business Requirements Document Generator")
+st.subheader("🔄 Enhanced with Sequential Chain Processing")
+
+st.info("💡 This version uses sequential chain processing to handle large documents and avoid token limits!")
 
 st.subheader("AI Model Selection")
 api_provider = st.radio("Select API Provider:", ["OpenAI", "Groq"])
@@ -525,6 +724,14 @@ if api_provider == "OpenAI":
     api_key = st.text_input("Enter your OpenAI API Key:", type="password")
 else:
     api_key = st.text_input("Enter your Groq API Key:", type="password")
+
+# Processing method selection
+st.subheader("Processing Method")
+processing_method = st.radio(
+    "Choose processing method:",
+    ["Sequential Chain (Recommended)", "Single Chain (Fallback)"],
+    help="Sequential Chain breaks down the BRD generation into smaller, manageable parts to avoid token limits."
+)
 
 st.subheader("Document Logo")
 logo_file = st.file_uploader("Upload logo/icon for document (PNG):", type=['png'])
@@ -542,7 +749,7 @@ if st.button("Generate BRD") and uploaded_files:
     if not api_key:
         st.error(f"Please enter your {api_provider} API Key.")
     else:
-        st.write(f"Generating BRD using {api_provider} API...")
+        st.write(f"Generating BRD using {api_provider} API with {processing_method}...")
         
         try:
             # Extract content from all uploaded files
@@ -566,23 +773,98 @@ if st.button("Generate BRD") and uploaded_files:
                 
                 combined_requirements.append(content)
             
-            # Generate BRD
-            llm_chain = initialize_llm(api_provider, api_key)
+            all_requirements = "\n\n".join(combined_requirements)
             
-            prompt_input = {
-                "requirements": "\n\n".join(combined_requirements),
-                "brd_format": BRD_FORMAT
-            }
+            # Show content size estimation
+            content_size = estimate_content_size(all_requirements)
+            st.info(f"📊 Content size: ~{content_size:,} characters")
             
-            output = llm_chain.run(prompt_input)
+            # Generate BRD based on selected method
+            if processing_method == "Sequential Chain (Recommended)":
+                try:
+                    chains = initialize_sequential_chains(api_provider, api_key)
+                    output = generate_brd_sequentially(chains, all_requirements)
+                    st.success("✅ BRD generated successfully using Sequential Chain!")
+                    
+                except Exception as e:
+                    st.warning(f"Sequential chain failed: {str(e)}")
+                    st.info("🔄 Falling back to Single Chain method...")
+                    
+                    # Fallback to single chain
+                    fallback_chain = create_fallback_chain(api_provider, api_key)
+                    
+                    # Try chunking if content is too large
+                    if content_size > 10000:
+                        chunks = chunk_requirements(all_requirements, max_chunk_size=8000)
+                        chunk_outputs = []
+                        
+                        for i, chunk in enumerate(chunks):
+                            st.write(f"Processing fallback chunk {i+1}/{len(chunks)}...")
+                            chunk_output = fallback_chain.run({
+                                "requirements": chunk,
+                                "brd_format": BRD_FORMAT
+                            })
+                            chunk_outputs.append(chunk_output)
+                        
+                        output = "\n\n".join(chunk_outputs)
+                    else:
+                        output = fallback_chain.run({
+                            "requirements": all_requirements,
+                            "brd_format": BRD_FORMAT
+                        })
+                    
+                    st.success("✅ BRD generated successfully using Fallback Single Chain!")
             
-            st.success("BRD generated successfully!")
+            else:  # Single Chain method
+                try:
+                    single_chain = create_fallback_chain(api_provider, api_key)
+                    
+                    # Check if content needs chunking
+                    if content_size > 10000:
+                        st.info("🔄 Large content detected. Processing in chunks...")
+                        chunks = chunk_requirements(all_requirements, max_chunk_size=8000)
+                        chunk_outputs = []
+                        
+                        for i, chunk in enumerate(chunks):
+                            st.write(f"Processing chunk {i+1}/{len(chunks)}...")
+                            chunk_output = single_chain.run({
+                                "requirements": chunk,
+                                "brd_format": BRD_FORMAT
+                            })
+                            chunk_outputs.append(chunk_output)
+                        
+                        output = "\n\n".join(chunk_outputs)
+                    else:
+                        output = single_chain.run({
+                            "requirements": all_requirements,
+                            "brd_format": BRD_FORMAT
+                        })
+                    
+                    st.success("✅ BRD generated successfully using Single Chain!")
+                    
+                except Exception as e:
+                    st.error(f"Single chain processing failed: {str(e)}")
+                    st.error("Please try the Sequential Chain method or check your API key.")
+                    st.stop()
             
             # Display generated BRD
             st.subheader("Generated Business Requirements Document")
-            st.markdown(output)
+            
+            # Add expandable sections for better readability
+            with st.expander("📋 View Complete BRD Content", expanded=True):
+                st.markdown(output)
+            
+            # Show BRD statistics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("📄 Total Sections", len([s for s in output.split('##') if s.strip()]))
+            with col2:
+                st.metric("📝 Total Characters", len(output))
+            with col3:
+                st.metric("📊 Total Words", len(output.split()))
             
             # Create Word document
+            st.info("🔄 Creating Word document...")
             logo_data = logo_file.getvalue() if logo_file else None
             doc = create_word_document(output, logo_data)
             
@@ -592,13 +874,122 @@ if st.button("Generate BRD") and uploaded_files:
             doc_buffer.seek(0)
             
             # Provide download
+            st.success("✅ Word document created successfully!")
             st.download_button(
-                label="Download BRD as Word Document",
+                label="📥 Download BRD as Word Document",
                 data=doc_buffer.getvalue(),
                 file_name="Business_Requirements_Document.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
             
+            # Additional features
+            st.subheader("📋 Additional Features")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.button("🔍 Analyze BRD Quality"):
+                    # Simple BRD quality analysis
+                    sections_found = []
+                    required_sections = [
+                        "Introduction", "Impact Analysis", "Process", "Business", 
+                        "Requirement", "Test", "Risk", "Reference"
+                    ]
+                    
+                    for section in required_sections:
+                        if section.lower() in output.lower():
+                            sections_found.append(section)
+                    
+                    st.write("**BRD Quality Analysis:**")
+                    st.write(f"✅ Sections covered: {len(sections_found)}/{len(required_sections)}")
+                    st.write(f"📝 Content completeness: {min(100, len(output) // 100)}%")
+                    st.write(f"📊 Tables detected: {output.count('|')//3}")
+                    
+                    if len(sections_found) >= 6:
+                        st.success("🎉 High quality BRD generated!")
+                    elif len(sections_found) >= 4:
+                        st.warning("⚠️ Good BRD, but could use more sections")
+                    else:
+                        st.error("❌ BRD needs improvement")
+            
+            with col2:
+                if st.button("📊 Export BRD Summary"):
+                    # Create a summary of the BRD
+                    summary_lines = []
+                    sections = output.split('##')
+                    
+                    for section in sections:
+                        if section.strip():
+                            lines = section.strip().split('\n')
+                            if lines:
+                                heading = lines[0].strip()
+                                word_count = len(section.split())
+                                summary_lines.append(f"• {heading}: {word_count} words")
+                    
+                    summary = "**BRD Summary:**\n\n" + "\n".join(summary_lines)
+                    
+                    st.text_area("BRD Summary", summary, height=200)
+                    
+                    # Download summary as text file
+                    st.download_button(
+                        label="📥 Download Summary",
+                        data=summary,
+                        file_name="BRD_Summary.txt",
+                        mime="text/plain"
+                    )
+            
         except Exception as e:
-            st.error(f"Error generating BRD: {str(e)}")
+            st.error(f"❌ Error generating BRD: {str(e)}")
             st.error("Please check your API key and try again.")
+            
+            # Show debug information
+            with st.expander("🔧 Debug Information"):
+                st.write(f"**API Provider:** {api_provider}")
+                st.write(f"**Processing Method:** {processing_method}")
+                st.write(f"**Content Size:** {content_size if 'content_size' in locals() else 'Unknown'}")
+                st.write(f"**Files Processed:** {len(uploaded_files)}")
+                st.write(f"**Error Details:** {str(e)}")
+
+# Add helpful information in sidebar
+with st.sidebar:
+    st.markdown("### 📚 Help & Information")
+    
+    st.markdown("""
+    **Sequential Chain Benefits:**
+    - ✅ Handles large documents
+    - ✅ Avoids token limits
+    - ✅ Better content organization
+    - ✅ More reliable processing
+    
+    **Supported File Types:**
+    - 📄 PDF files
+    - 📝 Word documents (.docx)
+    - 📊 Excel files (.xlsx)
+    - 📧 Outlook messages (.msg)
+    
+    **Tips for Best Results:**
+    - Use clear, structured requirement documents
+    - Include tables and diagrams when possible
+    - Provide complete business context
+    - Review generated BRD before finalizing
+    """)
+    
+    st.markdown("### 🔧 Troubleshooting")
+    st.markdown("""
+    **Common Issues:**
+    - **API Key Error:** Verify your API key is correct
+    - **Large Files:** Try Sequential Chain method
+    - **Missing Sections:** Check source document quality
+    - **Token Limits:** Use chunking or Sequential Chain
+    """)
+    
+    st.markdown("### 📞 Support")
+    st.info("For technical support, please check your API provider's documentation.")
+
+# Footer
+st.markdown("---")
+st.markdown(
+    "**Business Requirements Document Generator** | "
+    "Enhanced with Sequential Chain Processing | "
+    "Built with Streamlit & LangChain"
+)
