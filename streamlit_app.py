@@ -223,6 +223,7 @@ OUTPUT FORMAT:
 - Include bullet points and numbered lists for clarity
 - Maintain professional business document tone
 - Ensure each section has relevant content or clearly state if information is not available
+- No two tables under a section should be merged
 
 IMPORTANT: FOR ALL THE SECTIONS MENTIONED, PLEASE INCLUDE THE MOST ACCURATE INFORMATION AS PER THE UPLOADED DOCUMENTS, DO NOT MENTION GENERIC INFORMATION
 
