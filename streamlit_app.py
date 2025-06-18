@@ -69,7 +69,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - If tables are present in requirements, preserve them using markdown table format
     - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, only then build upon the context from previous sections
+    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
     """,
     
     "process_requirements": """
@@ -97,7 +97,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, only then build upon the context from previous sections
+    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
     """,
     
     "data_communication": """
@@ -125,7 +125,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, only then build upon the context from previous sections
+    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
     """,
     
     "testing_final": """
@@ -168,7 +168,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, only then build upon the context from previous sections
+    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
     """
 }
 
