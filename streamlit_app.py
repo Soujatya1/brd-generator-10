@@ -88,6 +88,8 @@ OUTPUT FORMAT:
 - Maintain professional business document tone
 - Ensure each section has relevant content or clearly state if information is not available
 
+IMPORTANT: FOR ALL THE SECTIONS MENTIONED, PLEASE INCLUDE THE MOST ACCURATE INFORMATION AS PER THE UPLOADED DOCUMENTS, DO NOT MENTION GENERIC INFORMATION
+
 Generate the complete BRD now:"""
         )
     )
