@@ -312,7 +312,7 @@ def analyze_table_content_for_section(table_content, original_section=""):
         'mis_data': ['data', 'field', 'column', 'database', 'table structure', 'report', 'analytics', 'metric'],
         'communication': ['notification', 'email', 'sms', 'communication', 'alert', 'message', 'recipient'],
         'test_scenarios': ['test', 'scenario', 'validation', 'verify', 'expected result', 'test case'],
-        'appendix': ['reference', 'lookup', 'code', 'mapping', 'configuration']
+        'risk_evaluation': ['risk', 'evaluation', 'assessment']
     }
     
     # Score each section based on keyword matches
