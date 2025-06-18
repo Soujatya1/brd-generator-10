@@ -15,8 +15,9 @@ import pdfplumber
 import pandas as pd
 import extract_msg
 import re
-from docx.shared import RGBColor
+from docx.shared import RGBColor, Pt
 from docx.enum.text import WD_BREAK
+from docx.enum.style import WD_STYLE_TYPE
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -326,18 +327,24 @@ def create_clickable_toc(doc):
     
     for entry_text, bookmark_name in toc_entries:
         toc_paragraph = doc.add_paragraph()
-        toc_paragraph.style = 'TOC 1' if not entry_text.startswith("    ") else 'TOC 2'
         
-        # Add the entry text as hyperlink
+        # Manual formatting instead of styles
         if entry_text.startswith("    "):
-            toc_paragraph.add_run("    ")  # Add indentation
+            # Sub-section formatting
+            toc_paragraph.paragraph_format.left_indent = Inches(0.25)
             link_text = entry_text.strip()
         else:
+            # Main section formatting
+            toc_paragraph.paragraph_format.left_indent = Inches(0)
             link_text = entry_text
-            
+        
+        # Set common formatting
+        toc_paragraph.paragraph_format.space_after = Pt(2)
+        
+        # Add the entry text as hyperlink
         add_hyperlink(toc_paragraph, link_text, bookmark_name, is_internal=True)
         
-        # Add tab stop for page numbers (important!)
+        # Add tab stop for page numbers alignment
         toc_paragraph.paragraph_format.tab_stops.add_tab_stop(Inches(6.0))
         
         # Add tab character before page number
@@ -346,25 +353,32 @@ def create_clickable_toc(doc):
         # Add page number field with proper XML structure
         page_run = toc_paragraph.add_run()
         
-        # Create field XML elements
-        fldChar_begin = parse_xml(r'<w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="begin"/>')
-        instrText = parse_xml(f'<w:instrText xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"> PAGEREF {bookmark_name} \\h </w:instrText>')
-        fldChar_end = parse_xml(r'<w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="end"/>')
-        
-        # Add field elements to the run
-        page_run._r.append(fldChar_begin)
-        page_run._r.append(instrText)
-        page_run._r.append(fldChar_end)
-        
-        # Add placeholder text that will be replaced when field updates
-        page_run.add_text("1")  # Placeholder page number
+        # Create field XML elements with proper namespace
+        try:
+            fldChar_begin = parse_xml(r'<w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="begin"/>')
+            instrText = parse_xml(f'<w:instrText xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"> PAGEREF {bookmark_name} \\h </w:instrText>')
+            fldChar_end = parse_xml(r'<w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="end"/>')
+            
+            # Add field elements to the run
+            page_run._r.append(fldChar_begin)
+            page_run._r.append(instrText)
+            page_run._r.append(fldChar_end)
+            
+            # Add placeholder text that will be replaced when field updates
+            page_run.add_text("1")  # Placeholder page number
+        except Exception as e:
+            # Fallback: just add placeholder text if field creation fails
+            page_run.add_text("##")
     
     # Add comprehensive note about updating TOC
     doc.add_paragraph()  # Empty line
     note_para = doc.add_paragraph()
     note_run = note_para.add_run("IMPORTANT: ")
     note_run.bold = True
-    note_run.font.color.rgb = RGBColor(255, 0, 0)  # Red color
+    try:
+        note_run.font.color.rgb = RGBColor(255, 0, 0)  # Red color
+    except:
+        pass  # Skip color if it fails
     
     note_para.add_run("To see actual page numbers in this Table of Contents:")
     
@@ -378,79 +392,93 @@ def create_clickable_toc(doc):
     ]
     
     for instruction in instructions:
-        instr_para = doc.add_paragraph(instruction, style='List Number')
+        try:
+            instr_para = doc.add_paragraph(instruction, style='List Number')
+        except:
+            # Fallback if List Number style doesn't exist
+            instr_para = doc.add_paragraph(instruction)
     
     alt_note = doc.add_paragraph()
-    alt_note.add_run("Alternative: ").bold = True
+    alt_run = alt_note.add_run("Alternative: ")
+    alt_run.bold = True
     alt_note.add_run("Press Ctrl+A to select all, then F9 to update all fields in the document.")
     
     return {entry[1]: entry[0] for entry in toc_entries}
 
 def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
     """Add a hyperlink to a paragraph with proper styling"""
-    # Get the document part for relationship handling
-    part = paragraph.part
-    
-    # Create hyperlink element
-    hyperlink = OxmlElement('w:hyperlink')
-    
-    if is_internal:
-        # Internal bookmark link
-        hyperlink.set(qn('w:anchor'), url_or_bookmark)
-    else:
-        # External URL link
-        r_id = part.relate_to(url_or_bookmark, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
-        hyperlink.set(qn('r:id'), r_id)
-    
-    # Create run element with hyperlink styling
-    new_run = OxmlElement('w:r')
-    
-    # Create run properties for hyperlink style
-    rPr = OxmlElement('w:rPr')
-    
-    # Set hyperlink color (blue)
-    color = OxmlElement('w:color')
-    color.set(qn('w:val'), '0563C1')
-    rPr.append(color)
-    
-    # Set underline
-    underline = OxmlElement('w:u')
-    underline.set(qn('w:val'), 'single')
-    rPr.append(underline)
-    
-    # Add run properties to run
-    new_run.append(rPr)
-    
-    # Add text to run
-    text_element = OxmlElement('w:t')
-    text_element.text = text
-    new_run.append(text_element)
-    
-    # Add run to hyperlink
-    hyperlink.append(new_run)
-    
-    # Add hyperlink to paragraph
-    paragraph._p.append(hyperlink)
-    
-    return hyperlink
+    try:
+        # Get the document part for relationship handling
+        part = paragraph.part
+        
+        # Create hyperlink element
+        hyperlink = OxmlElement('w:hyperlink')
+        
+        if is_internal:
+            # Internal bookmark link
+            hyperlink.set(qn('w:anchor'), url_or_bookmark)
+        else:
+            # External URL link
+            r_id = part.relate_to(url_or_bookmark, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
+            hyperlink.set(qn('r:id'), r_id)
+        
+        # Create run element with hyperlink styling
+        new_run = OxmlElement('w:r')
+        
+        # Create run properties for hyperlink style
+        rPr = OxmlElement('w:rPr')
+        
+        # Set hyperlink color (blue)
+        color = OxmlElement('w:color')
+        color.set(qn('w:val'), '0563C1')
+        rPr.append(color)
+        
+        # Set underline
+        underline = OxmlElement('w:u')
+        underline.set(qn('w:val'), 'single')
+        rPr.append(underline)
+        
+        # Add run properties to run
+        new_run.append(rPr)
+        
+        # Add text to run
+        text_element = OxmlElement('w:t')
+        text_element.text = text
+        new_run.append(text_element)
+        
+        # Add run to hyperlink
+        hyperlink.append(new_run)
+        
+        # Add hyperlink to paragraph
+        paragraph._p.append(hyperlink)
+        
+        return hyperlink
+    except Exception as e:
+        # Fallback: just add text if hyperlink creation fails
+        paragraph.add_run(text)
+        return None
 
 def add_bookmark(paragraph, bookmark_name):
     """Add a bookmark to a paragraph with unique ID"""
-    # Generate unique bookmark ID
-    bookmark_id = str(abs(hash(bookmark_name)) % 1000000)
-    
-    # Create bookmark start element
-    bookmark_start = OxmlElement('w:bookmarkStart')
-    bookmark_start.set(qn('w:id'), bookmark_id)
-    bookmark_start.set(qn('w:name'), bookmark_name)
-    
-    # Create bookmark end element
-    bookmark_end = OxmlElement('w:bookmarkEnd')
-    bookmark_end.set(qn('w:id'), bookmark_id)
-    
-    # Insert bookmark at the beginning and end of paragraph
-    paragraph._p.insert(0, bookmark_start)
-    paragraph._p.append(bookmark_end)
+    try:
+        # Generate unique bookmark ID
+        bookmark_id = str(abs(hash(bookmark_name)) % 1000000)
+        
+        # Create bookmark start element
+        bookmark_start = OxmlElement('w:bookmarkStart')
+        bookmark_start.set(qn('w:id'), bookmark_id)
+        bookmark_start.set(qn('w:name'), bookmark_name)
+        
+        # Create bookmark end element
+        bookmark_end = OxmlElement('w:bookmarkEnd')
+        bookmark_end.set(qn('w:id'), bookmark_id)
+        
+        # Insert bookmark at the beginning and end of paragraph
+        paragraph._p.insert(0, bookmark_start)
+        paragraph._p.append(bookmark_end)
+    except Exception as e:
+        # Skip bookmark creation if it fails
+        pass
 
 def add_section_with_bookmark(doc, heading_text, bookmark_name, level=1):
     """Add a section heading with bookmark for TOC linking"""
@@ -459,8 +487,12 @@ def add_section_with_bookmark(doc, heading_text, bookmark_name, level=1):
     
     # Force page break before major sections (level 1) for proper page numbering
     if level == 1 and not heading_text.lower().startswith('table of contents'):
-        # Add page break before the heading
-        heading.runs[0].add_break(WD_BREAK.PAGE)
+        try:
+            # Add page break before the heading
+            heading.runs[0].add_break(WD_BREAK.PAGE)
+        except:
+            # Skip page break if it fails
+            pass
     
     return heading
 
