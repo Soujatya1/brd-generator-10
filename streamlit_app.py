@@ -6,6 +6,9 @@ from langchain.chains import LLMChain
 from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.shared import OxmlElement, qn
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 from io import BytesIO
 import os
 import pdfplumber
@@ -14,10 +17,6 @@ import extract_msg
 import uuid
 import re
 import copy
-from docx.oxml.shared import qn
-from docx.oxml import OxmlElement
-from docx.enum.text import WD_TAB_ALIGNMENT, WD_ALIGN_PARAGRAPH, WD_TAB_LEADER
-import tempfile
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -37,6 +36,137 @@ BRD_FORMAT = """
 ## 10.0 Appendix
 ## 11.0 Risk Evaluation
 """
+
+def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
+    """Add a hyperlink to a paragraph"""
+    part = paragraph.part
+    r_id = part.relate_to(url_or_bookmark, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=not is_internal)
+    
+    # Create the w:hyperlink tag and add needed values
+    hyperlink = OxmlElement('w:hyperlink')
+    if is_internal:
+        hyperlink.set(qn('w:anchor'), url_or_bookmark)
+    else:
+        hyperlink.set(qn('r:id'), r_id)
+    
+    # Create a new run object and add the text
+    new_run = OxmlElement('w:r')
+    rPr = OxmlElement('w:rPr')
+    
+    # Add color and underline for hyperlink style
+    color = OxmlElement('w:color')
+    color.set(qn('w:val'), '0563C1')
+    rPr.append(color)
+    
+    underline = OxmlElement('w:u')
+    underline.set(qn('w:val'), 'single')
+    rPr.append(underline)
+    
+    new_run.append(rPr)
+    new_run.text = text
+    hyperlink.append(new_run)
+    
+    paragraph._p.append(hyperlink)
+    return hyperlink
+
+def add_bookmark(paragraph, bookmark_name):
+    """Add a bookmark to a paragraph"""
+    # Create bookmark start
+    bookmark_start = OxmlElement('w:bookmarkStart')
+    bookmark_start.set(qn('w:id'), str(abs(hash(bookmark_name)) % 1000000))
+    bookmark_start.set(qn('w:name'), bookmark_name)
+    
+    # Create bookmark end
+    bookmark_end = OxmlElement('w:bookmarkEnd')
+    bookmark_end.set(qn('w:id'), str(abs(hash(bookmark_name)) % 1000000))
+    
+    # Insert bookmarks
+    paragraph._p.insert(0, bookmark_start)
+    paragraph._p.append(bookmark_end)
+
+def add_page_field(paragraph):
+    """Add a page number field to paragraph"""
+    fldChar1 = OxmlElement('w:fldChar')
+    fldChar1.set(qn('w:fldCharType'), 'begin')
+    
+    instrText = OxmlElement('w:instrText')
+    instrText.text = 'PAGE'
+    
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'end')
+    
+    run = paragraph.add_run()
+    run._r.append(fldChar1)
+    run._r.append(instrText)
+    run._r.append(fldChar2)
+
+def create_clickable_toc(doc):
+    """Create a clickable table of contents with page numbers"""
+    toc_heading = doc.add_heading('Table of Contents', level=1)
+    add_bookmark(toc_heading, 'TOC')
+    
+    # TOC entries with their bookmark names
+    toc_entries = [
+        ("1.0 Introduction", "introduction"),
+        ("    1.1 Purpose", "purpose"),
+        ("    1.2 To be process / High level solution", "process_solution"),
+        ("2.0 Impact Analysis", "impact_analysis"),
+        ("    2.1 System impacts – Primary and cross functional", "system_impacts"),
+        ("    2.2 Impacted Products", "impacted_products"), 
+        ("    2.3 List of APIs required", "apis_required"),
+        ("3.0 Process / Data Flow diagram / Figma", "process_flow"),
+        ("4.0 Business / System Requirement", "business_requirements"),
+        ("5.0 MIS / DATA Requirement", "mis_data_requirement"),
+        ("6.0 Communication Requirement", "communication_requirement"),
+        ("7.0 Test Scenarios", "test_scenarios"),
+        ("8.0 Questions / Suggestions", "questions_suggestions"),
+        ("9.0 Reference Document", "reference_document"),
+        ("10.0 Appendix", "appendix"),
+        ("11.0 Risk Evaluation", "risk_evaluation")
+    ]
+    
+    for entry_text, bookmark_name in toc_entries:
+        toc_paragraph = doc.add_paragraph()
+        
+        # Add the entry text as hyperlink
+        if entry_text.startswith("    "):
+            toc_paragraph.add_run("    ")  # Add indentation
+            link_text = entry_text.strip()
+        else:
+            link_text = entry_text
+            
+        add_hyperlink(toc_paragraph, link_text, bookmark_name, is_internal=True)
+        
+        # Add dots/leaders (simplified version)
+        toc_paragraph.add_run(" " + "." * 50 + " ")
+        
+        # Add page number (this will be updated when document is opened in Word)
+        page_run = toc_paragraph.add_run()
+        fldChar1 = OxmlElement('w:fldChar')
+        fldChar1.set(qn('w:fldCharType'), 'begin')
+        
+        instrText = OxmlElement('w:instrText')
+        instrText.text = f'PAGEREF {bookmark_name} \\h'
+        
+        fldChar2 = OxmlElement('w:fldChar') 
+        fldChar2.set(qn('w:fldCharType'), 'end')
+        
+        page_run._r.append(fldChar1)
+        page_run._r.append(instrText)
+        page_run._r.append(fldChar2)
+    
+    # Add note about updating TOC
+    note_para = doc.add_paragraph()
+    note_para.add_run("Note: ").bold = True
+    note_para.add_run("Right-click on this Table of Contents and select 'Update Field' to refresh page numbers after opening in Microsoft Word.")
+    
+    return {entry[1]: entry[0] for entry in toc_entries}
+
+def add_section_with_bookmark(doc, heading_text, bookmark_name, level=1):
+    """Add a section heading with bookmark for TOC linking"""
+    heading = doc.add_heading(heading_text, level=level)
+    add_bookmark(heading, bookmark_name)
+    return heading
 
 @st.cache_resource
 def initialize_llm(api_provider, api_key):
@@ -76,7 +206,6 @@ def initialize_llm(api_provider, api_key):
 2. Map content from the source requirements to the appropriate BRD sections
 3. If you find content that matches a BRD section header, include ALL relevant information from that section
 4. Be comprehensive but concise - include all important details without unnecessary verbosity
-5. No two or more tables should be appended under a single section
 
 TABLE HANDLING:
 - When tables should be included, use the marker [[TABLE_ID:identifier]] exactly as provided in the tables section
@@ -400,6 +529,17 @@ def insert_table_into_doc(doc, table_to_insert, table_id, max_rows=50):
         
         return new_table
 
+def add_header_with_logo(doc, logo_bytes):
+    section = doc.sections[0]
+    
+    header = section.header
+    
+    header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+    
+    run = header_para.add_run()
+    logo_stream = BytesIO(logo_bytes)
+    run.add_picture(logo_stream, width=Inches(1.5))
+
 st.title("Business Requirements Document Generator")
 
 st.subheader("AI Model Selection")
@@ -486,10 +626,9 @@ if uploaded_files:
             
             excel_summary = summarize_excel_data(uploaded_file)
             combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_summary}")
-        
+        if 'msg_content' not in st.session_state:
+            st.session_state.msg_content = {}
         elif file_extension == ".msg":
-            if 'msg_content' not in st.session_state:
-                st.session_state.msg_content = {}
             msg_content, txt_filename = extract_content_from_msg(uploaded_file, save_as_txt=True)
             if msg_content:
                 combined_requirements.append(msg_content)
@@ -509,79 +648,6 @@ if uploaded_files:
         'tables': "\n\n".join(all_tables_as_text),
         'original_tables': all_original_tables
     }
-
-def add_header_with_logo(doc, logo_bytes):
-    section = doc.sections[0]
-    
-    header = section.header
-    
-    header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
-    
-    run = header_para.add_run()
-    logo_stream = BytesIO(logo_bytes)
-    run.add_picture(logo_stream, width=Inches(1.5))
-
-def add_hyperlink(paragraph, text, bookmark_name):
-    """Add a hyperlink to a bookmark within the document"""
-    part = paragraph.part
-    r_id = part.relate_to('', "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=False)
-    
-    # Create hyperlink element
-    hyperlink = OxmlElement('w:hyperlink')
-    hyperlink.set(qn('w:anchor'), bookmark_name)
-    
-    # Create run element
-    run = OxmlElement('w:r')
-    rPr = OxmlElement('w:rPr')
-    
-    # Add hyperlink styling
-    color = OxmlElement('w:color')
-    color.set(qn('w:val'), '0000FF')
-    rPr.append(color)
-    
-    u = OxmlElement('w:u')
-    u.set(qn('w:val'), 'single')
-    rPr.append(u)
-    
-    run.append(rPr)
-    run.text = text
-    hyperlink.append(run)
-    
-    paragraph._p.append(hyperlink)
-    return hyperlink
-
-def add_page_reference(paragraph, bookmark_name):
-    """Add a page number reference to a bookmark"""
-    fldChar1 = OxmlElement('w:fldChar')
-    fldChar1.set(qn('w:fldCharType'), 'begin')
-    
-    instrText = OxmlElement('w:instrText')
-    instrText.set(qn('xml:space'), 'preserve')
-    instrText.text = f'PAGEREF {bookmark_name} \\h'
-    
-    fldChar2 = OxmlElement('w:fldChar')
-    fldChar2.set(qn('w:fldCharType'), 'end')
-    
-    run = paragraph.add_run()
-    run._r.append(fldChar1)
-    run._r.append(instrText)
-    run._r.append(fldChar2)
-    
-    return run
-
-def add_bookmark(paragraph, bookmark_name):
-    """Add a bookmark to a paragraph"""
-    run = paragraph.runs[0] if paragraph.runs else paragraph.add_run()
-    
-    bookmark_start = OxmlElement('w:bookmarkStart')
-    bookmark_start.set(qn('w:id'), str(hash(bookmark_name) % 1000000))
-    bookmark_start.set(qn('w:name'), bookmark_name)
-    
-    bookmark_end = OxmlElement('w:bookmarkEnd')
-    bookmark_end.set(qn('w:id'), str(hash(bookmark_name) % 1000000))
-    
-    run._r.insert(0, bookmark_start)
-    run._r.append(bookmark_end)
 
 if st.button("Generate BRD") and uploaded_files:
     if not api_key:
@@ -614,211 +680,172 @@ if st.button("Generate BRD") and uploaded_files:
             
             st.subheader("Generated Business Requirements Document")
             display_output = re.sub(r'\[\[TABLE_ID:[a-zA-Z0-9_]+\]\]', '[TABLE WILL BE INSERTED HERE]', final_output)
-            display_output = display_output.replace(test_scenario_placeholder, "[TEST SCENARIOS WILL BE INSERTED HERE]")
             st.markdown(display_output)
             
-            # For debugging - show the test scenarios content
-            with st.expander("View Generated Test Scenarios"):
-                st.text(test_scenarios)
-            
+            # Create Word document
             doc = Document()
-            for _ in range(12):
-                doc.add_paragraph()
-            title_heading = doc.add_heading('Business Requirements Document', level=0)
-            title_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
-            if logo_file:
-                logo_bytes = logo_file.getvalue()
-                add_header_with_logo(doc, logo_bytes)
-
+            # Add logo to header if provided
+            if logo_file is not None:
+                add_header_with_logo(doc, st.session_state.logo_data)
+            
+            # Add title
+            title = doc.add_heading('Business Requirements Document', 0)
+            title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            
+            # Create clickable table of contents
+            bookmark_mapping = create_clickable_toc(doc)
+            
+            # Add page break after TOC
             doc.add_page_break()
             
-            doc.add_heading('Version History', level=1)
-            version_table = doc.add_table(rows=1, cols=5)
-            version_table.style = 'Table Grid'
-            hdr_cells = version_table.rows[0].cells
-            hdr_cells[0].text = 'Version'
-            hdr_cells[1].text = 'Date'
-            hdr_cells[2].text = 'Author'
-            hdr_cells[3].text = 'Change description'
-            hdr_cells[4].text = 'Review by'
-
-            for _ in range(4):
-                version_table.add_row()
-
-            doc.add_paragraph('**To be reviewed and filled in by IT Team.**', style='Caption')
-
-            doc.add_heading('Sign-off Matrix', level=1)
-            signoff_table = doc.add_table(rows=1, cols=5)
-            signoff_table.style = 'Table Grid'
-            hdr_cells = signoff_table.rows[0].cells
-            hdr_cells[0].text = 'Version'
-            hdr_cells[1].text = 'Sign-off Authority'
-            hdr_cells[2].text = 'Business Function'
-            hdr_cells[3].text = 'Sign-off Date'
-            hdr_cells[4].text = 'Email Confirmation'
-
-            for _ in range(4):
-                signoff_table.add_row()
-
-            doc.add_page_break()
-
-            doc.add_heading('Table of Contents', level=1)
-
-            toc_paragraph = doc.add_paragraph()
-            toc_paragraph.bold = True
-
-            toc_entries = [
-                ("1.0 Introduction", "intro"),
-                ("    1.1 Purpose", "purpose"),
-                ("    1.2 To be process / High level solution", "process"),
-                ("2.0 Impact Analysis", "impact"),
-                ("    2.1 System impacts – Primary and cross functional", "system_impacts"),
-                ("    2.2 Impacted Products", "impacted_products"),
-                ("    2.3 List of APIs required", "apis"),
-                ("3.0 Process / Data Flow diagram / Figma", "process_flow"),
-                ("4.0 Business / System Requirement", "business_req"),
-                ("5.0 MIS / DATA Requirement", "mis_req"),
-                ("6.0 Communication Requirement", "comm_req"),
-                ("7.0 Test Scenarios", "test_scenarios"),
-                ("8.0 Questions / Suggestions", "questions"),
-                ("9.0 Reference Document", "reference"),
-                ("10.0 Appendix", "appendix"),
-                ("11.0 Risk Evaluation", "risk_eval")
-            ]
-
-            for entry_text, bookmark_name in toc_entries:
-                toc_paragraph = doc.add_paragraph()
-                
-                if entry_text.startswith("    "):
-                    # Sub-heading style
-                    toc_paragraph.style = 'Heading 3'
-                    clean_text = entry_text.strip()
-                else:
-                    # Main heading style
-                    toc_paragraph.style = 'Heading 2'
-                    clean_text = entry_text
-                # Create hyperlink to bookmark
-                hyperlink = add_hyperlink(toc_paragraph, clean_text, bookmark_name)
-                
-                # Add page number with right alignment
-                toc_paragraph.paragraph_format.tab_stops.add_tab_stop(Inches(6.0), alignment=WD_TAB_ALIGNMENT.RIGHT, leader=WD_TAB_LEADER.DOTS)
-                run = toc_paragraph.add_run('\t')
-                page_ref = add_page_reference(toc_paragraph, bookmark_name)
-
-            doc.add_page_break()
-            
-            # Fix 4: Improved section processing logic
-            bookmark_mapping = {
-                "1.0 Introduction": "intro",
-                "1.1 Purpose": "purpose", 
-                "1.2 To be process / High level solution": "process",
-                "2.0 Impact Analysis": "impact",
-                "2.1 System impacts – Primary and cross functional": "system_impacts",
-                "2.2 Impacted Products": "impacted_products", 
-                "2.3 List of APIs required": "apis",
-                "3.0 Process / Data Flow diagram / Figma": "process_flow",
-                "4.0 Business / System Requirement": "business_req",
-                "5.0 MIS / DATA Requirement": "mis_req",
-                "6.0 Communication Requirement": "comm_req",
-                "7.0 Test Scenarios": "test_scenarios",
-                "8.0 Questions / Suggestions": "questions",
-                "9.0 Reference Document": "reference",
-                "10.0 Appendix": "appendix",
-                "11.0 Risk Evaluation": "risk_eval"
-            }
-            
-            sections = final_output.split('\n#')
+            # Process each section of the BRD
+            sections = final_output.split('##')
             
             for section in sections:
-                if not section.strip():
-                    continue
-                
-                lines = section.strip().split('\n')
-                heading_text = lines[0].lstrip('#').strip()
-                heading_level = 1 if section.startswith('#') else 2
-                
-                # Add section heading with bookmark
-                heading_paragraph = doc.add_heading(heading_text, level=heading_level)
-                
-                # Add bookmark if heading matches our mapping
-                for heading_key, bookmark_name in bookmark_mapping.items():
-                    if heading_key in heading_text or heading_text.startswith(heading_key.split()[0]):
-                        add_bookmark(heading_paragraph, bookmark_name)
-                        break
-                
-                # Rest of the section processing remains the same...
-                remaining_content = '\n'.join(lines[1:]).strip()
-                
-                # Handle test scenarios section specially
-                if "7.0 Test Scenarios" in heading_text or heading_text.startswith("7.0"):
-                    doc = process_test_scenarios(test_scenarios, doc)
-                    continue  # Skip further processing for this section
-                elif test_scenario_placeholder in remaining_content:
-                    # Split content at placeholder
-                    parts = remaining_content.split(test_scenario_placeholder)
-                    
-                    # Add content before placeholder
-                    if parts[0].strip():
-                        doc.add_paragraph(parts[0].strip())
-                    
-                    # Process test scenarios
-                    doc = process_test_scenarios(test_scenarios, doc)
-                    
-                    # Add content after placeholder if any
-                    if len(parts) > 1 and parts[1].strip():
-                        doc.add_paragraph(parts[1].strip())
-                    
-                    continue
-                
-                # Handle tables in the content
-                table_pattern = r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]'
-                matches = list(re.finditer(table_pattern, remaining_content))
-                
-                last_pos = 0
-                for match in matches:
-                    pre_text = remaining_content[last_pos:match.start()].strip()
-                    if pre_text:
-                        doc.add_paragraph(pre_text)
-                    
-                    table_id = match.group(1)
-                    if table_id in st.session_state.extracted_data['original_tables']:
-                        st.write(f"Inserting table {table_id}")
-                        table_to_insert = st.session_state.extracted_data['original_tables'][table_id]
-                        insert_table_into_doc(doc, table_to_insert, table_id)
-                    else:
-                        doc.add_paragraph(f"[TABLE {table_id} NOT FOUND]")
-                    
-                    last_pos = match.end()
-                
-                remaining_text = remaining_content[last_pos:].strip()
-                if remaining_text:
-                    lines = remaining_text.split('\n')
-                    clean_lines = []
-                    skip_mode = False
-                    
-                    for line in lines:
-                        if '|' in line and skip_mode:
-                            continue
-                        elif not line.strip() and skip_mode:
-                            skip_mode = False
-                        elif not skip_mode:
-                            clean_lines.append(line)
-                    
-                    clean_text = '\n'.join(clean_lines)
-                    if clean_text.strip():
-                        doc.add_paragraph(clean_text)
+                if section.strip():
+                    lines = section.strip().split('\n')
+                    if lines:
+                        # Extract heading
+                        heading_line = lines[0].strip()
+                        
+                        # Find the appropriate bookmark name for this heading
+                        bookmark_name = None
+                        for bookmark, heading_text in bookmark_mapping.items():
+                            if heading_line.lower().replace('#', '').strip() in heading_text.lower():
+                                bookmark_name = bookmark
+                                break
+                        
+                        # Determine heading level
+                        if heading_line.startswith('###'):
+                            level = 2
+                            heading_text = heading_line.replace('###', '').strip()
+                        else:
+                            level = 1
+                            heading_text = heading_line.replace('##', '').strip()
+                        
+                        # Add section heading with bookmark
+                        if bookmark_name:
+                            add_section_with_bookmark(doc, heading_text, bookmark_name, level)
+                        else:
+                            doc.add_heading(heading_text, level)
+                        
+                        # Process content
+                        content_lines = lines[1:]
+                        i = 0
+                        
+                        while i < len(content_lines):
+                            line = content_lines[i].strip()
+                            
+                            # Handle table markers
+                            table_match = re.search(r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]', line)
+                            if table_match:
+                                table_id = table_match.group(1)
+                                if table_id in st.session_state.extracted_data['original_tables']:
+                                    insert_table_into_doc(doc, st.session_state.extracted_data['original_tables'][table_id], table_id)
+                                i += 1
+                                continue
+                            
+                            # Handle test scenarios placeholder
+                            if line == test_scenario_placeholder:
+                                process_test_scenarios(test_scenarios, doc)
+                                i += 1
+                                continue
+                            
+                            # Handle regular content
+                            if line:
+                                # Handle bullet points
+                                if line.startswith('- ') or line.startswith('* '):
+                                    bullet_content = line[2:].strip()
+                                    para = doc.add_paragraph(bullet_content, style='List Bullet')
+                                
+                                # Handle numbered lists
+                                elif re.match(r'^\d+\.', line):
+                                    numbered_content = re.sub(r'^\d+\.\s*', '', line)
+                                    para = doc.add_paragraph(numbered_content, style='List Number')
+                                
+                                # Handle regular paragraphs
+                                else:
+                                    para = doc.add_paragraph(line)
+                            
+                            i += 1
             
-            buffer = BytesIO()
-            doc.save(buffer)
-            buffer.seek(0)
+            # Save document to BytesIO
+            doc_buffer = BytesIO()
+            doc.save(doc_buffer)
+            doc_buffer.seek(0)
             
+            # Provide download button
             st.download_button(
-                label="Download BRD as Word document",
-                data=buffer,
+                label="Download BRD as Word Document",
+                data=doc_buffer.getvalue(),
                 file_name="Business_Requirements_Document.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
+            
+            # Store generated content in session state for potential regeneration
+            st.session_state.generated_brd = final_output
+            st.session_state.generated_test_scenarios = test_scenarios
+            
+            # Optional: Display test scenarios separately
+            with st.expander("View Generated Test Scenarios"):
+                st.markdown(test_scenarios)
+                
         except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
-            st.info(f"This might be due to an invalid {api_provider} API key or connection issues. Please check your API key and try again.")
+            st.error(f"Error generating BRD: {str(e)}")
+            st.error("Please check your API key and try again.")
+
+# Additional features
+st.sidebar.header("Additional Options")
+
+if st.sidebar.button("Clear All Data"):
+    # Clear session state
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
+
+# Display extracted content for review
+if st.session_state.extracted_data['requirements']:
+    with st.expander("Review Extracted Content"):
+        st.subheader("Requirements Content")
+        st.text_area("Requirements", st.session_state.extracted_data['requirements'], height=200, key="requirements_review")
+        
+        if st.session_state.extracted_data['tables']:
+            st.subheader("Extracted Tables")
+            st.text_area("Tables", st.session_state.extracted_data['tables'], height=200, key="tables_review")
+
+# Help section
+with st.expander("Help & Instructions"):
+    st.markdown("""
+    ### How to Use the BRD Generator:
+    
+    1. **Select API Provider**: Choose between OpenAI or Groq
+    2. **Enter API Key**: Provide your API key for the selected provider
+    3. **Upload Logo**: Optional PNG logo for document header
+    4. **Upload Documents**: Upload your requirement documents (PDF, DOCX, XLSX, MSG)
+    5. **Generate BRD**: Click the button to generate your Business Requirements Document
+    6. **Download**: Download the generated Word document with clickable table of contents
+    
+    ### Supported File Types:
+    - **PDF**: Text extraction from PDF documents
+    - **DOCX**: Full document structure with tables and formatting
+    - **XLSX**: Excel spreadsheets converted to tables
+    - **MSG**: Outlook email files with body text extraction
+    
+    ### Features:
+    - Clickable table of contents with page references
+    - Automatic table insertion from source documents
+    - AI-generated test scenarios
+    - Professional document formatting
+    - Logo insertion in document header
+    
+    ### Tips:
+    - Ensure your documents contain clear section headings
+    - Include relevant tables and data for better BRD generation
+    - Review extracted content before generating the BRD
+    - Right-click the TOC in Word and select "Update Field" to refresh page numbers
+    """)
+
+# Footer
+st.markdown("---")
+st.markdown("**Business Requirements Document Generator** - Powered by AI")
