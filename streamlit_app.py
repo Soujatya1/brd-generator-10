@@ -192,41 +192,134 @@ def initialize_llm(api_provider, api_key):
         prompt=PromptTemplate(
             input_variables=['requirements', 'tables', 'brd_format'],
             template="""
-            Create a Business Requirements Document (BRD) based on the following details:
+            You are a Business Analyst expert creating a comprehensive Business Requirements Document (BRD). 
+            
+            DOCUMENT STRUCTURE TO FOLLOW:
+            {brd_format}
 
-        Document Structure To Follow:
-        {brd_format}
+            SOURCE REQUIREMENTS:
+            {requirements}
+            
+            TABLES:
+            {tables}
 
-        SOURCE REQUIREMENTS:
-        {requirements}
-        
-        Tables:
-        {tables}
-           
-        INSTRUCTIONS:
-1. Create a BRD following the exact structure provided in the document format above
-2. Map content from the source requirements to the appropriate BRD sections
-3. If you find content that matches a BRD section header, include ALL relevant information from that section
-4. Be comprehensive but concise - include all important details without unnecessary verbosity
+            DETAILED SECTION MAPPING INSTRUCTIONS:
 
-TABLE HANDLING:
-- When tables should be included, use the marker [[TABLE_ID:identifier]] exactly as provided in the tables section
-- Do NOT recreate or reformat tables - only use the provided markers
-- Place table markers in the most appropriate location within each section
+            **1.0 Introduction**
+            - 1.1 Purpose: Extract the business purpose, objectives, goals, or problem statement
+            - 1.2 To be process / High level solution: Look for solution overview, high-level approach, or process descriptions
 
-SPECIFIC SECTION REQUIREMENTS:
-- Section 4.0 (Business/System Requirements): Include business process flows, functional requirements, and any process-related tables
-- Section 7.0 (Test Scenarios): Only include the placeholder "[[TEST_SCENARIOS_PLACEHOLDER]]" - this will be generated separately
+            **2.0 Impact Analysis**
+            - 2.1 System impacts: Identify affected systems, integrations, dependencies, upstream/downstream impacts
+            - 2.2 Impacted Products: List specific products, services, or business lines affected
+            - 2.3 List of APIs required: Extract API names, endpoints, integrations, web services, or technical interfaces
 
-OUTPUT FORMAT:
-- Use proper markdown heading structure (## for main sections, ### for subsections)
-- Include bullet points and numbered lists for clarity
-- Maintain professional business document tone
-- Ensure each section has relevant content or clearly state if information is not available
+            **3.0 Process / Data Flow diagram / Figma**
+            - Look for: Process flows, workflow descriptions, data movement, user journeys, or references to diagrams
+            - Include: Step-by-step processes, decision points, data transformations
 
-IMPORTANT: FOR ALL THE SECTIONS MENTIONED, PLEASE INCLUDE THE MOST ACCURATE INFORMATION AS PER THE UPLOADED DOCUMENTS, DO NOT MENTION GENERIC INFORMATION
+            **4.0 Business / System Requirement**
+            - Functional requirements (what the system should do)
+            - Business rules and logic
+            - User stories or use cases
+            - Performance requirements
+            - Security requirements
+            - Compliance requirements
+            - Include relevant tables that show business processes or functional specifications
 
-Generate the complete BRD now:"""
+            **5.0 MIS / DATA Requirement**
+            - Data requirements and specifications
+            - Reporting needs
+            - Analytics requirements
+            - Data sources and destinations
+            - Data quality requirements
+            - Include tables showing data structures, fields, or reporting formats
+
+            **6.0 Communication Requirement**
+            - Stakeholder communication needs
+            - Notification requirements
+            - Email templates or communication workflows
+            - User communication touchpoints
+
+            **7.0 Test Scenarios**
+            - Use ONLY the placeholder: [[TEST_SCENARIOS_PLACEHOLDER]]
+            - Do not generate test scenarios in this section
+
+            **8.0 Questions / Suggestions**
+            - Open questions from the source documents
+            - Assumptions that need validation
+            - Suggestions for improvement
+            - Clarifications needed
+
+            **9.0 Reference Document**
+            - Source documents mentioned
+            - Related policies or procedures
+            - External references or standards
+
+            **10.0 Appendix**
+            - Supporting information
+            - Detailed technical specifications
+            - Additional tables or data not fitting in other sections
+
+            **11.0 Risk Evaluation**
+            - Identified risks and mitigation strategies
+            - Dependencies and constraints
+            - Timeline risks
+            - Technical risks
+
+            CONTENT ANALYSIS AND EXTRACTION RULES:
+
+            1. **Keyword-Based Mapping**: Look for these keywords to help categorize content:
+               - Purpose/Objective → Section 1.1
+               - Solution/Process/Workflow → Section 1.2
+               - System/Integration/API → Section 2.1, 2.3
+               - Product/Service → Section 2.2
+               - Requirement/Functional/Business Rule → Section 4.0
+               - Data/Report/Analytics → Section 5.0
+               - Communication/Notification/Email → Section 6.0
+               - Risk/Dependency/Constraint → Section 11.0
+
+            2. **Context Analysis**: Consider the context around each piece of information:
+               - If discussing "why" something is needed → Introduction
+               - If discussing "what" needs to be built → Requirements
+               - If discussing "how" it works → Process/Data Flow
+               - If discussing "impact" → Impact Analysis
+
+            3. **Table Placement Logic**:
+               - Process/workflow tables → Section 3.0 or 4.0
+               - Data structure/field tables → Section 5.0
+               - API/integration tables → Section 2.3
+               - Test-related tables → Will be handled in test scenarios
+               - Generic reference tables → Section 10.0 (Appendix)
+
+            4. **Smart Content Distribution**:
+               - If content could fit multiple sections, place it in the most specific/relevant section
+               - Cross-reference related content between sections when appropriate
+               - Ensure no critical information is missed or duplicated
+
+            QUALITY ASSURANCE RULES:
+
+            1. **Completeness**: Every section should have meaningful content or explicitly state "Not applicable based on provided requirements"
+            2. **Accuracy**: Only use information directly from the source documents
+            3. **Clarity**: Rewrite complex technical jargon into clear business language when appropriate
+            4. **Structure**: Use proper formatting with bullet points, numbered lists, and clear paragraphs
+            5. **Traceability**: Ensure all important information from source documents is captured somewhere in the BRD
+
+            TABLE HANDLING:
+            - Use table markers [[TABLE_ID:identifier]] exactly as provided
+            - Place tables in the most contextually appropriate section
+            - If a table could fit multiple sections, prioritize: Section 4.0 > Section 5.0 > Section 3.0 > Section 10.0
+
+            OUTPUT REQUIREMENTS:
+            - Use markdown formatting (## for main sections, ### for subsections)
+            - Include comprehensive content for each section
+            - Maintain professional business document tone
+            - Ensure logical flow and coherence between sections
+            - If information is not available for a section, state: "Information not available in source documents"
+
+            CRITICAL: Analyze the entire source document content holistically before writing. Understand the business context, then systematically extract and organize information according to the BRD structure.
+
+            Generate the complete BRD now:"""
         )
     )
     return llm_chain
