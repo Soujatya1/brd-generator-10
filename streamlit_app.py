@@ -297,48 +297,6 @@ def generate_brd_sequentially(chains, requirements):
     final_brd = "\n\n".join(final_sections)
     return final_brd
 
-def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
-    """Add a hyperlink to a paragraph"""
-    hyperlink = OxmlElement('w:hyperlink')
-    
-    if is_internal:
-        hyperlink.set(qn('w:anchor'), url_or_bookmark)
-    else:
-        part = paragraph.part
-        r_id = part.relate_to(url_or_bookmark, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
-        hyperlink.set(qn('r:id'), r_id)
-    
-    new_run = OxmlElement('w:r')
-    rPr = OxmlElement('w:rPr')
-    
-    # Add color and underline for hyperlink style
-    color = OxmlElement('w:color')
-    color.set(qn('w:val'), '0563C1')
-    rPr.append(color)
-    
-    underline = OxmlElement('w:u')
-    underline.set(qn('w:val'), 'single')
-    rPr.append(underline)
-    
-    new_run.append(rPr)
-    new_run.text = text
-    hyperlink.append(new_run)
-    
-    paragraph._p.append(hyperlink)
-    return hyperlink
-
-def add_bookmark(paragraph, bookmark_name):
-    """Add a bookmark to a paragraph"""
-    bookmark_start = OxmlElement('w:bookmarkStart')
-    bookmark_start.set(qn('w:id'), str(abs(hash(bookmark_name)) % 1000000))
-    bookmark_start.set(qn('w:name'), bookmark_name)
-    
-    bookmark_end = OxmlElement('w:bookmarkEnd')
-    bookmark_end.set(qn('w:id'), str(abs(hash(bookmark_name)) % 1000000))
-    
-    paragraph._p.insert(0, bookmark_start)
-    paragraph._p.append(bookmark_end)
-
 def create_clickable_toc(doc):
     """Create a clickable table of contents with page numbers"""
     toc_heading = doc.add_heading('Table of Contents', level=1)
@@ -366,6 +324,7 @@ def create_clickable_toc(doc):
     
     for entry_text, bookmark_name in toc_entries:
         toc_paragraph = doc.add_paragraph()
+        toc_paragraph.style = 'TOC 1' if not entry_text.startswith("    ") else 'TOC 2'
         
         # Add the entry text as hyperlink
         if entry_text.startswith("    "):
@@ -376,35 +335,131 @@ def create_clickable_toc(doc):
             
         add_hyperlink(toc_paragraph, link_text, bookmark_name, is_internal=True)
         
-        # Add dots/leaders
-        toc_paragraph.add_run(" " + "." * 50 + " ")
+        # Add tab stop for page numbers (important!)
+        toc_paragraph.paragraph_format.tab_stops.add_tab_stop(Inches(6.0))
         
-        # Add page number field
+        # Add tab character before page number
+        toc_paragraph.add_run("\t")
+        
+        # Add page number field with proper XML structure
         page_run = toc_paragraph.add_run()
-        fldChar1 = OxmlElement('w:fldChar')
-        fldChar1.set(qn('w:fldCharType'), 'begin')
         
-        instrText = OxmlElement('w:instrText')
-        instrText.text = f'PAGEREF {bookmark_name} \\h'
+        # Create field XML elements
+        fldChar_begin = parse_xml(r'<w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="begin"/>')
+        instrText = parse_xml(f'<w:instrText xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"> PAGEREF {bookmark_name} \\h </w:instrText>')
+        fldChar_end = parse_xml(r'<w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="end"/>')
         
-        fldChar2 = OxmlElement('w:fldChar') 
-        fldChar2.set(qn('w:fldCharType'), 'end')
-        
-        page_run._r.append(fldChar1)
+        # Add field elements to the run
+        page_run._r.append(fldChar_begin)
         page_run._r.append(instrText)
-        page_run._r.append(fldChar2)
+        page_run._r.append(fldChar_end)
+        
+        # Add placeholder text that will be replaced when field updates
+        page_run.add_text("1")  # Placeholder page number
     
-    # Add note about updating TOC
+    # Add comprehensive note about updating TOC
+    doc.add_paragraph()  # Empty line
     note_para = doc.add_paragraph()
-    note_para.add_run("Note: ").bold = True
-    note_para.add_run("Right-click on this Table of Contents and select 'Update Field' to refresh page numbers after opening in Microsoft Word.")
+    note_run = note_para.add_run("IMPORTANT: ")
+    note_run.bold = True
+    note_run.font.color.rgb = RGBColor(255, 0, 0)  # Red color
+    
+    note_para.add_run("To see actual page numbers in this Table of Contents:")
+    
+    # Add numbered instructions
+    instructions = [
+        "1. Open this document in Microsoft Word",
+        "2. Right-click anywhere in the Table of Contents above",
+        "3. Select 'Update Field' from the context menu",
+        "4. Choose 'Update entire table' when prompted",
+        "5. Click OK to refresh all page numbers"
+    ]
+    
+    for instruction in instructions:
+        instr_para = doc.add_paragraph(instruction, style='List Number')
+    
+    alt_note = doc.add_paragraph()
+    alt_note.add_run("Alternative: ").bold = True
+    alt_note.add_run("Press Ctrl+A to select all, then F9 to update all fields in the document.")
     
     return {entry[1]: entry[0] for entry in toc_entries}
+
+def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
+    """Add a hyperlink to a paragraph with proper styling"""
+    # Get the document part for relationship handling
+    part = paragraph.part
+    
+    # Create hyperlink element
+    hyperlink = OxmlElement('w:hyperlink')
+    
+    if is_internal:
+        # Internal bookmark link
+        hyperlink.set(qn('w:anchor'), url_or_bookmark)
+    else:
+        # External URL link
+        r_id = part.relate_to(url_or_bookmark, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
+        hyperlink.set(qn('r:id'), r_id)
+    
+    # Create run element with hyperlink styling
+    new_run = OxmlElement('w:r')
+    
+    # Create run properties for hyperlink style
+    rPr = OxmlElement('w:rPr')
+    
+    # Set hyperlink color (blue)
+    color = OxmlElement('w:color')
+    color.set(qn('w:val'), '0563C1')
+    rPr.append(color)
+    
+    # Set underline
+    underline = OxmlElement('w:u')
+    underline.set(qn('w:val'), 'single')
+    rPr.append(underline)
+    
+    # Add run properties to run
+    new_run.append(rPr)
+    
+    # Add text to run
+    text_element = OxmlElement('w:t')
+    text_element.text = text
+    new_run.append(text_element)
+    
+    # Add run to hyperlink
+    hyperlink.append(new_run)
+    
+    # Add hyperlink to paragraph
+    paragraph._p.append(hyperlink)
+    
+    return hyperlink
+
+def add_bookmark(paragraph, bookmark_name):
+    """Add a bookmark to a paragraph with unique ID"""
+    # Generate unique bookmark ID
+    bookmark_id = str(abs(hash(bookmark_name)) % 1000000)
+    
+    # Create bookmark start element
+    bookmark_start = OxmlElement('w:bookmarkStart')
+    bookmark_start.set(qn('w:id'), bookmark_id)
+    bookmark_start.set(qn('w:name'), bookmark_name)
+    
+    # Create bookmark end element
+    bookmark_end = OxmlElement('w:bookmarkEnd')
+    bookmark_end.set(qn('w:id'), bookmark_id)
+    
+    # Insert bookmark at the beginning and end of paragraph
+    paragraph._p.insert(0, bookmark_start)
+    paragraph._p.append(bookmark_end)
 
 def add_section_with_bookmark(doc, heading_text, bookmark_name, level=1):
     """Add a section heading with bookmark for TOC linking"""
     heading = doc.add_heading(heading_text, level=level)
     add_bookmark(heading, bookmark_name)
+    
+    # Force page break before major sections (level 1) for proper page numbering
+    if level == 1 and not heading_text.lower().startswith('table of contents'):
+        # Add page break before the heading
+        heading.runs[0].add_break(WD_BREAK.PAGE)
+    
     return heading
 
 def create_table_in_doc(doc, table_data):
@@ -911,78 +966,3 @@ if st.button("🚀 Generate BRD", type="primary"):
         except Exception as e:
             st.error(f"❌ An error occurred: {str(e)}")
             st.info("💡 Try reducing the input size or check your API key.")
-
-# Sidebar with instructions and tips
-with st.sidebar:
-    st.header("📖 Instructions")
-    
-    st.markdown("""
-    ### How to Use:
-    1. **Select AI Provider**: Choose between OpenAI or Groq
-    2. **Enter API Key**: Provide your valid API key
-    3. **Upload Logo**: Optional company logo for the document
-    4. **Upload Files**: Support for TXT, DOCX, PDF, Excel, MSG files
-    5. **Manual Input**: Or paste requirements directly
-    6. **Generate**: Click the generate button to create your BRD
-    
-    ### Features:
-    ✅ **Sequential Processing**: Handles large documents efficiently  
-    ✅ **Multiple File Support**: TXT, DOCX, PDF, Excel, MSG  
-    ✅ **Table Preservation**: Maintains table formatting  
-    ✅ **Professional Format**: Complete BRD with TOC  
-    ✅ **Downloadable**: Word and Markdown formats  
-    ✅ **Clickable TOC**: Navigate easily in Word  
-    
-    ### Tips:
-    💡 **Large Files**: The app automatically chunks large content  
-    💡 **Multiple Files**: Upload multiple files for comprehensive analysis  
-    💡 **Excel Files**: Automatically extracts sample data and structure  
-    💡 **Table Data**: Tables from source documents are preserved  
-    
-    ### BRD Sections Generated:
-    1. Introduction & Purpose
-    2. Impact Analysis
-    3. Process Flow
-    4. Business Requirements
-    5. MIS/Data Requirements
-    6. Communication Requirements
-    7. Test Scenarios
-    8. Questions/Suggestions
-    9. Reference Documents
-    10. Appendix
-    11. Risk Evaluation
-    """)
-    
-    st.header("⚡ Model Information")
-    
-    if api_provider == "OpenAI":
-        st.info("""
-        **OpenAI GPT-3.5-turbo-16k**
-        - Context: 16,384 tokens
-        - Good for: General BRD generation
-        - Speed: Moderate
-        """)
-    else:
-        st.info("""
-        **Groq Llama3-70b**
-        - Context: 8,192 tokens  
-        - Good for: Fast processing
-        - Speed: Very Fast
-        """)
-    
-    st.header("🔧 Technical Notes")
-    st.markdown("""
-    - **Token Limit Handling**: Automatic content chunking
-    - **Sequential Processing**: 4-stage chain processing
-    - **Memory Management**: Efficient processing of large files
-    - **Error Recovery**: Continues processing even if one section fails
-    """)
-
-# Footer
-st.markdown("---")
-st.markdown("""
-<div style='text-align: center; color: gray;'>
-    <p>Business Requirements Document Generator v2.0 | Sequential Chain Processing</p>
-    <p>Built with Streamlit • LangChain • OpenAI/Groq APIs</p>
-</div>
-""", unsafe_allow_html=True)
