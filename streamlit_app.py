@@ -260,7 +260,7 @@ def initialize_sequential_chains(api_provider, api_key):
     return [chain1, chain2, chain3, chain4]
 
 def generate_brd_sequentially(chains, requirements):
-    """Generate BRD using sequential chains - FIXED VERSION"""
+    """Generate BRD using sequential chains"""
     
     # Check if content is too large and needs chunking
     req_chunks = chunk_requirements(requirements)
@@ -296,50 +296,6 @@ def generate_brd_sequentially(chains, requirements):
     # Combine all sections into ONE final BRD
     final_brd = "\n\n".join(final_sections)
     return final_brd
-
-def create_fallback_chain_fixed(api_provider, api_key):
-    """Fallback to original single chain if sequential fails - FIXED VERSION"""
-    
-    if api_provider == "OpenAI":
-        model = ChatOpenAI(
-            openai_api_key=api_key,
-            model_name="gpt-3.5-turbo-16k",
-            temperature=0.2,
-            top_p=0.2
-        )
-    else:
-        model = ChatGroq(
-            groq_api_key=api_key,
-            model_name="llama3-70b-8192",
-            temperature=0.2,
-            top_p=0.2
-        )
-    
-    return LLMChain(
-        llm=model, 
-        prompt=PromptTemplate(
-            input_variables=['requirements', 'brd_format'],
-            template="""
-            You are a Business Analyst expert creating a comprehensive Business Requirements Document (BRD). 
-            
-            DOCUMENT STRUCTURE TO FOLLOW:
-            {brd_format}
-
-            SOURCE REQUIREMENTS (May contain multiple documents separated by "=== DOCUMENT BREAK ==="):
-            {requirements}
-
-            CRITICAL INSTRUCTIONS:
-            - Create ONE comprehensive BRD that consolidates information from ALL source documents
-            - When you see "=== DOCUMENT BREAK ===" it indicates content from multiple files
-            - Merge and consolidate information from all sources into each section
-            - When you encounter "TABLE:" sections in the requirements, PRESERVE them in the BRD output
-            - Format all tables using markdown table syntax with pipes (|)
-            - Include ALL relevant table data from the source requirements
-            
-            Generate a complete BRD following the structure provided. Use markdown formatting and include comprehensive content for each section that combines information from all source documents.
-            """
-        )
-    )
 
 def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
     """Add a hyperlink to a paragraph"""
@@ -501,9 +457,6 @@ def parse_markdown_table(table_text):
             table_data.append(cells)
     
     return table_data if table_data else None
-
-# [Include all other existing helper functions: extract_content_from_docx, extract_content_from_pdf, etc.]
-# [These remain the same as in your original code]
 
 def extract_content_from_docx(doc_file):
     doc = Document(doc_file)
@@ -785,7 +738,7 @@ def create_word_document(content, logo_data=None):
 
 # Enhanced Streamlit UI
 st.title("Business Requirements Document Generator")
-st.subheader("🔄 Enhanced with Sequential Chain Processing")
+st.subheader("🔄 Sequential Chain Processing")
 
 st.info("💡 This version uses sequential chain processing to handle large documents and avoid token limits!")
 
@@ -797,274 +750,239 @@ if api_provider == "OpenAI":
 else:
     api_key = st.text_input("Enter your Groq API Key:", type="password")
 
-# Processing method selection
-st.subheader("Processing Method")
-processing_method = st.radio(
-    "Choose processing method:",
-    ["Sequential Chain (Recommended)", "Single Chain (Fallback)"],
-    help="Sequential Chain breaks down the BRD generation into smaller, manageable parts to avoid token limits."
+st.subheader("Document Logo")
+
+logo_file = st.file_uploader("Upload Company Logo (optional):", type=['png', 'jpg', 'jpeg'])
+logo_data = None
+if logo_file:
+    logo_data = logo_file.getvalue()
+    st.success("✅ Logo uploaded successfully!")
+
+st.subheader("Upload Requirements Documents")
+uploaded_files = st.file_uploader(
+    "Choose files", 
+    type=['txt', 'docx', 'pdf', 'xlsx', 'xls', 'msg'],
+    accept_multiple_files=True
 )
 
-st.subheader("Document Logo")
-logo_file = st.file_uploader("Upload logo/icon for document (PNG):", type=['png'])
+# Text input option
+st.subheader("Or Enter Requirements Manually")
+manual_requirements = st.text_area(
+    "Paste your requirements here:",
+    height=200,
+    placeholder="Enter your business requirements, user stories, or project specifications here..."
+)
 
-if logo_file:
-    st.image(logo_file, caption="Logo Preview", width=100)
-    st.success("Logo uploaded successfully!")
-
-st.subheader("Requirement Documents")
-uploaded_files = st.file_uploader("Upload requirement documents:", 
-                                 accept_multiple_files=True, 
-                                 type=['pdf', 'docx', 'xlsx', 'msg'])
-
-if st.button("Generate BRD") and uploaded_files:
+if st.button("🚀 Generate BRD", type="primary"):
     if not api_key:
-        st.error(f"Please enter your {api_provider} API Key.")
+        st.error("❌ Please enter your API key!")
+    elif not uploaded_files and not manual_requirements.strip():
+        st.error("❌ Please upload files or enter requirements manually!")
     else:
-        st.write(f"Generating BRD using {api_provider} API with {processing_method}...")
-        
         try:
-            # Extract content from all uploaded files
-            combined_requirements = []
+            # Initialize chains
+            with st.spinner("🔧 Initializing AI chains..."):
+                chains = initialize_sequential_chains(api_provider, api_key)
             
-            for uploaded_file in uploaded_files:
-                file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
-                st.write(f"Processing {uploaded_file.name}...")
+            # Extract content from uploaded files
+            all_requirements = []
+            
+            if manual_requirements.strip():
+                all_requirements.append("=== MANUAL REQUIREMENTS ===")
+                all_requirements.append(manual_requirements.strip())
+                all_requirements.append("="*50)
+            
+            if uploaded_files:
+                st.info(f"📁 Processing {len(uploaded_files)} uploaded files...")
                 
-                if file_extension == ".docx":
-                    content = extract_content_from_docx(uploaded_file)
-                elif file_extension == ".pdf":
-                    content = extract_content_from_pdf(uploaded_file)
-                elif file_extension == ".xlsx":
-                    content = extract_content_from_excel(uploaded_file)
-                elif file_extension == ".msg":
-                    content = extract_content_from_msg(uploaded_file)
-                else:
-                    st.warning(f"Unsupported file format: {uploaded_file.name}")
-                    continue
+                for uploaded_file in uploaded_files:
+                    file_extension = uploaded_file.name.split('.')[-1].lower()
+                    
+                    try:
+                        st.write(f"📄 Processing: {uploaded_file.name}")
+                        
+                        if file_extension == 'txt':
+                            content = str(uploaded_file.read(), "utf-8")
+                        elif file_extension == 'docx':
+                            content = extract_content_from_docx(uploaded_file)
+                        elif file_extension == 'pdf':
+                            content = extract_content_from_pdf(uploaded_file)
+                        elif file_extension in ['xlsx', 'xls']:
+                            content = extract_content_from_excel(uploaded_file)
+                        elif file_extension == 'msg':
+                            content = extract_content_from_msg(uploaded_file)
+                        else:
+                            st.warning(f"⚠️ Unsupported file type: {file_extension}")
+                            continue
+                        
+                        if content.strip():
+                            all_requirements.append(f"=== FILE: {uploaded_file.name} ===")
+                            all_requirements.append(content.strip())
+                            all_requirements.append("="*50)
+                            st.success(f"✅ Successfully processed: {uploaded_file.name}")
+                        else:
+                            st.warning(f"⚠️ No content extracted from: {uploaded_file.name}")
+                            
+                    except Exception as e:
+                        st.error(f"❌ Error processing {uploaded_file.name}: {str(e)}")
+                        continue
+            
+            if not all_requirements:
+                st.error("❌ No valid content found in uploaded files!")
+                st.stop()
+            
+            # Combine all requirements
+            combined_requirements = "\n\n".join(all_requirements)
+            
+            # Display content size info
+            content_size = estimate_content_size(combined_requirements)
+            st.info(f"📊 Total content size: {content_size:,} characters")
+            
+            # Generate BRD using sequential chains
+            st.subheader("🤖 AI Processing Progress")
+            
+            with st.spinner("🔄 Generating comprehensive BRD using sequential processing..."):
+                brd_content = generate_brd_sequentially(chains, combined_requirements)
+            
+            if brd_content:
+                st.success("✅ BRD generated successfully!")
                 
-                combined_requirements.append(content)
-
-                file_content = f"=== SOURCE FILE: {uploaded_file.name} ===\n\n{content}"
-                combined_requirements.append(file_content)
-            
-            all_requirements = "\n\n".join(combined_requirements)
-            
-            # Show content size estimation
-            content_size = estimate_content_size(all_requirements)
-            st.info(f"📊 Content size: ~{content_size:,} characters")
-            
-            # Generate BRD based on selected method
-            if processing_method == "Sequential Chain (Recommended)":
+                # Display generated content
+                st.subheader("📋 Generated BRD Content")
+                
+                # Create expandable sections for preview
+                with st.expander("🔍 Preview Generated BRD", expanded=False):
+                    st.markdown(brd_content)
+                
+                # Generate Word document
+                st.subheader("📄 Download Options")
+                
                 try:
-                    chains = initialize_sequential_chains(api_provider, api_key)
-                    output = generate_brd_sequentially(chains, all_requirements)
-                    st.success("✅ BRD generated successfully using Sequential Chain!")
-                    
+                    with st.spinner("📝 Creating Word document..."):
+                        doc = create_word_document(brd_content, logo_data)
+                        
+                        # Save to BytesIO
+                        doc_buffer = BytesIO()
+                        doc.save(doc_buffer)
+                        doc_buffer.seek(0)
+                        
+                        # Download button for Word document
+                        st.download_button(
+                            label="📥 Download BRD (Word Document)",
+                            data=doc_buffer.getvalue(),
+                            file_name="Business_Requirements_Document.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        )
+                        
+                        st.success("✅ Word document ready for download!")
+                        
                 except Exception as e:
-                    st.warning(f"Sequential chain failed: {str(e)}")
-                    st.info("🔄 Falling back to Single Chain method...")
-                    
-                    # Fallback to single chain
-                    fallback_chain = create_fallback_chain(api_provider, api_key)
-                    
-                    # Try chunking if content is too large
-                    if content_size > 10000:
-                        chunks = chunk_requirements(all_requirements, max_chunk_size=8000)
-                        chunk_outputs = []
-                        
-                        for i, chunk in enumerate(chunks):
-                            st.write(f"Processing fallback chunk {i+1}/{len(chunks)}...")
-                            chunk_output = fallback_chain.run({
-                                "requirements": chunk,
-                                "brd_format": BRD_FORMAT
-                            })
-                            chunk_outputs.append(chunk_output)
-                        
-                        output = "\n\n".join(chunk_outputs)
-                    else:
-                        output = fallback_chain.run({
-                            "requirements": all_requirements,
-                            "brd_format": BRD_FORMAT
-                        })
-                    
-                    st.success("✅ BRD generated successfully using Fallback Single Chain!")
-            
-            else:  # Single Chain method
+                    st.error(f"❌ Error creating Word document: {str(e)}")
+                    st.info("📋 You can still copy the content above manually.")
+                
+                # Also provide markdown download option
                 try:
-                    single_chain = create_fallback_chain(api_provider, api_key)
-                    
-                    # Check if content needs chunking
-                    if content_size > 10000:
-                        st.info("🔄 Large content detected. Processing in chunks...")
-                        chunks = chunk_requirements(all_requirements, max_chunk_size=8000)
-                        chunk_outputs = []
-                        
-                        for i, chunk in enumerate(chunks):
-                            st.write(f"Processing chunk {i+1}/{len(chunks)}...")
-                            chunk_output = single_chain.run({
-                                "requirements": chunk,
-                                "brd_format": BRD_FORMAT
-                            })
-                            chunk_outputs.append(chunk_output)
-                        
-                        output = "\n\n".join(chunk_outputs)
-                    else:
-                        output = single_chain.run({
-                            "requirements": all_requirements,
-                            "brd_format": BRD_FORMAT
-                        })
-                    
-                    st.success("✅ BRD generated successfully using Single Chain!")
-                    
-                except Exception as e:
-                    st.error(f"Single chain processing failed: {str(e)}")
-                    st.error("Please try the Sequential Chain method or check your API key.")
-                    st.stop()
-            
-            # Display generated BRD
-            st.subheader("Generated Business Requirements Document")
-            
-            # Add expandable sections for better readability
-            with st.expander("📋 View Complete BRD Content", expanded=True):
-                st.markdown(output)
-            
-            # Show BRD statistics
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("📄 Total Sections", len([s for s in output.split('##') if s.strip()]))
-            with col2:
-                st.metric("📝 Total Characters", len(output))
-            with col3:
-                st.metric("📊 Total Words", len(output.split()))
-            
-            # Create Word document
-            st.info("🔄 Creating Word document...")
-            logo_data = logo_file.getvalue() if logo_file else None
-            doc = create_word_document(output, logo_data)
-            
-            # Save to BytesIO
-            doc_buffer = BytesIO()
-            doc.save(doc_buffer)
-            doc_buffer.seek(0)
-            
-            # Provide download
-            st.success("✅ Word document created successfully!")
-            st.download_button(
-                label="📥 Download BRD as Word Document",
-                data=doc_buffer.getvalue(),
-                file_name="Business_Requirements_Document.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
-            
-            # Additional features
-            st.subheader("📋 Additional Features")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                if st.button("🔍 Analyze BRD Quality"):
-                    # Simple BRD quality analysis
-                    sections_found = []
-                    required_sections = [
-                        "Introduction", "Impact Analysis", "Process", "Business", 
-                        "Requirement", "Test", "Risk", "Reference"
-                    ]
-                    
-                    for section in required_sections:
-                        if section.lower() in output.lower():
-                            sections_found.append(section)
-                    
-                    st.write("**BRD Quality Analysis:**")
-                    st.write(f"✅ Sections covered: {len(sections_found)}/{len(required_sections)}")
-                    st.write(f"📝 Content completeness: {min(100, len(output) // 100)}%")
-                    st.write(f"📊 Tables detected: {output.count('|')//3}")
-                    
-                    if len(sections_found) >= 6:
-                        st.success("🎉 High quality BRD generated!")
-                    elif len(sections_found) >= 4:
-                        st.warning("⚠️ Good BRD, but could use more sections")
-                    else:
-                        st.error("❌ BRD needs improvement")
-            
-            with col2:
-                if st.button("📊 Export BRD Summary"):
-                    # Create a summary of the BRD
-                    summary_lines = []
-                    sections = output.split('##')
-                    
-                    for section in sections:
-                        if section.strip():
-                            lines = section.strip().split('\n')
-                            if lines:
-                                heading = lines[0].strip()
-                                word_count = len(section.split())
-                                summary_lines.append(f"• {heading}: {word_count} words")
-                    
-                    summary = "**BRD Summary:**\n\n" + "\n".join(summary_lines)
-                    
-                    st.text_area("BRD Summary", summary, height=200)
-                    
-                    # Download summary as text file
                     st.download_button(
-                        label="📥 Download Summary",
-                        data=summary,
-                        file_name="BRD_Summary.txt",
-                        mime="text/plain"
+                        label="📥 Download BRD (Markdown)",
+                        data=brd_content,
+                        file_name="Business_Requirements_Document.md",
+                        mime="text/markdown"
                     )
-            
+                except Exception as e:
+                    st.error(f"❌ Error creating markdown download: {str(e)}")
+                
+                # Content statistics
+                st.subheader("📊 Document Statistics")
+                word_count = len(brd_content.split())
+                char_count = len(brd_content)
+                section_count = brd_content.count('##')
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("📝 Word Count", f"{word_count:,}")
+                with col2:
+                    st.metric("🔤 Character Count", f"{char_count:,}")
+                with col3:
+                    st.metric("📑 Sections", section_count)
+                
+            else:
+                st.error("❌ Failed to generate BRD content!")
+                
         except Exception as e:
-            st.error(f"❌ Error generating BRD: {str(e)}")
-            st.error("Please check your API key and try again.")
-            
-            # Show debug information
-            with st.expander("🔧 Debug Information"):
-                st.write(f"**API Provider:** {api_provider}")
-                st.write(f"**Processing Method:** {processing_method}")
-                st.write(f"**Content Size:** {content_size if 'content_size' in locals() else 'Unknown'}")
-                st.write(f"**Files Processed:** {len(uploaded_files)}")
-                st.write(f"**Error Details:** {str(e)}")
+            st.error(f"❌ An error occurred: {str(e)}")
+            st.info("💡 Try reducing the input size or check your API key.")
 
-# Add helpful information in sidebar
+# Sidebar with instructions and tips
 with st.sidebar:
-    st.markdown("### 📚 Help & Information")
+    st.header("📖 Instructions")
     
     st.markdown("""
-    **Sequential Chain Benefits:**
-    - ✅ Handles large documents
-    - ✅ Avoids token limits
-    - ✅ Better content organization
-    - ✅ More reliable processing
+    ### How to Use:
+    1. **Select AI Provider**: Choose between OpenAI or Groq
+    2. **Enter API Key**: Provide your valid API key
+    3. **Upload Logo**: Optional company logo for the document
+    4. **Upload Files**: Support for TXT, DOCX, PDF, Excel, MSG files
+    5. **Manual Input**: Or paste requirements directly
+    6. **Generate**: Click the generate button to create your BRD
     
-    **Supported File Types:**
-    - 📄 PDF files
-    - 📝 Word documents (.docx)
-    - 📊 Excel files (.xlsx)
-    - 📧 Outlook messages (.msg)
+    ### Features:
+    ✅ **Sequential Processing**: Handles large documents efficiently  
+    ✅ **Multiple File Support**: TXT, DOCX, PDF, Excel, MSG  
+    ✅ **Table Preservation**: Maintains table formatting  
+    ✅ **Professional Format**: Complete BRD with TOC  
+    ✅ **Downloadable**: Word and Markdown formats  
+    ✅ **Clickable TOC**: Navigate easily in Word  
     
-    **Tips for Best Results:**
-    - Use clear, structured requirement documents
-    - Include tables and diagrams when possible
-    - Provide complete business context
-    - Review generated BRD before finalizing
+    ### Tips:
+    💡 **Large Files**: The app automatically chunks large content  
+    💡 **Multiple Files**: Upload multiple files for comprehensive analysis  
+    💡 **Excel Files**: Automatically extracts sample data and structure  
+    💡 **Table Data**: Tables from source documents are preserved  
+    
+    ### BRD Sections Generated:
+    1. Introduction & Purpose
+    2. Impact Analysis
+    3. Process Flow
+    4. Business Requirements
+    5. MIS/Data Requirements
+    6. Communication Requirements
+    7. Test Scenarios
+    8. Questions/Suggestions
+    9. Reference Documents
+    10. Appendix
+    11. Risk Evaluation
     """)
     
-    st.markdown("### 🔧 Troubleshooting")
+    st.header("⚡ Model Information")
+    
+    if api_provider == "OpenAI":
+        st.info("""
+        **OpenAI GPT-3.5-turbo-16k**
+        - Context: 16,384 tokens
+        - Good for: General BRD generation
+        - Speed: Moderate
+        """)
+    else:
+        st.info("""
+        **Groq Llama3-70b**
+        - Context: 8,192 tokens  
+        - Good for: Fast processing
+        - Speed: Very Fast
+        """)
+    
+    st.header("🔧 Technical Notes")
     st.markdown("""
-    **Common Issues:**
-    - **API Key Error:** Verify your API key is correct
-    - **Large Files:** Try Sequential Chain method
-    - **Missing Sections:** Check source document quality
-    - **Token Limits:** Use chunking or Sequential Chain
+    - **Token Limit Handling**: Automatic content chunking
+    - **Sequential Processing**: 4-stage chain processing
+    - **Memory Management**: Efficient processing of large files
+    - **Error Recovery**: Continues processing even if one section fails
     """)
-    
-    st.markdown("### 📞 Support")
-    st.info("For technical support, please check your API provider's documentation.")
 
 # Footer
 st.markdown("---")
-st.markdown(
-    "**Business Requirements Document Generator** | "
-    "Enhanced with Sequential Chain Processing | "
-    "Built with Streamlit & LangChain"
-)
+st.markdown("""
+<div style='text-align: center; color: gray;'>
+    <p>Business Requirements Document Generator v2.0 | Sequential Chain Processing</p>
+    <p>Built with Streamlit • LangChain • OpenAI/Groq APIs</p>
+</div>
+""", unsafe_allow_html=True)
