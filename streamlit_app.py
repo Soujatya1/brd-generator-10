@@ -486,8 +486,7 @@ if uploaded_files:
             
             excel_summary = summarize_excel_data(uploaded_file)
             combined_requirements.append(f"Excel file content from {uploaded_file.name}:\n{excel_summary}")
-        if 'msg_content' not in st.session_state:
-            st.session_state.msg_content = {}
+        
         elif file_extension == ".msg":
             if 'msg_content' not in st.session_state:
                 st.session_state.msg_content = {}
