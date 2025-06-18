@@ -696,14 +696,13 @@ if st.button("Generate BRD") and uploaded_files:
             for _ in range(12):
                 doc.add_paragraph()
             
+            # Add logo to header if provided
+            if logo_file is not None:
+                add_header_with_logo(doc, st.session_state.logo_data)
+            
             # Add title
             title = doc.add_heading('Business Requirements Document', 0)
             title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
-            # Add logo to header if provided
-            if logo_file is not None:
-                logo_bytes = logo_file.getvalue()
-                add_header_with_logo(doc, logo_bytes)
             
             # Add page break
             doc.add_page_break()
@@ -771,83 +770,82 @@ if st.button("Generate BRD") and uploaded_files:
                 else:
                     doc.add_paragraph(entry, style='Heading 2')
 
+            # Create clickable table of contents
+            bookmark_mapping = create_clickable_toc(doc)
+            
+            # Add page break after TOC
             doc.add_page_break()
             
-            # Process each section of the BRD - Improved section processing logic
-            sections = final_output.split('\n#')
+            # Process each section of the BRD
+            sections = final_output.split('##')
             
             for section in sections:
-                if not section.strip():
-                    continue
-                
-                lines = section.strip().split('\n')
-                heading_text = lines[0].lstrip('#').strip()
-                heading_level = 1 if section.startswith('#') else 2
-                
-                # Add section heading
-                doc.add_heading(heading_text, level=heading_level)
-                
-                remaining_content = '\n'.join(lines[1:]).strip()
-                
-                # Handle test scenarios section specially
-                if "7.0 Test Scenarios" in heading_text or heading_text.startswith("7.0"):
-                    # Process test scenarios content
-                    doc = process_test_scenarios(test_scenarios, doc)
-                    continue  # Skip further processing for this section
-                elif test_scenario_placeholder in remaining_content:
-                    # Split content at placeholder
-                    parts = remaining_content.split(test_scenario_placeholder)
-                    
-                    # Add content before placeholder
-                    if parts[0].strip():
-                        doc.add_paragraph(parts[0].strip())
-                    
-                    # Process test scenarios
-                    doc = process_test_scenarios(test_scenarios, doc)
-                    
-                    # Add content after placeholder if any
-                    if len(parts) > 1 and parts[1].strip():
-                        doc.add_paragraph(parts[1].strip())
-                    
-                    continue
-                
-                # Handle tables in the content
-                table_pattern = r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]'
-                matches = list(re.finditer(table_pattern, remaining_content))
-                
-                last_pos = 0
-                for match in matches:
-                    pre_text = remaining_content[last_pos:match.start()].strip()
-                    if pre_text:
-                        doc.add_paragraph(pre_text)
-                    
-                    table_id = match.group(1)
-                    if table_id in st.session_state.extracted_data['original_tables']:
-                        st.write(f"Inserting table {table_id}")
-                        table_to_insert = st.session_state.extracted_data['original_tables'][table_id]
-                        insert_table_into_doc(doc, table_to_insert, table_id)
-                    else:
-                        doc.add_paragraph(f"[TABLE {table_id} NOT FOUND]")
-                    
-                    last_pos = match.end()
-                
-                remaining_text = remaining_content[last_pos:].strip()
-                if remaining_text:
-                    lines = remaining_text.split('\n')
-                    clean_lines = []
-                    skip_mode = False
-                    
-                    for line in lines:
-                        if '|' in line and skip_mode:
-                            continue
-                        elif not line.strip() and skip_mode:
-                            skip_mode = False
-                        elif not skip_mode:
-                            clean_lines.append(line)
-                    
-                    clean_text = '\n'.join(clean_lines)
-                    if clean_text.strip():
-                        doc.add_paragraph(clean_text)
+                if section.strip():
+                    lines = section.strip().split('\n')
+                    if lines:
+                        # Extract heading
+                        heading_line = lines[0].strip()
+                        
+                        # Find the appropriate bookmark name for this heading
+                        bookmark_name = None
+                        for bookmark, heading_text in bookmark_mapping.items():
+                            if heading_line.lower().replace('#', '').strip() in heading_text.lower():
+                                bookmark_name = bookmark
+                                break
+                        
+                        # Determine heading level
+                        if heading_line.startswith('###'):
+                            level = 2
+                            heading_text = heading_line.replace('###', '').strip()
+                        else:
+                            level = 1
+                            heading_text = heading_line.replace('##', '').strip()
+                        
+                        # Add section heading with bookmark
+                        if bookmark_name:
+                            add_section_with_bookmark(doc, heading_text, bookmark_name, level)
+                        else:
+                            doc.add_heading(heading_text, level)
+                        
+                        # Process content
+                        content_lines = lines[1:]
+                        i = 0
+                        
+                        while i < len(content_lines):
+                            line = content_lines[i].strip()
+                            
+                            # Handle table markers
+                            table_match = re.search(r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]', line)
+                            if table_match:
+                                table_id = table_match.group(1)
+                                if table_id in st.session_state.extracted_data['original_tables']:
+                                    insert_table_into_doc(doc, st.session_state.extracted_data['original_tables'][table_id], table_id)
+                                i += 1
+                                continue
+                            
+                            # Handle test scenarios placeholder
+                            if line == test_scenario_placeholder:
+                                process_test_scenarios(test_scenarios, doc)
+                                i += 1
+                                continue
+                            
+                            # Handle regular content
+                            if line:
+                                # Handle bullet points
+                                if line.startswith('- ') or line.startswith('* '):
+                                    bullet_content = line[2:].strip()
+                                    para = doc.add_paragraph(bullet_content, style='List Bullet')
+                                
+                                # Handle numbered lists
+                                elif re.match(r'^\d+\.', line):
+                                    numbered_content = re.sub(r'^\d+\.\s*', '', line)
+                                    para = doc.add_paragraph(numbered_content, style='List Number')
+                                
+                                # Handle regular paragraphs
+                                else:
+                                    para = doc.add_paragraph(line)
+                            
+                            i += 1
             
             # Save document to BytesIO
             doc_buffer = BytesIO()
@@ -873,21 +871,6 @@ if st.button("Generate BRD") and uploaded_files:
         except Exception as e:
             st.error(f"Error generating BRD: {str(e)}")
             st.error("Please check your API key and try again.")
-
-# Additional features
-st.sidebar.header("Additional Options")
-
-if st.sidebar.button("Clear All Data"):
-    # Clear session state
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
-
-# Display extracted content for review
-if st.session_state.extracted_data['requirements']:
-    with st.expander("Review Extracted Content"):
-        st.subheader("Requirements Content")
-        st.text_area("Requirements", st.session_state.extracted_data['requirements'], height=200, key="requirements_review")
         
         if st.session_state.extracted_data['tables']:
             st.subheader("Extracted Tables")
