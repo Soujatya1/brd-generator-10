@@ -546,27 +546,103 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel(excel_file):
+def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10):
     content = []
     try:
         excel_data = pd.read_excel(excel_file, sheet_name=None)
         
         for sheet_name, df in excel_data.items():
-            if not df.empty:
-                content.append(f"Excel Sheet: {sheet_name}")
-                content.append(f"Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
-                content.append(f"Columns: {', '.join(df.columns.tolist())}")
+            if df.empty:
+                continue
                 
-                # Add table representation
+            content.append(f"=== EXCEL SHEET: {sheet_name} ===")
+            content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
+            
+            # Add column information
+            content.append(f"Columns ({len(df.columns)}): {', '.join(df.columns.tolist())}")
+            
+            # Add data type information
+            data_types = df.dtypes.to_dict()
+            type_summary = []
+            for col, dtype in data_types.items():
+                type_summary.append(f"{col}: {str(dtype)}")
+            content.append(f"Data Types: {', '.join(type_summary[:10])}...")  # Limit to first 10
+            
+            # Add statistical summary for numeric columns
+            numeric_cols = df.select_dtypes(include=['number']).columns
+            if len(numeric_cols) > 0:
+                content.append(f"Numeric Columns: {', '.join(numeric_cols.tolist()[:5])}...")  # First 5 only
+                
+            # Add sample data (limited rows)
+            sample_size = min(max_sample_rows, len(df))
+            if sample_size > 0:
+                content.append(f"\nSample Data (first {sample_size} rows):")
                 content.append("TABLE:")
-                table_lines = []
-                table_lines.append(" | ".join(df.columns.tolist()))
-                for _, row in df.iterrows():
-                    table_lines.append(" | ".join([str(val) for val in row]))
-                content.append("\n".join(table_lines))
+                
+                # Create sample table with limited columns if too many
+                display_df = df.head(sample_size)
+                if len(df.columns) > 10:
+                    # If too many columns, show first 8 and indicate there are more
+                    display_cols = df.columns[:8].tolist() + [f"... +{len(df.columns)-8} more columns"]
+                    display_df = df[df.columns[:8]].head(sample_size)
+                    
+                    # Add header row
+                    header_row = " | ".join(display_cols)
+                    content.append(header_row)
+                else:
+                    # Normal case - show all columns
+                    header_row = " | ".join(df.columns.tolist())
+                    content.append(header_row)
+                
+                # Add sample data rows
+                for _, row in display_df.iterrows():
+                    row_data = []
+                    for val in row:
+                        # Truncate long text values
+                        str_val = str(val)
+                        if len(str_val) > 50:
+                            str_val = str_val[:47] + "..."
+                        row_data.append(str_val)
+                    content.append(" | ".join(row_data))
+                
+                # Add summary of remaining data if applicable
+                if len(df) > sample_size:
+                    content.append(f"... and {len(df) - sample_size} more rows")
+            
+            # Add key insights if possible
+            content.append(f"\nData Summary:")
+            
+            # Check for key patterns or important columns
+            key_columns = []
+            for col in df.columns:
+                col_lower = col.lower()
+                if any(keyword in col_lower for keyword in ['id', 'name', 'title', 'status', 'type', 'category', 'priority', 'requirement']):
+                    key_columns.append(col)
+            
+            if key_columns:
+                content.append(f"Key Columns Identified: {', '.join(key_columns[:5])}")
+                
+                # Show unique values for key categorical columns
+                for col in key_columns[:3]:  # Limit to first 3 key columns
+                    if df[col].dtype == 'object':  # Text/categorical column
+                        unique_vals = df[col].dropna().unique()
+                        if len(unique_vals) <= 20:  # Only if manageable number of unique values
+                            content.append(f"{col} Values: {', '.join(map(str, unique_vals[:10]))}")
+                        else:
+                            content.append(f"{col}: {len(unique_vals)} unique values")
+            
+            # Add missing data info
+            missing_data = df.isnull().sum()
+            if missing_data.sum() > 0:
+                missing_cols = missing_data[missing_data > 0].head(5)  # Top 5 columns with missing data
+                missing_info = [f"{col}: {count} missing" for col, count in missing_cols.items()]
+                content.append(f"Missing Data: {', '.join(missing_info)}")
+            
+            content.append("="*50)  # Separator between sheets
     
     except Exception as e:
         st.error(f"Error processing Excel file: {str(e)}")
+        content.append(f"Error processing Excel file: {str(e)}")
     
     return "\n".join(content)
 
