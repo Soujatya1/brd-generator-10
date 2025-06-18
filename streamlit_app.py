@@ -409,21 +409,8 @@ def create_clickable_toc(doc):
     
     # Add numbered instructions
     instructions = [
-        "1. Open this document in Microsoft Word",
-        "2. Right-click anywhere in the Table of Contents above",
-        "3. Select 'Update Field' from the context menu",
-        "4. Choose 'Update entire table' when prompted",
-        "5. Click OK to refresh all page numbers"
+        "Press Ctrl+A to select all, then F9 to update all fields in the document."
     ]
-    
-    for instruction in instructions:
-        instr_para = doc.add_paragraph(instruction, style='List Number')
-    
-    alt_note = doc.add_paragraph()
-    alt_note.add_run("Alternative: ").bold = True
-    alt_note.add_run("Press Ctrl+A to select all, then F9 to update all fields in the document.")
-    
-    return {entry[1]: entry[0] for entry in toc_entries}
 
 def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
     """Add a hyperlink to a paragraph with proper styling"""
@@ -495,11 +482,6 @@ def add_section_with_bookmark(doc, heading_text, bookmark_name, level=1):
     """Add a section heading with bookmark for TOC linking"""
     heading = doc.add_heading(heading_text, level=level)
     add_bookmark(heading, bookmark_name)
-    
-    # Force page break before major sections (level 1) for proper page numbering
-    if level == 1 and not heading_text.lower().startswith('table of contents'):
-        # Add page break before the heading
-        heading.runs[0].add_break(WD_BREAK.PAGE)
     
     return heading
 
