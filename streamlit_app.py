@@ -267,36 +267,6 @@ def initialize_llm(api_provider, api_key):
             - Timeline risks
             - Technical risks
 
-            CONTENT ANALYSIS AND EXTRACTION RULES:
-
-            1. **Keyword-Based Mapping**: Look for these keywords to help categorize content:
-               - Purpose/Objective → Section 1.1
-               - Solution/Process/Workflow → Section 1.2
-               - System/Integration/API → Section 2.1, 2.3
-               - Product/Service → Section 2.2
-               - Requirement/Functional/Business Rule → Section 4.0
-               - Data/Report/Analytics → Section 5.0
-               - Communication/Notification/Email → Section 6.0
-               - Risk/Dependency/Constraint → Section 11.0
-
-            2. **Context Analysis**: Consider the context around each piece of information:
-               - If discussing "why" something is needed → Introduction
-               - If discussing "what" needs to be built → Requirements
-               - If discussing "how" it works → Process/Data Flow
-               - If discussing "impact" → Impact Analysis
-
-            3. **Table Placement Logic**:
-               - Process/workflow tables → Section 3.0 or 4.0
-               - Data structure/field tables → Section 5.0
-               - API/integration tables → Section 2.3
-               - Test-related tables → Will be handled in test scenarios
-               - Generic reference tables → Section 10.0 (Appendix)
-
-            4. **Smart Content Distribution**:
-               - If content could fit multiple sections, place it in the most specific/relevant section
-               - Cross-reference related content between sections when appropriate
-               - Ensure no critical information is missed or duplicated
-
             QUALITY ASSURANCE RULES:
 
             1. **Completeness**: Every section should have meaningful content or explicitly state "Not applicable based on provided requirements"
