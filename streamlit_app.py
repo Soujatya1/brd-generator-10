@@ -39,14 +39,16 @@ BRD_FORMAT = """
 
 def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
     """Add a hyperlink to a paragraph"""
-    part = paragraph.part
-    r_id = part.relate_to(url_or_bookmark, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=not is_internal)
-    
     # Create the w:hyperlink tag and add needed values
     hyperlink = OxmlElement('w:hyperlink')
+    
     if is_internal:
+        # For internal bookmarks, just set the anchor attribute
         hyperlink.set(qn('w:anchor'), url_or_bookmark)
     else:
+        # For external URLs, create a relationship
+        part = paragraph.part
+        r_id = part.relate_to(url_or_bookmark, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
         hyperlink.set(qn('r:id'), r_id)
     
     # Create a new run object and add the text
