@@ -676,7 +676,8 @@ if st.button("Generate BRD") and uploaded_files:
             
             # Use an easily identifiable placeholder
             test_scenario_placeholder = "[[TEST_SCENARIOS_PLACEHOLDER]]"
-            final_output = output.replace("[[TEST_SCENARIOS_PLACEHOLDER]]", test_scenario_placeholder)
+            final_output = re.sub(r'[•\-\*]\s*\[\[TEST_SCENARIOS_PLACEHOLDER\]\]', "[[TEST_SCENARIOS_PLACEHOLDER]]", output)
+            final_output = re.sub(r'\s*\[\[TEST_SCENARIOS_PLACEHOLDER\]\]\s*', "[[TEST_SCENARIOS_PLACEHOLDER]]", final_output)
             
             st.success("BRD generated successfully!")
             
@@ -777,7 +778,7 @@ if st.button("Generate BRD") and uploaded_files:
             doc.add_page_break()
             
             # Process each section of the BRD
-            sections = final_output.split('\n#')
+            sections = final_output.split('##')
             
             for section in sections:
                 if section.strip():
@@ -808,9 +809,25 @@ if st.button("Generate BRD") and uploaded_files:
                             doc.add_heading(heading_text, level)
                         
                         # Process content
+                        content_lines = lines[1:]
+                        i = 0
+
                         if "7.0 Test Scenarios" in heading_text or heading_text.startswith("7.0"):
                             doc = process_test_scenarios(test_scenarios, doc)
                             continue
+                        
+                        while i < len(content_lines):
+                            line = content_lines[i].strip()
+                            
+                            # Handle table markers
+                            table_match = re.search(r'\[\[TABLE_ID:([a-zA-Z0-9_]+)\]\]', line)
+                            if table_match:
+                                table_id = table_match.group(1)
+                                if table_id in st.session_state.extracted_data['original_tables']:
+                                    insert_table_into_doc(doc, st.session_state.extracted_data['original_tables'][table_id], table_id)
+                                i += 1
+                                continue
+                            
                             
                             # Handle regular content
                             if line:
