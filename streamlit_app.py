@@ -165,7 +165,7 @@ SECTION_TEMPLATES = {
     - Use markdown formatting (## for main sections, ### for subsections)
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
-    - Build upon the context from previous sections
+    - If content found for the mentioned sections, put it in the BRD as-is, else build upon the context from previous sections
     """
 }
 
