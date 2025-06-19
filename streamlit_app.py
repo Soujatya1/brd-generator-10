@@ -210,7 +210,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
             azure_endpoint=azure_endpoint,
             openai_api_key=api_key,
             azure_deployment=azure_deployment,
-            openai_api_version=api_version,
+            api_version=api_version,
             temperature=0.2,
             top_p=0.2
         )
