@@ -727,7 +727,7 @@ def create_word_document(content, logo_data=None):
                         if line.startswith('- ') or line.startswith('* '):
                             doc.add_paragraph(line[2:].strip(), style='List Bullet')
                         elif re.match(r'^\d+\.', line):
-                            doc.add_paragraph(re.sub(r'^\d+\.\s*', '', line), style='List Number')
+                            doc.add_paragraph(re.sub(r'^\d+\.\s*', '', line), style='List Bullet')
                         else:
                             doc.add_paragraph(line)
                 
