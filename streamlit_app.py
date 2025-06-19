@@ -195,7 +195,7 @@ def chunk_requirements(requirements, max_chunk_size=8000):
     return chunks
 
 @st.cache_resource
-def initialize_sequential_chains(api_provider, api_key):
+def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azure_deployment=None, api_version=None):
     
     if api_provider == "OpenAI":
         model = ChatOpenAI(
@@ -204,7 +204,16 @@ def initialize_sequential_chains(api_provider, api_key):
             temperature=0.2,
             top_p=0.2
         )
-    else:
+    elif api_provider == "AzureOpenAI":
+        model = AzureChatOpenAI(
+            azure_endpoint=azure_endpoint,
+            openai_api_key=api_key,
+            azure_deployment=azure_deployment,
+            openai_api_version=api_version,
+            temperature=0.2,
+            top_p=0.2
+        )
+    else:  # Groq
         model = ChatGroq(
             groq_api_key=api_key,
             model_name="llama3-70b-8192",
@@ -738,6 +747,15 @@ api_provider = st.radio("Select API Provider:", ["OpenAI", "Groq"])
 
 if api_provider == "OpenAI":
     api_key = st.text_input("Enter your OpenAI API Key:", type="password")
+elif api_provider == "AzureOpenAI":
+    api_key = st.text_input("Enter your Azure OpenAI API Key:", type="password")
+    azure_endpoint = st.text_input("Enter your Azure OpenAI Endpoint:", 
+                                   placeholder="https://your-resource.openai.azure.com/")
+    azure_deployment = st.text_input("Enter your Azure Deployment Name:", 
+                                     placeholder="gpt-35-turbo")
+    api_version = st.text_input("Enter API Version (optional):", 
+                                value="2024-02-15-preview",
+                                placeholder="2024-02-15-preview")
 else:
     api_key = st.text_input("Enter your Groq API Key:", type="password")
 
