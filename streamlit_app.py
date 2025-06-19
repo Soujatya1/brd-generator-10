@@ -790,7 +790,11 @@ if st.button("Generate BRD", type="primary"):
     else:
         try:
             with st.spinner("Initializing AI chains..."):
-                chains = initialize_sequential_chains(api_provider, api_key)
+                chains = initialize_sequential_chains(api_provider=api_provider,
+            api_key=api_key,
+            azure_endpoint=azure_endpoint,
+            azure_deployment=azure_deployment,
+            api_version=api_version)
             
             all_requirements = []
             
