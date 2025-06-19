@@ -744,7 +744,7 @@ def create_word_document(content, logo_data=None):
 st.title("Business Requirements Document Generator")
 
 st.subheader("AI Model Selection")
-api_provider = st.radio("Select API Provider:", ["OpenAI", "Groq"])
+api_provider = st.radio("Select API Provider:", ["OpenAI", "Groq", "AzureOpenAI"])
 
 if api_provider == "OpenAI":
     api_key = st.text_input("Enter your OpenAI API Key:", type="password")
