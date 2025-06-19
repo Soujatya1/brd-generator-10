@@ -69,7 +69,6 @@ SECTION_TEMPLATES = {
     - If tables are present in requirements, preserve them using markdown table format
     - Include comprehensive content for each section
     - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
-    - ALL POINTERS UNDER EACH SECTIONS MUST BE IN BULLET POINTS
     """,
     
     "process_requirements": """
@@ -98,7 +97,6 @@ SECTION_TEMPLATES = {
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
     - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
-    - ALL POINTERS UNDER EACH SECTIONS MUST BE IN BULLET POINTS
     """,
     
     "data_communication": """
@@ -127,7 +125,6 @@ SECTION_TEMPLATES = {
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
     - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
-    - ALL POINTERS UNDER EACH SECTIONS MUST BE IN BULLET POINTS
     """,
     
     "testing_final": """
@@ -171,7 +168,6 @@ SECTION_TEMPLATES = {
     - Preserve any tables using markdown table format with pipes (|)
     - Include comprehensive content for each section
     - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
-    - ALL POINTERS UNDER EACH SECTIONS MUST BE IN BULLET POINTS
     """
 }
 
