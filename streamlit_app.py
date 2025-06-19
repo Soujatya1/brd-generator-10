@@ -18,6 +18,7 @@ import re
 from docx.shared import RGBColor, Pt
 from docx.enum.text import WD_BREAK
 from docx.enum.style import WD_STYLE_TYPE
+from langchain_openai import AzureChatOpenAI
 
 BRD_FORMAT = """
 ## 1.0 Introduction
