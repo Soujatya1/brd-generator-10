@@ -375,11 +375,8 @@ def create_clickable_toc(doc):
     note_run.bold = True
     note_run.font.color.rgb = RGBColor(255, 0, 0)
     
-    note_para.add_run("To see actual page numbers in this Table of Contents:")
+    note_para.add_run("To see actual page numbers in this Table of Contents: Press 'Ctrl + A' to select all, then F9 to update all fields in the document.")
     
-    instructions = [
-        "Press Ctrl+A to select all, then F9 to update all fields in the document."
-    ]
     return bookmark_mapping
 
 def add_hyperlink(paragraph, text, url_or_bookmark, is_internal=True):
