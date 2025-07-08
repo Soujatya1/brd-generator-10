@@ -50,7 +50,7 @@ SECTION_TEMPLATES = {
     
     ## 1.0 Introduction
     ### 1.1 Purpose
-    Extract and elaborate on the business purpose, objectives, goals, or problem statement from the requirements.
+    Extract and elaborate on the business purpose, objectives, goals, or problem statement from the requirements under the above-mentioned header
     
     ### 1.2 To be process / High level solution
     Provide solution overview, high-level approach, or process descriptions based on the requirements.
