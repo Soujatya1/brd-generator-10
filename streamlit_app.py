@@ -86,6 +86,7 @@ SECTION_TEMPLATES = {
     Look for process flows, workflow descriptions, data movement, user journeys, or references to diagrams.
     Describe these in words and pointers ONLY, not any other format
     Include step-by-step processes, decision points, data transformations.
+    DO NOT INCLUDE ANY FLOWCHART IN THE OUTPUT
     
     ## 4.0 Business / System Requirement
     - Functional requirements (what the system should do)
