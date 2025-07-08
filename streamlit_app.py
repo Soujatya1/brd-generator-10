@@ -84,6 +84,7 @@ SECTION_TEMPLATES = {
     
     ## 3.0 Process / Data Flow diagram / Figma
     Look for process flows, workflow descriptions, data movement, user journeys, or references to diagrams.
+    Describe these in words and pointers ONLY, not any other format
     Include step-by-step processes, decision points, data transformations.
     
     ## 4.0 Business / System Requirement
