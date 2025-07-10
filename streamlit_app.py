@@ -532,6 +532,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         excel_data = pd.read_excel(excel_file, sheet_name=None)
         
         for sheet_name, df in excel_data.items():
+            st.write(f"Processing sheet: {sheet_name}")
             if df.empty:
                 continue
                 
