@@ -541,7 +541,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             if sheet.sheet_state == 'visible':
                 visible_sheets.append(sheet_name)
         
-        print(f"Visible sheets found: {visible_sheets}")
+        st.write(f"Visible sheets found: {visible_sheets}")
         
         # Read only visible sheets
         if visible_sheets:
