@@ -531,26 +531,22 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
     try:
         from openpyxl import load_workbook
         
-        # First, get only visible sheet names
         wb = load_workbook(excel_file)
         visible_sheets = []
         
         for sheet_name in wb.sheetnames:
             sheet = wb[sheet_name]
-            # Check if sheet is visible (not hidden or very hidden)
             if sheet.sheet_state == 'visible':
                 visible_sheets.append(sheet_name)
         
         st.write(f"Visible sheets found: {visible_sheets}")
         
-        # Read only visible sheets
         if visible_sheets:
             excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
         else:
             print("No visible sheets found")
             return "No visible sheets found in the Excel file"
         
-        # If only one sheet, pandas returns a DataFrame instead of dict
         if not isinstance(excel_data, dict):
             excel_data = {visible_sheets[0]: excel_data}
         
