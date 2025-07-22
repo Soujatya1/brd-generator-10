@@ -307,7 +307,7 @@ IMPORTANT:
 VALIDATION CHECK:
 
 Before finalizing sections 8.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
-
+Be Specific about all the details, not generic
 """
 
 }
