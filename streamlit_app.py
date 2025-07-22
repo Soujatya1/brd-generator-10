@@ -43,7 +43,7 @@ SECTION_TEMPLATES = {
 
     "intro_impact": """
 
-You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD).
+You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD). Capture the core business logic from the input documents. Capture all specific details correctly
 
 IMPORTANT: Do not output any ``` code fences or Mermaid syntax.
 All text should be plain markdown (headings, lists, tables) only - no code blocks or fenced content.
