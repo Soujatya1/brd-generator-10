@@ -385,7 +385,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
         model = ChatOpenAI(
             openai_api_key=api_key,
             model_name="gpt-3.5-turbo-16k",
-            temperature=0.2,
+            temperature=0.1,
             top_p=0.2
         )
     elif api_provider == "AzureOpenAI":
@@ -394,7 +394,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
             openai_api_key=api_key,
             azure_deployment=azure_deployment,
             api_version=api_version,
-            temperature=0.2,
+            temperature=0,
             top_p=0.2
         )
     else:  # Groq
