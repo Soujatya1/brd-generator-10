@@ -40,138 +40,276 @@ BRD_FORMAT = """
 """
 
 SECTION_TEMPLATES = {
+
     "intro_impact": """
-    You are a Business Analyst expert creating sections 1.0-2.0 of a comprehensive Business Requirements Document (BRD).
-    
-    SOURCE REQUIREMENTS:
-    {requirements}
-    
-    Create ONLY the following sections with detailed content:
-    
-    ## 1.0 Introduction
-    ### 1.1 Purpose
-    Extract and elaborate on the business purpose, objectives, goals, or problem statement from the requirements under the above-mentioned header
-    
-    ### 1.2 To be process / High level solution
-    Provide solution overview, high-level approach, or process descriptions based on the requirements.
-    
-    ## 2.0 Impact Analysis
-    ### 2.1 System impacts – Primary and cross functional
-    Identify affected systems, integrations, dependencies, upstream/downstream impacts.
-    
-    ### 2.2 Impacted Products
-    List specific products, services, or business lines affected.
-    
-    ### 2.3 List of APIs required
-    Extract API names, endpoints, integrations, web services, or technical interfaces.
-    
-    IMPORTANT: 
-    - Use markdown formatting (## for main sections, ### for subsections)
-    - If tables are present in requirements, preserve them using markdown table format
-    - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
-    """,
-    
+
+You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD).
+
+IMPORTANT: Do not output any ``` code fences or Mermaid syntax.
+All text should be plain markdown (headings, lists, tables) only - no code blocks or fenced content.
+
+SOURCE REQUIREMENTS:
+
+{requirements}
+
+CRITICAL INSTRUCTIONS:
+
+- Extract information ONLY from the provided source requirements
+
+- Do NOT create, assume, or fabricate any content not explicitly present in the source
+
+- If a section has no relevant information in the source, leave it BLANK
+
+- Do NOT generate sample data, mock examples, or placeholder content
+
+Create ONLY the following sections with detailed content in markdown:
+
+## 1.0 Introduction
+
+### 1.1 Purpose
+
+Read the document, understand it and then provide elaborate business purpose, objectives, goals, or problem statement ONLY if explicitly stated in the requirements.
+
+### 1.2 To be process / High level solution
+
+Extract any solution overview, high-level approach, or process descriptions ONLY if present in the requirements.
+
+## 2.0 Impact Analysis
+
+### 2.1 System impacts – Primary and cross functional
+
+Extract information about affected systems, integrations, dependencies, upstream/downstream impacts ONLY if mentioned in the requirements.
+
+### 2.2 Impacted Products
+
+List ONLY the products, services, or business lines explicitly mentioned in the requirements.
+
+### 2.3 List of APIs required
+
+Extract ONLY the API names, endpoints, integrations, web services, or technical interfaces explicitly mentioned in the requirements.
+
+IMPORTANT:
+
+- Use markdown headings (##, ###).
+
+- Preserve any tables in markdown format.
+
+- If no content found for a subsection, leave it blank.
+
+VALIDATION CHECK:
+
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
+""",
+
     "process_requirements": """
-    You are a Business Analyst expert creating sections 3.0-4.0 of a comprehensive Business Requirements Document (BRD).
-    
-    Previous sections context: {previous_content}
-    
-    SOURCE REQUIREMENTS:
-    {requirements}
-    
-    Create ONLY the following sections with detailed content:
-    
-    ## 3.0 Process / Data Flow diagram / Figma
-    Look for process flows, workflow descriptions, data movement, user journeys, or references to diagrams.
-    Describe these in words and pointers ONLY, not any other format
-    Include step-by-step processes, decision points, data transformations.
-    DO NOT INCLUDE ANY FLOWCHART IN THE OUTPUT
-    
-    ## 4.0 Business / System Requirement
-    - Functional requirements (what the system should do)
-    - Business rules and logic
-    - User stories or use cases
-    - Performance, security, and compliance requirements
-    - Include any requirement tables from source documents here
-    
-    IMPORTANT:
-    - Use markdown formatting (## for main sections, ### for subsections)
-    - Preserve any tables using markdown table format with pipes (|)
-    - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
-    """,
-    
+
+You are a Business Analyst expert creating sections 3.0–4.0 of a comprehensive BRD.
+
+PREVIOUS CONTENT:
+
+{previous_content}
+
+SOURCE REQUIREMENTS:
+
+{requirements}
+
+CRITICAL INSTRUCTIONS:
+
+- Extract information ONLY from the provided source requirements
+
+- Do NOT create, assume, or fabricate any content not explicitly present in the source
+
+- If a section has no relevant information in the source, leave it BLANK
+
+- Do NOT generate sample data, mock examples, or placeholder content
+
+Create ONLY the following sections with detailed content in markdown:
+
+## 3.0 Process / Data Flow diagram / Figma
+
+Extract any process flows, workflow descriptions, data movement, user journeys ONLY if present in the requirements.
+
+Describe the workflow as a **step-by-step list under section 3.0**, and for any decision points use sub-bullets ONLY if explicitly mentioned in the source.
+
+    For example:
+
+    3.1. Check training completion flag  
+
+       - If "Y": proceed to dashboard  
+
+       - If "N": display training popup  
+
+    3.2. …
+
+## 4.0 Business / System Requirement
+
+Extract ONLY the following if explicitly mentioned in the requirements:
+
+- Functional requirements
+
+- Business rules and logic
+
+- Performance, security, and compliance requirements
+
+IMPORTANT:
+
+- Use markdown headings.
+
+- Leave blank if no content found.
+
+VALIDATION CHECK:
+
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
+""",
+
     "data_communication": """
-    You are a Business Analyst expert creating sections 5.0-6.0 of a comprehensive Business Requirements Document (BRD).
-    
-    Previous sections context: {previous_content}
-    
-    SOURCE REQUIREMENTS:
-    {requirements}
-    
-    Create ONLY the following sections with detailed content:
-    
-    ## 5.0 MIS / DATA Requirement
-    - Data requirements and specifications
-    - Reporting needs, analytics requirements
-    - Data sources and destinations
-    - Include any data specification tables from source documents here
-    
-    ## 6.0 Communication Requirement
-    - Stakeholder communication needs
-    - Notification requirements
-    - Email templates or communication workflows
-    
-    IMPORTANT:
-    - Use markdown formatting (## for main sections, ### for subsections)
-    - Preserve any tables using markdown table format with pipes (|)
-    - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
-    """,
-    
+
+You are a Business Analyst expert creating sections 5.0–6.0 of a comprehensive BRD.
+
+PREVIOUS CONTENT:
+
+{previous_content}
+
+SOURCE REQUIREMENTS:
+
+{requirements}
+
+CRITICAL INSTRUCTIONS:
+
+- Extract information ONLY from the provided source requirements
+
+- Do NOT create, assume, or fabricate any content not explicitly present in the source
+
+- If a section has no relevant information in the source, leave it BLANK
+
+- Do NOT generate sample data, mock examples, or placeholder content
+
+Create ONLY the following sections with detailed content in markdown:
+
+## 5.0 MIS / DATA Requirement
+
+Extract ONLY the following if explicitly mentioned in the requirements:
+
+- Data specifications
+
+- Reporting and analytics needs
+
+- Data sources and destinations
+
+## 6.0 Communication Requirement
+
+Include top 3 most relevant original emails or communication messages found from the requirement documents. DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
+
+IMPORTANT:
+
+- Use markdown headings.
+
+- Preserve tables with pipe syntax.
+
+- Leave blank if no content found.
+
+VALIDATION CHECK:
+
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
+""",
+
     "testing_final": """
-    You are a Business Analyst expert creating sections 7.0-11.0 of a comprehensive Business Requirements Document (BRD).
-    
-    Previous sections context: {previous_content}
-    
-    SOURCE REQUIREMENTS:
-    {requirements}
-    
-    Create ONLY the following sections with detailed content:
-    
-    ## 7.0 Test Scenarios
-    Generate at least 5 detailed test scenarios in a table format:
-    | Test ID | Test Name | Objective | Test Steps | Expected Results | Test Data | Type |
-    | ------- | --------- | --------- | ---------- | ---------------- | --------- | ---- |
-    | TC001 | [Test Name] | [Objective] | [Steps] | [Results] | [Data] | [Type] |
-    
-    ## 8.0 Questions / Suggestions
-    - Open questions from the source documents
-    - Assumptions that need validation
-    - Suggestions for improvement
-    
-    ## 9.0 Reference Document
-    - Source documents mentioned
-    - Related policies or procedures
-    - External references or standards
-    
-    ## 10.0 Appendix
-    - Supporting information
-    - Detailed technical specifications
-    - Include any supporting tables from source documents here
-    
-    ## 11.0 Risk Evaluation
-    - Identified risks and mitigation strategies
-    - Timeline and technical risks
-    - If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same
-    
-    IMPORTANT:
-    - Use markdown formatting (## for main sections, ### for subsections)
-    - Preserve any tables using markdown table format with pipes (|)
-    - Include comprehensive content for each section
-    - If content found for the mentioned sections, put it in the BRD as-is, IF not found, leave BLANK
-    """
+
+You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD.
+
+PREVIOUS CONTENT:
+
+{previous_content}
+
+SOURCE REQUIREMENTS:
+
+{requirements}
+
+CRITICAL INSTRUCTIONS FOR SECTIONS 8.0-11.0:
+
+- Extract information ONLY from the provided source requirements
+
+- Do NOT create, assume, or fabricate any content not explicitly present in the source
+
+- If a section has no relevant information in the source, leave it BLANK
+
+- Do NOT generate sample data, mock examples, or placeholder content
+
+Create ONLY the following sections with detailed content in markdown:
+
+## 7.0 Test Scenarios
+
+Generate at least 5 test scenarios in a table relating to the already available test scenarios from the input requirement documents:
+
+| Test ID | Test Name    | Objective     | Test Steps   | Expected Results | Test Data    | Type |
+
+| ------- | ------------ | ------------- | ------------ | ---------------- | ------------ | ---- |
+
+| TC001   | [Name]       | [Objective]   | [Steps]      | [Results]        | [Data]       | [Type] |
+
+... (at least 5 rows)
+
+## 8.0 Questions / Suggestions
+
+Extract ONLY the following if explicitly mentioned in the requirements:
+
+- Open questions
+
+- Assumptions to validate
+
+- Improvement suggestions
+
+IMPORTANT:
+
+For any points use sub-bullets.
+
+## 9.0 Reference Document
+
+Extract ONLY the following if explicitly mentioned in the requirements:
+
+- Source documents
+
+- Related standards or policies
+
+- External references, if any
+
+## 10.0 Appendix
+
+Extract ONLY the following if explicitly mentioned in the requirements:
+
+- Supporting information
+
+- Include any secondary or non important information from the source document.
+
+## 11.0 Risk Evaluation
+
+Extract ONLY the following if explicitly mentioned in the requirements:
+
+- Identified risks & mitigation strategies
+
+- Timeline and technical risks
+
+- If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same.
+
+IMPORTANT:
+
+- Use markdown headings.
+
+- Preserve tables with markdown table format using pipe syntax.
+
+- Do NOT output code fences.
+
+- For sections 8.0-11.0: Leave blank if no content found.
+
+VALIDATION CHECK:
+
+Before finalizing sections 8.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
+"""
+
 }
 
 def estimate_content_size(text):
@@ -526,71 +664,96 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10):
+def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=False):
+    """
+    Extract and summarize content from Excel files.
+    Can process all sheets or only visible sheets based on preference.
+    
+    Args:
+        excel_file: Path to Excel file or file-like object
+        max_rows_per_sheet: Maximum rows to process per sheet (default: 70)
+        max_sample_rows: Maximum number of sample rows to display (default: 10)
+        visible_only: If True, only process visible sheets (default: False)
+    
+    Returns:
+        str: Formatted string containing Excel file analysis
+    """
     content = []
     try:
-        from openpyxl import load_workbook
-        
-        wb = load_workbook(excel_file)
-        visible_sheets = []
-        
-        for sheet_name in wb.sheetnames:
-            sheet = wb[sheet_name]
-            if sheet.sheet_state == 'visible':
-                visible_sheets.append(sheet_name)
-        
-        st.write(f"Visible sheets found: {visible_sheets}")
-        
-        if visible_sheets:
-            excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
+        if visible_only:
+            # Use openpyxl to filter visible sheets only
+            from openpyxl import load_workbook
+            
+            wb = load_workbook(excel_file)
+            visible_sheets = []
+            
+            for sheet_name in wb.sheetnames:
+                sheet = wb[sheet_name]
+                if sheet.sheet_state == 'visible':
+                    visible_sheets.append(sheet_name)
+            
+            if visible_sheets:
+                excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
+            else:
+                return "No visible sheets found in the Excel file"
+            
+            if not isinstance(excel_data, dict):
+                excel_data = {visible_sheets[0]: excel_data}
         else:
-            print("No visible sheets found")
-            return "No visible sheets found in the Excel file"
-        
-        if not isinstance(excel_data, dict):
-            excel_data = {visible_sheets[0]: excel_data}
+            # Read all sheets from Excel file
+            excel_data = pd.read_excel(excel_file, sheet_name=None)
         
         for sheet_name, df in excel_data.items():
-            print(f"Processing visible sheet: {sheet_name}")
-            
             if df.empty:
                 continue
+            
+            # Limit processing to max_rows_per_sheet if specified
+            if max_rows_per_sheet and len(df) > max_rows_per_sheet:
+                df = df.head(max_rows_per_sheet)
+                content.append(f"Note: Processing first {max_rows_per_sheet} rows only")
                 
             content.append(f"=== EXCEL SHEET: {sheet_name} ===")
             content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
             
+            # Column information
             content.append(f"Columns ({len(df.columns)}): {', '.join(df.columns.tolist())}")
             
+            # Data types summary
             data_types = df.dtypes.to_dict()
             type_summary = []
             for col, dtype in data_types.items():
                 type_summary.append(f"{col}: {str(dtype)}")
             content.append(f"Data Types: {', '.join(type_summary[:10])}...")
             
+            # Numeric columns
             numeric_cols = df.select_dtypes(include=['number']).columns
             if len(numeric_cols) > 0:
                 content.append(f"Numeric Columns: {', '.join(numeric_cols.tolist()[:5])}...")
-                
+            
+            # Sample data display
             sample_size = min(max_sample_rows, len(df))
             if sample_size > 0:
                 content.append(f"\nSample Data (first {sample_size} rows):")
                 content.append("TABLE:")
                 
                 display_df = df.head(sample_size)
+                
+                # Handle wide tables by showing first 8 columns
                 if len(df.columns) > 10:
                     display_cols = df.columns[:8].tolist() + [f"... +{len(df.columns)-8} more columns"]
                     display_df = df[df.columns[:8]].head(sample_size)
-                    
                     header_row = " | ".join(display_cols)
                     content.append(header_row)
                 else:
                     header_row = " | ".join(df.columns.tolist())
                     content.append(header_row)
                 
+                # Display data rows
                 for _, row in display_df.iterrows():
                     row_data = []
                     for val in row:
                         str_val = str(val)
+                        # Truncate long values
                         if len(str_val) > 50:
                             str_val = str_val[:47] + "..."
                         row_data.append(str_val)
@@ -601,6 +764,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             
             content.append(f"\nData Summary:")
             
+            # Identify key columns based on common patterns
             key_columns = []
             for col in df.columns:
                 col_lower = col.lower()
@@ -610,6 +774,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             if key_columns:
                 content.append(f"Key Columns Identified: {', '.join(key_columns[:5])}")
                 
+                # Show unique values for key columns
                 for col in key_columns[:3]:
                     if df[col].dtype == 'object':
                         unique_vals = df[col].dropna().unique()
@@ -618,6 +783,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                         else:
                             content.append(f"{col}: {len(unique_vals)} unique values")
             
+            # Missing data analysis
             missing_data = df.isnull().sum()
             if missing_data.sum() > 0:
                 missing_cols = missing_data[missing_data > 0].head(5)
@@ -627,7 +793,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             content.append("="*50)
     
     except Exception as e:
-        st.error(f"Error processing Excel file: {str(e)}")
         content.append(f"Error processing Excel file: {str(e)}")
     
     return "\n".join(content)
