@@ -132,65 +132,31 @@ CRITICAL INSTRUCTIONS:
 
 ## 3.0 Process / Data Flow diagram / Figma
 
-### 3.1 Process Flow Description
-Extract ONLY workflow information explicitly described in source requirements:
+Extract any process flows, workflow descriptions, data movement, user journeys ONLY if present in the requirements.
 
-If process steps are mentioned, format as:
-1. [First step from source]
-   - Condition A: [outcome from source]
-   - Condition B: [outcome from source]
-2. [Next step from source]
-   - Sub-condition: [specific behavior from source]
+Describe the workflow as a **step-by-step list under section 3.0**, and for any decision points use sub-bullets ONLY if explicitly mentioned in the source.
 
-If no process flow found: "No specific process flow provided in requirements"
+    For example:
 
-### 3.2 Business Rules and Validation Logic
-Extract ONLY business rules, conditions, and validation logic explicitly mentioned in source:
-- When to allow/restrict certain actions (only if stated)
-- Specific criteria for decision making (only if mentioned)
-- Error conditions and handling (only if described)
-- Status checks or validations required (only if specified)
+    3.1. Check training completion flag  
 
-If no business rules found: "No specific business rules provided in requirements"
+       - If "Y": proceed to dashboard  
 
-### 3.3 User Journey Impact
-Extract ONLY user interaction information if explicitly described in source:
-- Screen/interface changes (only if mentioned)
-- User actions and system responses (only if described)
-- Error messages or notifications (only if specified)
-- Navigation flow changes (only if stated)
+       - If "N": display training popup  
+
+    3.2. …
 
 If no user journey found: "No specific user journey impact provided in requirements"
 
 ## 4.0 Business / System Requirement
 
-### 4.1 Functional Requirements
-Extract ONLY specific functional requirements explicitly mentioned in source.
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-Format requirements ONLY if detailed information is available:
+- Functional requirements
 
-**Requirement ID 4.1.1: [Name from source]**
-- **Description:** [Only if detailed requirement provided in source]
-- **Business Rule:** [Only if specific business logic mentioned in source]
-- **Input:** [Only if user input specified in source]
-- **Processing:** [Only if system behavior described in source]
-- **Output:** [Only if expected result mentioned in source]
-- **Error Handling:** [Only if error conditions stated in source]
+- Business rules and logic
 
-If insufficient detail for formal requirements: "Detailed functional requirements not provided in source - only high-level requirement: [state what was found]"
-
-### 4.2 Business Logic Specifications
-Extract ONLY specific business rules explicitly mentioned in source:
-- Validation criteria (only if stated)
-- Decision matrices (only if provided)
-- Conditional logic (only if described)
-- Status-based restrictions (only if mentioned)
-- Data combination rules (only if specified)
-
-If no business logic found: "No specific business logic specifications provided in requirements"
-
-### 4.3 Non-Functional Requirements
-Extract ONLY performance, security, or compliance requirements explicitly mentioned in source.
+- Performance, security, and compliance requirements
 
 If none found: "No specific non-functional requirements provided in requirements"
 
@@ -218,57 +184,27 @@ CRITICAL INSTRUCTIONS:
 
 ## 5.0 MIS / DATA Requirement
 
-### 5.1 Data Elements Required
-Extract ONLY specific data fields explicitly mentioned in source:
-- Input data fields (only if specified in source)
-- Data for validation/checking (only if mentioned in source)
-- Output data requirements (only if stated in source)
-- Data format specifications (only if provided in source)
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-If no data elements found: "No specific data elements provided in requirements"
+- Data specifications
 
-### 5.2 Data Sources and Dependencies
-Extract ONLY data source information explicitly mentioned in source:
-- Database tables or systems to be queried (only if stated)
-- Existing data that needs to be checked (only if mentioned)
-- Data integration requirements (only if specified)
-- Master data dependencies (only if described)
+- Reporting and analytics needs
 
-If no data sources found: "No specific data sources provided in requirements"
+- Data sources and destinations
 
-### 5.3 Reporting and Analytics Needs
-Extract ONLY reporting requirements explicitly mentioned in source:
-- MIS reports needed (only if stated)
-- Data tracking requirements (only if mentioned)
-- Analytics or metrics to capture (only if specified)
-- Audit trail requirements (only if described)
-
-If no reporting needs found: "No specific reporting requirements provided in requirements"
+If no reporting needs found: "No specific MIS details found"
 
 ## 6.0 Communication Requirement
 
-### 6.1 User Communication
-Extract ONLY user-facing communication needs explicitly mentioned in source:
-- Error messages to be displayed (only if specified)
-- Success notifications (only if mentioned)
-- User guidance or instructions (only if stated)
-- Help text or tooltips (only if described)
+Include top 3 most relevant original emails or communication messages found from the requirement documents. DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
 
-If no user communication found: "No specific user communication requirements provided in requirements"
+IMPORTANT:
 
-### 6.2 System Communication
-Extract ONLY system-level communication explicitly mentioned in source:
-- Integration messages (only if stated)
-- API response formats (only if specified)
-- Status updates between systems (only if mentioned)
-- Notification triggers (only if described)
+- Use markdown headings.
 
-If no system communication found: "No specific system communication requirements provided in requirements"
+- Preserve tables with pipe syntax.
 
-### 6.3 Stakeholder Communication
-Include ONLY original emails, communications, or documentation found in source requirements.
-
-If no stakeholder communication found: "No specific stakeholder communication found in requirements"
+- Leave blank if no content found.
 
 IMPORTANT:
 - Include exact error messages only if specified in source
@@ -314,72 +250,41 @@ Generate at least 5 test scenarios covering:
 
 ## 8.0 Questions / Suggestions
 
-EXTRACT ONLY - Do not generate content:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-### 8.1 Open Questions
-Extract ONLY questions that need clarification if explicitly mentioned in source requirements.
+- Open questions
 
-If no questions found: "No specific questions provided in requirements"
+- Assumptions to validate
 
-### 8.2 Assumptions Made
-Extract ONLY assumptions if explicitly stated in source requirements.
-
-If no assumptions found: "No specific assumptions provided in requirements"
-
-### 8.3 Recommendations and Suggestions
-Extract ONLY improvement suggestions if explicitly mentioned in source requirements.
-
-If no suggestions found: "No specific suggestions provided in requirements"
+- Improvement suggestions
 
 ## 9.0 Reference Document
 
-EXTRACT ONLY - Do not generate content:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-### 9.1 Source Documents
-List ONLY the actual source documents that were analyzed (exact names from source).
+- Source documents
 
-### 9.2 Related Standards or Policies
-Include ONLY standards, policies, or guidelines explicitly referenced in source requirements.
+- Related standards or policies
 
-If none found: "No specific standards or policies referenced in requirements"
+- External references, if any
 
 ## 10.0 Appendix
 
-EXTRACT ONLY - Do not generate content:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-### 10.1 Detailed Business Rules Matrix
-Create a matrix ONLY if complex business rules exist in source requirements.
+- Supporting information
 
-If no detailed rules found: "No detailed business rules matrix provided in requirements"
-
-### 10.2 Data Mapping
-Include ONLY data field mappings if explicitly mentioned in source requirements.
-
-If none found: "No data mapping information provided in requirements"
-
-### 10.3 Additional Supporting Information
-Include ONLY additional information explicitly found in source requirements.
-
-If none found: "No additional supporting information provided in requirements"
+- Include any secondary or non important information from the source document.
 
 ## 11.0 Risk Evaluation
 
-EXTRACT ONLY - Do not generate content:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-### 11.1 Business Risks
-Extract ONLY business risks if explicitly mentioned in source requirements.
+- Identified risks & mitigation strategies
 
-If none found: "No specific business risks identified in requirements"
+- Timeline and technical risks
 
-### 11.2 Technical Risks
-Extract ONLY technical risks if explicitly mentioned in source requirements.
-
-If none found: "No specific technical risks identified in requirements"
-
-### 11.3 Mitigation Strategies
-Extract ONLY risk mitigation approaches if explicitly mentioned in source requirements.
-
-If none found: "No specific mitigation strategies provided in requirements"
+- If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same.
 
 IMPORTANT:
 - For sections 8.0-11.0: Base ALL content ONLY on source requirements
