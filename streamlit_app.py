@@ -305,7 +305,7 @@ Extract from source:
 
 ## 6.0 Communication Requirement
 
-Include top 3 most relevant original emails or communication messages found from the requirement/source documents (especially from .msg files). DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
+Include top 3 most relevant original emails found from the requirement/source documents (especially from .msg files). DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
 
 IMPORTANT:
 
@@ -336,7 +336,7 @@ SOURCE REQUIREMENTS:
 CRITICAL INSTRUCTIONS FOR ALL SECTIONS:
 
 - Extract information ONLY from the provided source requirements
-- Create test scenarios based on ACTUAL functionality described in source
+- For Test Scenarios: PRIORITY CHECK - First look for existing test scenarios in source
 - Adapt to any business domain or requirement type
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
 
@@ -344,13 +344,30 @@ Create ONLY the following sections with detailed content in markdown:
 
 ## 7.0 Test Scenarios
 
-Generate test scenarios based on EXACT functionality and requirements found in source:
+**PRIMARY APPROACH - Check for Existing Test Scenarios:**
+
+FIRST, scan the source requirements for these keywords and related content:
+- "Test Scenarios" / "Test Scenario"
+- "Test Cases" / "Test Case" 
+- "Test case Scenarios"
+
+**IF existing test scenarios/cases are found in source:**
+- Extract and preserve the EXACT test scenarios from the source
+- Maintain original test structure, format, and content
+- Convert to markdown table format if needed:
+
+| **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
+|-------------|---------------|---------------|----------------|---------------------|---------------|----------|
+| [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
+
+**SECONDARY APPROACH - Generate from Functional Requirements:**
+
+ONLY IF no existing test scenarios are found in source, then generate test scenarios based on EXACT functionality described in source requirements:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 
-Create test scenarios that cover:
-- 5 test scenarios
+Create 5 test scenarios that cover:
 - Primary functional requirements mentioned in source
 - Different user roles, permissions, or access levels described
 - Various input conditions, data scenarios, or edge cases noted
