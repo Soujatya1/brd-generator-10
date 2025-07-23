@@ -402,15 +402,27 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 
 ## 11.0 Risk Evaluation
 
-Extract ONLY the following if explicitly mentioned in the requirements:
+Extract ONLY the following if explicitly mentioned in the source document:
 
 **FIRST, scan the source requirements for these keywords and related content:, pick the content and tables AS-IS**
 - "Risk Evaluation"
 - "Risk Assessment"
+
+Check for tables, charts, or structured formats under these sections
     
-**IF existing test scenarios/cases are found in source:**
+**IF existing Risk Evaluation content are found in source:**
 - Extract and preserve the EXACT risk evaluation from the source
 - Maintain original structure, format, and content
+- Preserve ALL original formatting including:
+  * Tables (maintain rows, columns, headers)
+  * Bullet points and numbering
+  * Bold/italic text formatting
+  * Indentation and spacing
+- Include complete sections from header to end
+
+**IF NO Risk Evaluation content is found:**
+- State explicitly: "No Risk Evaluation section found in source document"
+- Do not create or infer risk content
 
 IMPORTANT:
 
