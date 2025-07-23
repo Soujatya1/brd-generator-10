@@ -306,15 +306,7 @@ Extract from source:
 
 ## 6.0 Communication Requirement
 
-Extract EXACT communication requirements from the source documents:
-
-- What specific communication channels or methods are mentioned?
-- What user notifications, alerts, or messaging requirements exist?
-- What error messages, status updates, or system responses are needed?
-- What communication triggers, events, or conditions are specified?
-- What user interface messages, prompts, or guidance is required?
-- Any email templates, SMS formats, or notification specifications
-- What communication protocols, standards, or formats are needed?
+Include top 3 most relevant original emails or communication messages found from the requirement documents. DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
 
 IMPORTANT:
 
@@ -409,14 +401,11 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-### 11.1 Identified Risks & Mitigation Strategies
-- [List specific risks and mitigation approaches mentioned in source]
+- Identified risks & mitigation strategies
 
-### 11.2 Timeline and Technical Risks
-- [Include project timeline, delivery, or technical risks noted in source]
+- Timeline and technical risks
 
-### 11.3 Risk Assessment
-- [If risk assessment tables or data are in source requirements, preserve the complete structure using markdown format]
+- If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same.
 
 IMPORTANT:
 
