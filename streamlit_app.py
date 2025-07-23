@@ -71,6 +71,8 @@ Create ONLY the following sections with detailed content in markdown:
 
 Read the document, understand it and then provide elaborate business purpose, objectives, goals, or problem statement ONLY if explicitly stated in the requirements.
 
+If the input document is an xlsx, focus on the PART B (Mandatory) portion
+
 ### 1.2 As-is process
 
 Read the document, and understand what is the current process ongoing at the moment ONLY if present in the requirements.
