@@ -19,6 +19,7 @@ from docx.shared import RGBColor, Pt
 from docx.enum.text import WD_BREAK
 from docx.enum.style import WD_STYLE_TYPE
 from langchain_openai import AzureChatOpenAI
+from openpyxl import load_workbook
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -488,7 +489,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
             temperature=0.2,
             top_p=0.2
         )
-    else:  # Groq
+    else:
         model = ChatGroq(
             groq_api_key=api_key,
             model_name="llama3-70b-8192",
@@ -816,9 +817,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
     content = []
     try:
         if visible_only:
-            # Use openpyxl to filter visible sheets only
-            from openpyxl import load_workbook
-            
             wb = load_workbook(excel_file)
             visible_sheets = []
             
@@ -835,14 +833,12 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             if not isinstance(excel_data, dict):
                 excel_data = {visible_sheets[0]: excel_data}
         else:
-            # Read all sheets from Excel file
             excel_data = pd.read_excel(excel_file, sheet_name=None)
         
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
             
-            # Limit processing to max_rows_per_sheet if specified
             if max_rows_per_sheet and len(df) > max_rows_per_sheet:
                 df = df.head(max_rows_per_sheet)
                 content.append(f"Note: Processing first {max_rows_per_sheet} rows only")
@@ -850,22 +846,18 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             content.append(f"=== EXCEL SHEET: {sheet_name} ===")
             content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
             
-            # Column information
             content.append(f"Columns ({len(df.columns)}): {', '.join(df.columns.tolist())}")
             
-            # Data types summary
             data_types = df.dtypes.to_dict()
             type_summary = []
             for col, dtype in data_types.items():
                 type_summary.append(f"{col}: {str(dtype)}")
             content.append(f"Data Types: {', '.join(type_summary[:10])}...")
             
-            # Numeric columns
             numeric_cols = df.select_dtypes(include=['number']).columns
             if len(numeric_cols) > 0:
                 content.append(f"Numeric Columns: {', '.join(numeric_cols.tolist()[:5])}...")
             
-            # Sample data display
             sample_size = min(max_sample_rows, len(df))
             if sample_size > 0:
                 content.append(f"\nSample Data (first {sample_size} rows):")
@@ -873,7 +865,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                 
                 display_df = df.head(sample_size)
                 
-                # Handle wide tables by showing first 8 columns
                 if len(df.columns) > 10:
                     display_cols = df.columns[:8].tolist() + [f"... +{len(df.columns)-8} more columns"]
                     display_df = df[df.columns[:8]].head(sample_size)
@@ -883,12 +874,10 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                     header_row = " | ".join(df.columns.tolist())
                     content.append(header_row)
                 
-                # Display data rows
                 for _, row in display_df.iterrows():
                     row_data = []
                     for val in row:
                         str_val = str(val)
-                        # Truncate long values
                         if len(str_val) > 50:
                             str_val = str_val[:47] + "..."
                         row_data.append(str_val)
@@ -899,7 +888,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             
             content.append(f"\nData Summary:")
             
-            # Identify key columns based on common patterns
             key_columns = []
             for col in df.columns:
                 col_lower = col.lower()
@@ -909,7 +897,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             if key_columns:
                 content.append(f"Key Columns Identified: {', '.join(key_columns[:5])}")
                 
-                # Show unique values for key columns
                 for col in key_columns[:3]:
                     if df[col].dtype == 'object':
                         unique_vals = df[col].dropna().unique()
@@ -918,7 +905,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                         else:
                             content.append(f"{col}: {len(unique_vals)} unique values")
             
-            # Missing data analysis
             missing_data = df.isnull().sum()
             if missing_data.sum() > 0:
                 missing_cols = missing_data[missing_data > 0].head(5)
