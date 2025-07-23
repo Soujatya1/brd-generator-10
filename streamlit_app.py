@@ -404,21 +404,26 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 
 Extract ONLY the following if explicitly mentioned in the source document:
 
-**FIRST, scan the source requirements for these keywords and related content:, pick the content and tables AS-IS**
-- "Risk Evaluation"
-- "Risk Assessment"
+**SEARCH STRATEGY:**
+- Scan the ENTIRE source document for sections containing keywords: "Risk Evaluation", "Risk Assessment", "Risk Analysis"
+- Check for tables, charts, or structured formats under these sections
 
-Check for tables, charts, or structured formats under these sections
-    
-**IF existing Risk Evaluation content are found in source:**
-- Extract and preserve the EXACT risk evaluation from the source
-- Maintain original structure, format, and content
+**EXTRACTION RULES:**
+- Copy the content VERBATIM - do not paraphrase, summarize, or reformat
 - Preserve ALL original formatting including:
   * Tables (maintain rows, columns, headers)
   * Bullet points and numbering
   * Bold/italic text formatting
   * Indentation and spacing
 - Include complete sections from header to end
+- If content spans multiple pages/sections, extract ALL related portions
+- Maintain original sequence and order
+
+**IF Risk Evaluation content is found:**
+- Start extraction with the exact section header as it appears
+- Include ALL subsections, tables, and associated content
+- Stop only when the section clearly ends or new major section begins
+- Use markdown code blocks to preserve formatting if necessary
 
 **IF NO Risk Evaluation content is found:**
 - State explicitly: "No Risk Evaluation section found in source document"
