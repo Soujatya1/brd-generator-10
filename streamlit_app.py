@@ -305,7 +305,7 @@ Extract from source:
 
 ## 6.0 Communication Requirement
 
-Include top 3 most relevant original emails or communication messages found from the requirement documents. DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
+Include top 3 most relevant original emails or communication messages found from the requirement/source documents (especially from .msg files). DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
 
 IMPORTANT:
 
