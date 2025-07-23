@@ -23,7 +23,8 @@ from langchain_openai import AzureChatOpenAI
 BRD_FORMAT = """
 ## 1.0 Introduction
     ## 1.1 Purpose
-    ## 1.2 To be process / High level solution
+    ## 1.2 As-is process
+    ## 1.3 To be process / High level solution
 ## 2.0 Impact Analysis
     ## 2.1 System impacts – Primary and cross functional
     ## 2.2 Impacted Products
@@ -70,9 +71,13 @@ Create ONLY the following sections with detailed content in markdown:
 
 Read the document, understand it and then provide elaborate business purpose, objectives, goals, or problem statement ONLY if explicitly stated in the requirements.
 
-### 1.2 To be process / High level solution
+### 1.2 As-is process
 
-Extract any solution overview, high-level approach, or process descriptions ONLY if present in the requirements.
+Read the document, and understand what is the current process ongoing at the moment ONLY if present in the requirements.
+
+### 1.3 To be process / High level solution
+
+Post understanding the current process, check what all changes are requested and decipher the process which is asked for in the future, ONLY if present in the requirements.
 
 ## 2.0 Impact Analysis
 
@@ -462,7 +467,8 @@ def create_clickable_toc(doc):
     toc_entries = [
         ("1.0 Introduction", "introduction"),
         ("    1.1 Purpose", "purpose"),
-        ("    1.2 To be process / High level solution", "process_solution"),
+        ("    1.2 As-is process", "process_solution"),
+        ("    1.3 To be process / High level solution", "process_solution"),
         ("2.0 Impact Analysis", "impact_analysis"),
         ("    2.1 System impacts – Primary and cross functional", "system_impacts"),
         ("    2.2 Impacted Products", "impacted_products"), 
