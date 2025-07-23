@@ -401,10 +401,6 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-- Identified risks & mitigation strategies
-
-- Timeline and technical risks
-
 - If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same.
 
 IMPORTANT:
