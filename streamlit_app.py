@@ -361,9 +361,9 @@ FIRST, scan the source requirements for these keywords and related content:
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 | [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
 
-**SECONDARY APPROACH - Generate from Functional Requirements:**
+ONLY IF PRIMARY APPROACH FAILS, **SECONDARY APPROACH - Generate from Functional Requirements:**
 
-ONLY IF no existing test scenarios are found in source, then generate test scenarios based on EXACT functionality described in source requirements:
+ONLY IF NO existing test scenarios are found in source, then generate test scenarios based on EXACT functionality described in source requirements:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
