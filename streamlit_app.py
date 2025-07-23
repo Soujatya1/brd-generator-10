@@ -351,7 +351,7 @@ FIRST, scan the source requirements for these keywords and related content:
 - "Test Cases" / "Test Case" 
 - "Test case Scenarios"
 
-**IF existing test scenarios/cases are found in source:**
+**IF existing test scenarios/cases are found in source, consider ALL:**
 - Extract and preserve the EXACT test scenarios from the source
 - Maintain original test structure, format, and content
 - Convert to markdown table format if needed:
@@ -404,7 +404,7 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-**FIRST, scan the source requirements for these keywords and related content:**
+**FIRST, scan the source requirements for these keywords and related content:, pick the content and tables AS-IS**
 - "Risk Evaluation"
 - "Risk Assessment"
     
