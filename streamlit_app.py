@@ -42,402 +42,274 @@ BRD_FORMAT = """
 SECTION_TEMPLATES = {
 
     "intro_impact": """
-You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD). 
+
+You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD).
+
+IMPORTANT: Do not output any ``` code fences or Mermaid syntax.
+All text should be plain markdown (headings, lists, tables) only - no code blocks or fenced content.
 
 SOURCE REQUIREMENTS:
+
 {requirements}
 
 CRITICAL INSTRUCTIONS:
-- CAREFULLY READ and UNDERSTAND the actual business problem before writing
+
 - Extract information ONLY from the provided source requirements
-- IDENTIFY the core business requirement accurately - don't misinterpret the problem
+
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-- ONLY include sections/subsections if relevant information exists in the source
-- If NO relevant information exists for a section, DO NOT include that section at all
-- Focus on BUSINESS LOGIC and FUNCTIONAL REQUIREMENTS, not technical implementation
-- Be SPECIFIC and DETAILED - avoid generic statements
-- Pay special attention to BUSINESS RULES, RESTRICTIONS, and VALIDATION LOGIC
+
+- If a section has no relevant information in the source, leave it BLANK
+
+- Do NOT generate sample data, mock examples, or placeholder content
+
+Create ONLY the following sections with detailed content in markdown:
 
 ## 1.0 Introduction
 
 ### 1.1 Purpose
-ONLY include this subsection if business purpose information exists in source:
-- What SPECIFIC business problem is being solved (be precise)
-- What EXACT functionality is being restricted/enhanced/added
-- Why this change is needed (business justification with numbers/ROI if mentioned)
-- Scope and boundaries (what's included/excluded)
-- Business impact and benefits expected
 
-### 1.2 Current State (As-is Process)
-ONLY include this subsection if current process information exists in source:
-- Current workflow steps (step-by-step if described)
-- Existing user journey (detailed flow if mentioned)
-- Current system behavior (how it works today)
-- Pain points, issues, or problems (specific issues stated)
-- Current business rules and restrictions (if any mentioned)
+Read the document, understand it and then provide elaborate business purpose, objectives, goals, or problem statement ONLY if explicitly stated in the requirements.
 
-### 1.3 Future State (To-be Process / High Level Solution)
-ONLY include this subsection if proposed solution information exists in source:
-- New workflow or process changes (detailed steps if provided)
-- High-level functional changes (specific changes described)
-- New business rules to be implemented (exact rules from source)
-- Expected outcome or behavior change (specific results expected)
-- Integration points and system changes (if mentioned)
+### 1.2 To be process / High level solution
+
+Extract any solution overview, high-level approach, or process descriptions ONLY if present in the requirements.
 
 ## 2.0 Impact Analysis
 
 ### 2.1 System impacts – Primary and cross functional
-ONLY include this subsection if system impact information exists in source:
-- Primary application/system being modified (specific names)
-- Dependent systems that will be affected (integration points)
-- Cross-functional impacts (other systems affected)
-- Data flow between systems (if described)
-- Integration requirements (APIs, services, databases)
+
+Extract information about affected systems, integrations, dependencies, upstream/downstream impacts ONLY if mentioned in the requirements.
 
 ### 2.2 Impacted Products
-ONLY include this subsection if product information exists in source:
-- Product names (exact names from source)
-- Product categories (if specified)
-- Business lines affected (if mentioned)
-- Customer segments impacted (if described)
+
+List ONLY the products, services, or business lines explicitly mentioned in the requirements.
 
 ### 2.3 List of APIs required
-ONLY include this subsection if API/integration information exists in source:
-- New APIs/services needed (specific names)
-- Existing APIs that need modification (which ones)
-- Integration services required (specific integrations)
-- Data exchange requirements (what data flows where)
 
-QUALITY CHECK:
-- Ensure you've correctly identified the CORE business requirement
-- Verify all extracted information is directly from the source
-- Check that business rules and restrictions are accurately captured
-- Confirm integration points and system impacts are specific
-- ONLY include sections where source data exists
+Extract ONLY the API names, endpoints, integrations, web services, or technical interfaces explicitly mentioned in the requirements.
+
+IMPORTANT:
+
+- Use markdown headings (##, ###).
+
+- Preserve any tables in markdown format.
+
+- If no content found for a subsection, leave it blank.
+
+VALIDATION CHECK:
+
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
 """,
 
     "process_requirements": """
+
 You are a Business Analyst expert creating sections 3.0–4.0 of a comprehensive BRD.
 
 PREVIOUS CONTENT:
+
 {previous_content}
 
 SOURCE REQUIREMENTS:
+
 {requirements}
 
 CRITICAL INSTRUCTIONS:
+
 - Extract information ONLY from the provided source requirements
-- Build upon the CORRECTLY IDENTIFIED business requirement from previous sections
-- Focus on DETAILED BUSINESS LOGIC and step-by-step workflows
-- Include specific business rules, validation logic, and error conditions
+
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-- ONLY include sections/subsections if relevant information exists in the source
+
+- If a section has no relevant information in the source, leave it BLANK
+
+- Do NOT generate sample data, mock examples, or placeholder content
+
+Create ONLY the following sections with detailed content in markdown:
 
 ## 3.0 Process / Data Flow diagram / Figma
 
-ONLY include this section if process flow information exists in source:
+Extract any process flows, workflow descriptions, data movement, user journeys ONLY if present in the requirements.
 
-### 3.1 User Journey/Workflow Steps
-ONLY include this subsection if step-by-step process is described in source:
+Describe the workflow as a **step-by-step list under section 3.0**, and for any decision points use sub-bullets ONLY if explicitly mentioned in the source.
 
-1. [Step 1 description from source]
-   - Conditions: [specific conditions if mentioned]
-   - Validation: [validation rules if stated]
+    For example:
 
-2. [Step 2 description from source]
-   - Decision points: [if/then logic if provided]
-   - Error handling: [error scenarios if described]
+    3.1. Check training completion flag  
 
-3. [Continue with actual steps from source...]
+       - If "Y": proceed to dashboard  
 
-### 3.2 System Interaction Flow
-ONLY include this subsection if system interactions are mentioned in source:
-- System A → System B: [data flow if described]
-- Validation points: [where validations occur]
-- Error handling: [how errors are managed]
+       - If "N": display training popup  
 
-### 3.3 Business Rules in Process
-ONLY include this subsection if process-specific business rules exist in source:
-- Rule 1: [exact rule from source]
-- Rule 2: [exact rule from source]
-- Exception handling: [exceptions if mentioned]
+    3.2. …
 
 ## 4.0 Business / System Requirement
 
-### 4.1 Functional Requirements
-ONLY include this subsection if functional requirements exist in source:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-**Primary Functional Requirements:**
-- FR001: [Specific requirement from source with exact conditions]
-- FR002: [Another specific requirement with business logic]
-- FR003: [Continue with actual requirements from source]
+- Functional requirements
 
-**Business Logic Requirements:**
-ONLY include this sub-section if business logic is specified in source:
-- BL001: [Specific business rule with conditions]
-- BL002: [Validation logic with criteria]
-- BL003: [Error handling requirements]
+- Business rules and logic
 
-### 4.2 Business Rules and Validation Logic
-ONLY include this subsection if business rules/validation logic exists in source:
+- Performance, security, and compliance requirements
 
-**Validation Rules:**
-- [Specific validation rule 1 with conditions]
-- [Specific validation rule 2 with criteria]
-- [Exception scenarios and handling]
+IMPORTANT:
 
-**Error Handling Rules:**
-ONLY include if error handling is specified in source:
-- [Specific error conditions]
-- [Exact error messages if provided]
-- [Error response actions]
+- Use markdown headings.
 
-### 4.3 Integration Requirements
-ONLY include this subsection if integration requirements exist in source:
-- [System integrations required]
-- [Data exchange specifications]
-- [API requirements if specified]
+- Leave blank if no content found.
 
-### 4.4 Non-Functional Requirements
-ONLY include this subsection if non-functional requirements exist in source:
-- [Performance requirements if mentioned]
-- [Security requirements if specified]
-- [Compliance needs if stated]
+VALIDATION CHECK:
 
-QUALITY CHECK:
-- Ensure business logic is extracted accurately from source
-- Verify all requirements are traceable to source content
-- Confirm validation rules and error handling are specific
-- Check that integration requirements are properly documented
-- ONLY include sections where source data exists
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
 """,
 
     "data_communication": """
+
 You are a Business Analyst expert creating sections 5.0–6.0 of a comprehensive BRD.
 
 PREVIOUS CONTENT:
+
 {previous_content}
 
 SOURCE REQUIREMENTS:
+
 {requirements}
 
 CRITICAL INSTRUCTIONS:
+
 - Extract information ONLY from the provided source requirements
-- Focus on data specifications and communication details from source
-- Include exact error messages, notifications, and communications if specified
-- Do NOT create generic content - be specific to the source
-- ONLY include sections/subsections if relevant information exists in the source
+
+- Do NOT create, assume, or fabricate any content not explicitly present in the source
+
+- If a section has no relevant information in the source, leave it BLANK
+
+- Do NOT generate sample data, mock examples, or placeholder content
+
+Create ONLY the following sections with detailed content in markdown:
 
 ## 5.0 MIS / DATA Requirement
 
-ONLY include this section if data-related requirements exist in source:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-### 5.1 Data Specifications
-ONLY include this subsection if data specifications exist in source:
+- Data specifications
 
-**Data Elements Required:**
-ONLY include if specific data fields are mentioned in source:
-- [Specific data fields needed - from source only]
-- [Data formats and types if specified]
-- [Data validation requirements if mentioned]
+- Reporting and analytics needs
 
-**Data Sources:**
-ONLY include if data sources are mentioned in source:
-- [Source systems for data if mentioned]
-- [Data extraction requirements if specified]
-- [Data transformation needs if described]
-
-**Reporting Requirements:**
-ONLY include if reporting needs are mentioned in source:
-- [Specific reports needed if mentioned]
-- [Report frequency if specified]
-- [Report recipients if stated]
-
-**Analytics and MIS Needs:**
-ONLY include if analytics requirements are mentioned in source:
-- [Specific analytics requirements if mentioned]
-- [KPIs and metrics to track if specified]
-- [Dashboard requirements if described]
-
-### 5.2 Data Integration Requirements
-ONLY include this subsection if data integration is mentioned in source:
-- [Data flow between systems if described]
-- [Real-time vs batch processing if mentioned]
-- [Data synchronization needs if specified]
+- Data sources and destinations
 
 ## 6.0 Communication Requirement
 
-ONLY include this section if communication requirements exist in source:
+Include top 3 most relevant original emails or communication messages found from the requirement documents. DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
 
-### 6.1 User Communications
-ONLY include this subsection if user communication details exist in source:
+IMPORTANT:
 
-**Error Messages:**
-ONLY include if error messages are specified in source:
-- Error Scenario 1: "[Exact error message from source]"
-- Error Scenario 2: "[Another exact error message if provided]"
-- [Continue with actual error messages from source]
+- Use markdown headings.
 
-**User Notifications:**
-ONLY include if user notifications are mentioned in source:
-- [Specific notifications mentioned in source]
-- [Notification triggers if described]
-- [Notification channels if specified]
+- Preserve tables with pipe syntax.
 
-**System Messages:**
-ONLY include if system messages are mentioned in source:
-- [System-generated messages if mentioned]
-- [Confirmation messages if specified]
-- [Status updates if described]
+- Leave blank if no content found.
 
-### 6.2 Stakeholder Communications
-ONLY include this subsection if stakeholder communications are mentioned in source:
-- [Internal notifications if specified]
-- [External communications if mentioned]
-- [Escalation procedures if described]
+VALIDATION CHECK:
 
-### 6.3 Email/Document Communications
-ONLY include this subsection if original emails/documents are found in source:
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
 
-**Email/Document 1:**
-[Include exact content if found in source]
-
-**Email/Document 2:**
-[Include exact content if found in source]
-
-**Email/Document 3:**
-[Include exact content if found in source]
-
-QUALITY CHECK:
-- Ensure error messages are exactly as specified in source
-- Verify communication requirements are specific and actionable
-- Confirm all content is traceable to source documents
-- ONLY include sections where source data exists
 """,
 
     "testing_final": """
+
 You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD.
 
 PREVIOUS CONTENT:
+
 {previous_content}
 
 SOURCE REQUIREMENTS:
+
 {requirements}
 
-CRITICAL INSTRUCTIONS:
-- For section 7.0: ONLY generate if business logic exists in previous sections to test
-- For sections 8.0-11.0: ONLY include sections if information exists in source requirements
+CRITICAL INSTRUCTIONS FOR SECTIONS 8.0-11.0:
+
 - Extract information ONLY from the provided source requirements
-- Ensure test scenarios cover ALL business rules, validation logic, and error conditions identified
-- Create detailed test cases that developers and testers can actually execute
+
+- Do NOT create, assume, or fabricate any content not explicitly present in the source
+
+- If a section has no relevant information in the source, leave it BLANK
+
+- Do NOT generate sample data, mock examples, or placeholder content
+
+Create ONLY the following sections with detailed content in markdown:
 
 ## 7.0 Test Scenarios
 
-ONLY include this section if business requirements and logic were identified in previous sections:
+Generate at least 5 test scenarios in a table relating to the already available test scenarios from the input requirement documents:
 
-Based on the business requirements and logic identified in previous sections, create comprehensive test scenarios:
+| Test ID | Test Name    | Objective     | Test Steps   | Expected Results | Test Data    | Type |
 
-| Test ID | Test Name | Objective | Pre-requisites | Test Steps | Expected Results | Test Data Required | Type |
-|---------|-----------|-----------|----------------|------------|------------------|-------------------|------|
-| TC001 | [Happy Path Scenario] | Verify [main business function works correctly] | [Setup conditions] | 1. [Detailed step] 2. [Detailed step] 3. [Detailed step] | [Specific expected outcome] | [Specific test data] | Functional |
-| TC002 | [Business Rule Validation] | Verify [specific business rule from requirements] | [Setup conditions] | 1. [Detailed step] 2. [Detailed step] | [Expected validation result] | [Test data for rule] | Business Rule |
-| TC003 | [Error Condition Testing] | Test [specific error scenario from requirements] | [Setup for error] | 1. [Steps to trigger error] 2. [Verification steps] | [Expected error message/behavior] | [Error test data] | Negative |
-| TC004 | [Boundary Condition] | Test [edge case or boundary from requirements] | [Boundary setup] | 1. [Boundary test steps] | [Boundary result] | [Boundary data] | Boundary |
-| TC005 | [Integration Testing] | Verify [system integration mentioned in requirements] | [Integration setup] | 1. [Integration steps] | [Integration result] | [Integration data] | Integration |
+| ------- | ------------ | ------------- | ------------ | ---------------- | ------------ | ---- |
+
+| TC001   | [Name]       | [Objective]   | [Steps]      | [Results]        | [Data]       | [Type] |
+
+... (at least 5 rows)
 
 ## 8.0 Questions / Suggestions
 
-ONLY include this section if questions/suggestions exist in source:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-**Open Questions:**
-ONLY include if questions are mentioned in source:
-- [Question 1 from source if present]
-- [Question 2 from source if present]
+- Open questions
 
-**Assumptions to Validate:**
-ONLY include if assumptions are mentioned in source:
-- [Assumption 1 if mentioned]
-- [Assumption 2 if mentioned]
+- Assumptions to validate
 
-**Improvement Suggestions:**
-ONLY include if suggestions are provided in source:
-- [Suggestion 1 if provided]
-- [Suggestion 2 if provided]
+- Improvement suggestions
+
+IMPORTANT:
+
+For any points use sub-bullets.
 
 ## 9.0 Reference Document
 
-ONLY include this section if reference documents are mentioned in source:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-**Source Documents:**
-ONLY include if source documents are mentioned:
-- [Document 1 name and reference if mentioned]
-- [Document 2 name and reference if mentioned]
+- Source documents
 
-**Related Standards or Policies:**
-ONLY include if standards/policies are mentioned in source:
-- [Standard 1 if mentioned]
-- [Policy 1 if mentioned]
+- Related standards or policies
 
-**External References:**
-ONLY include if external references are mentioned in source:
-- [External reference 1 if mentioned]
-- [External reference 2 if mentioned]
+- External references, if any
 
 ## 10.0 Appendix
 
-ONLY include this section if supporting information exists in source:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-**Supporting Information:**
-ONLY include if supporting details are present in source:
-- [Supporting detail 1 if present]
-- [Supporting detail 2 if present]
+- Supporting information
 
-**Technical Details:**
-ONLY include if technical details are mentioned in source:
-- [Technical detail 1 if mentioned]
-- [Technical detail 2 if mentioned]
-
-**Additional Context:**
-ONLY include if additional context is provided in source:
-- [Context 1 if provided]
-- [Context 2 if provided]
+- Include any secondary or non important information from the source document.
 
 ## 11.0 Risk Evaluation
 
-ONLY include this section if risk information exists in source:
+Extract ONLY the following if explicitly mentioned in the requirements:
 
-**Identified Risks:**
-ONLY include if risks are mentioned in source:
-- [Risk 1 if mentioned in source]
-- [Risk 2 if mentioned in source]
+- Identified risks & mitigation strategies
 
-**Mitigation Strategies:**
-ONLY include if mitigation strategies are provided in source:
-- [Mitigation 1 if provided]
-- [Mitigation 2 if provided]
+- Timeline and technical risks
 
-**Risk Assessment Data:**
-ONLY include if risk assessment data is found in source:
+- If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same.
 
-[Include exact table structure from source using markdown format]
+IMPORTANT:
 
-**Timeline and Technical Risks:**
-ONLY include if timeline/technical risks are mentioned in source:
-- [Timeline risk if mentioned]
-- [Technical risk if mentioned]
+- Use markdown headings.
 
-**Business Continuity Risks:**
-ONLY include if business continuity risks are mentioned in source:
-- [Business continuity concern if mentioned]
-- [Operational risk if mentioned]
+- Preserve tables with markdown table format using pipe syntax.
 
-QUALITY CHECK:
-- Ensure test scenarios cover ALL identified business rules
-- Verify test cases are detailed enough for execution
-- Confirm all extracted content is from source only
-- Check that risk evaluation captures actual risks from source
-- ONLY include sections where source data exists
+- Do NOT output code fences.
+
+- For sections 8.0-11.0: Leave blank if no content found.
+
+VALIDATION CHECK:
+
+Before finalizing sections 8.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
 """
+
 }
 
 def estimate_content_size(text):
@@ -470,7 +342,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
         model = ChatOpenAI(
             openai_api_key=api_key,
             model_name="gpt-3.5-turbo-16k",
-            temperature=0.1,
+            temperature=0.2,
             top_p=0.2
         )
     elif api_provider == "AzureOpenAI":
@@ -479,7 +351,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
             openai_api_key=api_key,
             azure_deployment=azure_deployment,
             api_version=api_version,
-            temperature=0,
+            temperature=0.2,
             top_p=0.2
         )
     else:  # Groq
