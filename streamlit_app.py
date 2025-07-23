@@ -44,7 +44,7 @@ SECTION_TEMPLATES = {
 
     "intro_impact": """
 
-You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD).
+You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD) in the style of AG-5620.
 
 IMPORTANT: Do not output any ``` code fences or Mermaid syntax.
 All text should be plain markdown (headings, lists, tables) only - no code blocks or fenced content.
@@ -56,12 +56,11 @@ SOURCE REQUIREMENTS:
 CRITICAL INSTRUCTIONS:
 
 - Extract information ONLY from the provided source requirements
-
+- Focus on VALIDATION LOGIC, HISTORICAL DATA CHECKS, and STATUS-BASED RESTRICTIONS
+- Look for cheque/payment validation, previous application checks, status conditions (CIA/CDA/Cancelled)
+- Pay special attention to IFSC codes, cheque numbers, and cross-application validation
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-
 - If a section has no relevant information in the source, leave it BLANK
-
-- Do NOT generate sample data, mock examples, or placeholder content
 
 Create ONLY the following sections with detailed content in markdown:
 
@@ -69,39 +68,72 @@ Create ONLY the following sections with detailed content in markdown:
 
 ### 1.1 Purpose
 
-Read the document, understand it and then provide elaborate business purpose, objectives, goals, or problem statement ONLY if explicitly stated in the requirements.
+Extract the EXACT business purpose focusing on:
+- Restriction mechanisms (self-receipting restrictions)
+- Validation requirements (cheque reuse prevention)
+- Cross-application checks
+- Historical data validation
+- Payment integrity measures
 
-If the input document is an xlsx, focus on the PART B (Mandatory) portion
+Look for phrases like "restrict", "prevent", "validate", "check", "previous application", "same cheque"
 
 ### 1.2 As-is process
 
-Read the document, and understand what is the current process ongoing at the moment ONLY if present in the requirements.
+Extract the CURRENT process that shows:
+- How users currently perform receipting
+- What validation checks (if any) are currently in place
+- What problems exist with current approach
+- Screenshots or process flows if mentioned
+- Current system behavior that needs to be changed
+
+Look for "currently", "as-is", "existing process", "present system"
 
 ### 1.3 To be process / High level solution
 
-Post understanding the current process, check what all changes are requested and decipher the process which is asked for in the future, ONLY if present in the requirements.
+Extract the PROPOSED solution focusing on:
+- Multi-step validation logic (Step A, Step B conditions)
+- Status-based exception handling (CIA/CDA/Cancelled)
+- Historical database checks
+- Error restriction mechanisms
+- Conditional logic flows
+
+Look for "to-be", "proposed", "solution", "check will be as follows", "if condition A", "if condition B"
 
 ## 2.0 Impact Analysis
 
 ### 2.1 System impacts – Primary and cross functional
 
-Extract information about affected systems, integrations, dependencies, upstream/downstream impacts ONLY if mentioned in the requirements.
+Extract SPECIFIC system impacts:
+- Primary systems (DigiAgency, Digi, etc.)
+- Cross-functional systems (Cashiering, Financial systems)
+- Database impacts (historical receipting database)
+- Integration points
+- Child call IDs or system dependencies
 
 ### 2.2 Impacted Products
 
-List ONLY the products, services, or business lines explicitly mentioned in the requirements.
+List ONLY the products explicitly mentioned:
+- Insurance products (ULIP, Endowment, Term, INSTAB)
+- Business lines affected
+- Proposal types (OPUS/NGIN)
+- Generic vs specific product scope
 
 ### 2.3 List of APIs required
 
-Extract ONLY the API names, endpoints, integrations, web services, or technical interfaces explicitly mentioned in the requirements.
+Extract SPECIFIC technical requirements:
+- New service requirements for historical data lookup
+- API endpoints for status checking
+- Database query services
+- Integration services with existing systems
+- Service to identify previous applications
 
 IMPORTANT:
 
-- Use markdown headings (##, ###).
-
-- Preserve any tables in markdown format.
-
-- If no content found for a subsection, leave it blank.
+- Use markdown headings (##, ###)
+- Preserve any tables in markdown format
+- Focus on COMPLEX VALIDATION LOGIC rather than simple restrictions
+- Emphasize historical data checks and status-based conditions
+- If no content found for a subsection, leave it blank
 
 VALIDATION CHECK:
 
@@ -111,7 +143,7 @@ Before finalizing each section, verify that every piece of information can be tr
 
     "process_requirements": """
 
-You are a Business Analyst expert creating sections 3.0–4.0 of a comprehensive BRD.
+You are a Business Analyst expert creating sections 3.0–4.0 of a comprehensive BRD in the AG-5620 style.
 
 PREVIOUS CONTENT:
 
@@ -124,46 +156,85 @@ SOURCE REQUIREMENTS:
 CRITICAL INSTRUCTIONS:
 
 - Extract information ONLY from the provided source requirements
-
+- Focus on COMPLEX VALIDATION WORKFLOWS with multiple conditions
+- Look for step-by-step validation logic (Condition A, Condition B)
+- Emphasize historical data checks and status-based decision trees
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-
-- If a section has no relevant information in the source, leave it BLANK
-
-- Do NOT generate sample data, mock examples, or placeholder content
 
 Create ONLY the following sections with detailed content in markdown:
 
 ## 3.0 Process / Data Flow diagram / Figma
 
-Extract any process flows, workflow descriptions, data movement, user journeys ONLY if present in the requirements.
+Extract DETAILED validation workflow:
 
-Describe the workflow as a **step-by-step list under section 3.0**, and for any decision points use sub-bullets ONLY if explicitly mentioned in the source.
+### 3.1 Workflow Description
 
-    For example:
+Create step-by-step process focusing on:
+- User initiates receipting with cheque details
+- System performs Condition A check (historical lookup)
+- If Condition A true → proceed to Condition B
+- If Condition A false → allow receipting
+- Condition B: Status validation (CIA/CDA/Cancelled)
+- If Condition B true → restrict user
+- If Condition B false → allow receipting
+- Error handling and user restriction mechanisms
 
-    3.1. Check training completion flag  
+Format as:
+- Step 1: [Action]
+  - If [condition]: [result]
+  - If [condition]: [result]
+- Step 2: [Action]
+  - If [condition]: [result]
 
-       - If "Y": proceed to dashboard  
-
-       - If "N": display training popup  
-
-    3.2. …
+Look for: "check will be as follows", "condition A", "condition B", "if true", "if false"
 
 ## 4.0 Business / System Requirement
 
-Extract ONLY the following if explicitly mentioned in the requirements:
+### 4.1 Application / Module Name: [Extract exact module name]
 
-- Functional requirements
+Create detailed requirement table:
 
-- Business rules and logic
+| **Rule ID** | **Rule Description** | **Expected Result** | **Dependency** |
+|-------------|---------------------|-------------------|----------------|
+| **4.1.1** | [Complex validation rule with conditions] | [Multi-step expected behavior] | [Technical dependencies] |
 
-- Performance, security, and compliance requirements
+Focus on:
+- Multi-condition validation rules
+- Historical data lookup requirements
+- Status-based exception handling
+- Error message specifications
+- Cross-application validation logic
+
+### 4.2 Functional Requirements
+
+Extract:
+- Complex validation functions
+- Historical data access requirements
+- Status checking mechanisms
+- Error handling specifications
+
+### 4.3 Business Rules and Logic
+
+Extract:
+- Conditional logic (if/then/else scenarios)
+- Status-based exceptions (CIA/CDA/Cancelled)
+- Historical validation rules
+- Cross-application checks
+
+### 4.4 Performance, Security, and Compliance Requirements
+
+Extract any mentioned:
+- Database performance requirements
+- Historical data access security
+- Compliance validation needs
 
 IMPORTANT:
 
-- Use markdown headings.
-
-- Leave blank if no content found.
+- Use markdown headings
+- Create detailed requirement tables with multiple columns
+- Focus on COMPLEX CONDITIONAL LOGIC
+- Emphasize historical validation and status checking
+- Leave blank if no content found
 
 VALIDATION CHECK:
 
@@ -173,7 +244,7 @@ Before finalizing each section, verify that every piece of information can be tr
 
     "data_communication": """
 
-You are a Business Analyst expert creating sections 5.0–6.0 of a comprehensive BRD.
+You are a Business Analyst expert creating sections 5.0–6.0 of a comprehensive BRD in the AG-5620 style.
 
 PREVIOUS CONTENT:
 
@@ -186,36 +257,57 @@ SOURCE REQUIREMENTS:
 CRITICAL INSTRUCTIONS:
 
 - Extract information ONLY from the provided source requirements
-
+- Focus on HISTORICAL DATA requirements and database access needs
+- Look for cashiering system integration, receipting database access
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-
-- If a section has no relevant information in the source, leave it BLANK
-
-- Do NOT generate sample data, mock examples, or placeholder content
 
 Create ONLY the following sections with detailed content in markdown:
 
 ## 5.0 MIS / DATA Requirement
 
-Extract ONLY the following if explicitly mentioned in the requirements:
+### 5.1 Data Specifications
 
-- Data specifications
+Extract SPECIFIC data requirements:
+- Historical receipting database access
+- Cheque number and IFSC code lookup
+- Previous application status data
+- Cross-application data correlation
+- Database query requirements for validation
 
-- Reporting and analytics needs
+### 5.2 Reporting and Analytics Needs
 
-- Data sources and destinations
+Extract any mentioned:
+- Receipt validation reporting
+- Error tracking analytics
+- Historical usage reports
+- Validation success/failure metrics
+
+### 5.3 Data Sources and Destinations
+
+Extract:
+- Source: Historical receipting database
+- Source: Cashiering system
+- Source: Application status database
+- Destination: Validation service
+- Integration points with existing systems
 
 ## 6.0 Communication Requirement
 
-Include top 3 most relevant original emails or communication messages found from the requirement documents. DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
+Include EXACT communication requirements or emails found in the source documents.
+
+Extract:
+- Specific communication modes mentioned (CCM, Email, Whatsapp, Text, Letter, Call)
+- Error message specifications
+- User notification requirements
+- System communication needs
 
 IMPORTANT:
 
-- Use markdown headings.
-
-- Preserve tables with pipe syntax.
-
-- Leave blank if no content found.
+- Use markdown headings
+- Preserve tables with pipe syntax
+- Focus on HISTORICAL DATA ACCESS requirements
+- Emphasize database integration needs
+- Leave blank if no content found
 
 VALIDATION CHECK:
 
@@ -225,7 +317,7 @@ Before finalizing each section, verify that every piece of information can be tr
 
     "testing_final": """
 
-You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD.
+You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD in the AG-5620 style.
 
 PREVIOUS CONTENT:
 
@@ -235,81 +327,93 @@ SOURCE REQUIREMENTS:
 
 {requirements}
 
+CRITICAL INSTRUCTIONS FOR TEST SCENARIOS:
+
+- Extract EXACT test scenarios from source requirements
+- Focus on COMPLEX VALIDATION test cases with multiple conditions
+- Include historical data validation tests
+- Test status-based exception scenarios (CIA/CDA/Cancelled)
+
 CRITICAL INSTRUCTIONS FOR SECTIONS 8.0-11.0:
 
 - Extract information ONLY from the provided source requirements
-
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-
-- If a section has no relevant information in the source, leave it BLANK
-
-- Do NOT generate sample data, mock examples, or placeholder content
 
 Create ONLY the following sections with detailed content in markdown:
 
 ## 7.0 Test Scenarios
 
-Generate at least 5 test scenarios in a table relating to the already available test scenarios from the input requirement documents:
+Generate test scenarios based on EXACT scenarios found in source requirements:
 
-| Test ID | Test Name    | Objective     | Test Steps   | Expected Results | Test Data    | Type |
+| **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
+|-------------|---------------|---------------|----------------|---------------------|---------------|----------|
+| TC001 | New Cheque Receipting | Validate new cheque acceptance | 1. Enter new cheque details<br>2. Complete receipting process | Receipt generated successfully | New cheque number + IFSC | Functional |
+| TC002 | Previous Cheque - CI/CDA Status | Validate exception for cancelled receipts | 1. Enter previously used cheque<br>2. Verify old receipt in CI/CDA/Cancelled status | Receipt allowed successfully | Cheque with CI/CDA status | Functional |
+| TC003 | Previous Cheque - Active Status | Validate restriction for active receipts | 1. Enter previously used cheque<br>2. Verify old receipt in ACTIVE status | Error message displayed, receipting blocked | Cheque with ACTIVE status | Functional |
+| TC004 | Historical Data Lookup | Validate database query functionality | 1. Query historical receipting database<br>2. Check cheque + IFSC combination | Accurate historical data retrieved | Various cheque combinations | Integration |
+| TC005 | Cross-Application Validation | Validate checks across multiple applications | 1. Use cheque from different application<br>2. Verify cross-application detection | Proper validation across applications | Multi-application test data | System |
 
-| ------- | ------------ | ------------- | ------------ | ---------------- | ------------ | ---- |
-
-| TC001   | [Name]       | [Objective]   | [Steps]      | [Results]        | [Data]       | [Type] |
-
-... (at least 5 rows)
+Add more test scenarios ONLY if found in source requirements.
 
 ## 8.0 Questions / Suggestions
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-- Open questions
+### 8.1 Open Questions
+- [List exact questions from source]
 
-- Assumptions to validate
+### 8.2 Assumptions to Validate
+- [List exact assumptions from source]
 
-- Improvement suggestions
-
-IMPORTANT:
-
-For any points use sub-bullets.
+### 8.3 Improvement Suggestions
+- [List exact suggestions from source]
 
 ## 9.0 Reference Document
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-- Source documents
+### 9.1 Source Documents
+- [List exact source documents mentioned]
 
-- Related standards or policies
+### 9.2 Related Standards or Policies
+- [List exact standards mentioned]
 
-- External references, if any
+### 9.3 External References
+- [List exact external references]
 
 ## 10.0 Appendix
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-- Supporting information
+### 10.1 Supporting Information
+- [Include any secondary information from source]
 
-- Include any secondary or non important information from the source document.
+### 10.2 Technical Details
+- [Include technical specifications if present]
 
 ## 11.0 Risk Evaluation
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-- Identified risks & mitigation strategies
+### 11.1 Identified Risks & Mitigation Strategies
+- [List exact risks mentioned in source]
 
-- Timeline and technical risks
+### 11.2 Timeline and Technical Risks
+- [List timeline risks if mentioned]
 
-- If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same.
+If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure:
+
+| **Risk Category** | **Risk Description** | **Mitigation Strategy** | **Owner** |
+|-------------------|---------------------|------------------------|-----------|
+| [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
 
 IMPORTANT:
 
-- Use markdown headings.
-
-- Preserve tables with markdown table format using pipe syntax.
-
-- Do NOT output code fences.
-
-- For sections 8.0-11.0: Leave blank if no content found.
+- Use markdown headings
+- Preserve tables with markdown table format using pipe syntax
+- Do NOT output code fences
+- Focus on COMPLEX VALIDATION test scenarios
+- For sections 8.0-11.0: Leave blank if no content found
 
 VALIDATION CHECK:
 
