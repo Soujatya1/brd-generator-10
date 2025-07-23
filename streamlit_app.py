@@ -52,7 +52,8 @@ CRITICAL INSTRUCTIONS:
 - Extract information ONLY from the provided source requirements
 - IDENTIFY the core business requirement accurately - don't misinterpret the problem
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-- If a section has no relevant information in the source, write "Information not available in source requirements"
+- ONLY include sections/subsections if relevant information exists in the source
+- If NO relevant information exists for a section, DO NOT include that section at all
 - Focus on BUSINESS LOGIC and FUNCTIONAL REQUIREMENTS, not technical implementation
 - Be SPECIFIC and DETAILED - avoid generic statements
 - Pay special attention to BUSINESS RULES, RESTRICTIONS, and VALIDATION LOGIC
@@ -60,17 +61,15 @@ CRITICAL INSTRUCTIONS:
 ## 1.0 Introduction
 
 ### 1.1 Purpose
-CAREFULLY extract and document the ACTUAL business purpose from the source:
+ONLY include this subsection if business purpose information exists in source:
 - What SPECIFIC business problem is being solved (be precise)
 - What EXACT functionality is being restricted/enhanced/added
 - Why this change is needed (business justification with numbers/ROI if mentioned)
 - Scope and boundaries (what's included/excluded)
 - Business impact and benefits expected
 
-IMPORTANT: Read the requirements thoroughly to understand the REAL business problem. Don't assume or generalize.
-
 ### 1.2 Current State (As-is Process)
-Extract ONLY current process information if documented in requirements:
+ONLY include this subsection if current process information exists in source:
 - Current workflow steps (step-by-step if described)
 - Existing user journey (detailed flow if mentioned)
 - Current system behavior (how it works today)
@@ -78,7 +77,7 @@ Extract ONLY current process information if documented in requirements:
 - Current business rules and restrictions (if any mentioned)
 
 ### 1.3 Future State (To-be Process / High Level Solution)
-Extract ONLY the proposed solution if mentioned in requirements:
+ONLY include this subsection if proposed solution information exists in source:
 - New workflow or process changes (detailed steps if provided)
 - High-level functional changes (specific changes described)
 - New business rules to be implemented (exact rules from source)
@@ -88,7 +87,7 @@ Extract ONLY the proposed solution if mentioned in requirements:
 ## 2.0 Impact Analysis
 
 ### 2.1 System impacts – Primary and cross functional
-Extract ONLY systems, applications, modules explicitly mentioned:
+ONLY include this subsection if system impact information exists in source:
 - Primary application/system being modified (specific names)
 - Dependent systems that will be affected (integration points)
 - Cross-functional impacts (other systems affected)
@@ -96,14 +95,14 @@ Extract ONLY systems, applications, modules explicitly mentioned:
 - Integration requirements (APIs, services, databases)
 
 ### 2.2 Impacted Products
-List ONLY the specific products, services, business lines, or policy types explicitly mentioned:
+ONLY include this subsection if product information exists in source:
 - Product names (exact names from source)
 - Product categories (if specified)
 - Business lines affected (if mentioned)
 - Customer segments impacted (if described)
 
 ### 2.3 List of APIs required
-Extract ONLY the specific APIs, services, endpoints, or integrations explicitly mentioned:
+ONLY include this subsection if API/integration information exists in source:
 - New APIs/services needed (specific names)
 - Existing APIs that need modification (which ones)
 - Integration services required (specific integrations)
@@ -114,6 +113,7 @@ QUALITY CHECK:
 - Verify all extracted information is directly from the source
 - Check that business rules and restrictions are accurately captured
 - Confirm integration points and system impacts are specific
+- ONLY include sections where source data exists
 """,
 
     "process_requirements": """
@@ -131,13 +131,14 @@ CRITICAL INSTRUCTIONS:
 - Focus on DETAILED BUSINESS LOGIC and step-by-step workflows
 - Include specific business rules, validation logic, and error conditions
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
+- ONLY include sections/subsections if relevant information exists in the source
 
 ## 3.0 Process / Data Flow diagram / Figma
 
-Extract and document the complete workflow if present in requirements:
+ONLY include this section if process flow information exists in source:
 
-**3.1 User Journey/Workflow Steps**
-Document the step-by-step process flow ONLY if described in source:
+### 3.1 User Journey/Workflow Steps
+ONLY include this subsection if step-by-step process is described in source:
 
 1. [Step 1 description from source]
    - Conditions: [specific conditions if mentioned]
@@ -149,24 +150,22 @@ Document the step-by-step process flow ONLY if described in source:
 
 3. [Continue with actual steps from source...]
 
-**3.2 System Interaction Flow**
-Document system-to-system interactions ONLY if mentioned:
+### 3.2 System Interaction Flow
+ONLY include this subsection if system interactions are mentioned in source:
 - System A → System B: [data flow if described]
 - Validation points: [where validations occur]
 - Error handling: [how errors are managed]
 
-**3.3 Business Rules in Process**
-Extract specific business rules that govern the process:
+### 3.3 Business Rules in Process
+ONLY include this subsection if process-specific business rules exist in source:
 - Rule 1: [exact rule from source]
 - Rule 2: [exact rule from source]
 - Exception handling: [exceptions if mentioned]
 
-If no process flow information found: "Process flow details not provided in source requirements"
-
 ## 4.0 Business / System Requirement
 
 ### 4.1 Functional Requirements
-Extract ONLY specific functional requirements from source:
+ONLY include this subsection if functional requirements exist in source:
 
 **Primary Functional Requirements:**
 - FR001: [Specific requirement from source with exact conditions]
@@ -174,12 +173,13 @@ Extract ONLY specific functional requirements from source:
 - FR003: [Continue with actual requirements from source]
 
 **Business Logic Requirements:**
+ONLY include this sub-section if business logic is specified in source:
 - BL001: [Specific business rule with conditions]
 - BL002: [Validation logic with criteria]
 - BL003: [Error handling requirements]
 
 ### 4.2 Business Rules and Validation Logic
-Document EXACT business rules from source:
+ONLY include this subsection if business rules/validation logic exists in source:
 
 **Validation Rules:**
 - [Specific validation rule 1 with conditions]
@@ -187,18 +187,19 @@ Document EXACT business rules from source:
 - [Exception scenarios and handling]
 
 **Error Handling Rules:**
+ONLY include if error handling is specified in source:
 - [Specific error conditions]
 - [Exact error messages if provided]
 - [Error response actions]
 
 ### 4.3 Integration Requirements
-Extract integration needs ONLY if mentioned:
+ONLY include this subsection if integration requirements exist in source:
 - [System integrations required]
 - [Data exchange specifications]
 - [API requirements if specified]
 
 ### 4.4 Non-Functional Requirements
-Include performance, security, compliance requirements ONLY if stated in source:
+ONLY include this subsection if non-functional requirements exist in source:
 - [Performance requirements if mentioned]
 - [Security requirements if specified]
 - [Compliance needs if stated]
@@ -208,6 +209,7 @@ QUALITY CHECK:
 - Verify all requirements are traceable to source content
 - Confirm validation rules and error handling are specific
 - Check that integration requirements are properly documented
+- ONLY include sections where source data exists
 """,
 
     "data_communication": """
@@ -224,68 +226,78 @@ CRITICAL INSTRUCTIONS:
 - Focus on data specifications and communication details from source
 - Include exact error messages, notifications, and communications if specified
 - Do NOT create generic content - be specific to the source
+- ONLY include sections/subsections if relevant information exists in the source
 
 ## 5.0 MIS / DATA Requirement
 
+ONLY include this section if data-related requirements exist in source:
+
 ### 5.1 Data Specifications
-Extract ONLY data-related requirements if mentioned in source:
+ONLY include this subsection if data specifications exist in source:
 
 **Data Elements Required:**
+ONLY include if specific data fields are mentioned in source:
 - [Specific data fields needed - from source only]
 - [Data formats and types if specified]
 - [Data validation requirements if mentioned]
 
 **Data Sources:**
+ONLY include if data sources are mentioned in source:
 - [Source systems for data if mentioned]
 - [Data extraction requirements if specified]
 - [Data transformation needs if described]
 
 **Reporting Requirements:**
+ONLY include if reporting needs are mentioned in source:
 - [Specific reports needed if mentioned]
 - [Report frequency if specified]
 - [Report recipients if stated]
 
 **Analytics and MIS Needs:**
+ONLY include if analytics requirements are mentioned in source:
 - [Specific analytics requirements if mentioned]
 - [KPIs and metrics to track if specified]
 - [Dashboard requirements if described]
 
-If no data requirements found: "No specific data/MIS requirements provided in source"
-
 ### 5.2 Data Integration Requirements
+ONLY include this subsection if data integration is mentioned in source:
 - [Data flow between systems if described]
 - [Real-time vs batch processing if mentioned]
 - [Data synchronization needs if specified]
 
 ## 6.0 Communication Requirement
 
+ONLY include this section if communication requirements exist in source:
+
 ### 6.1 User Communications
-Extract EXACT communication content from source:
+ONLY include this subsection if user communication details exist in source:
 
 **Error Messages:**
-Include EXACT error messages from source requirements:
+ONLY include if error messages are specified in source:
 - Error Scenario 1: "[Exact error message from source]"
 - Error Scenario 2: "[Another exact error message if provided]"
 - [Continue with actual error messages from source]
 
 **User Notifications:**
+ONLY include if user notifications are mentioned in source:
 - [Specific notifications mentioned in source]
 - [Notification triggers if described]
 - [Notification channels if specified]
 
 **System Messages:**
+ONLY include if system messages are mentioned in source:
 - [System-generated messages if mentioned]
 - [Confirmation messages if specified]
 - [Status updates if described]
 
 ### 6.2 Stakeholder Communications
-Extract communication requirements ONLY if mentioned:
+ONLY include this subsection if stakeholder communications are mentioned in source:
 - [Internal notifications if specified]
 - [External communications if mentioned]
 - [Escalation procedures if described]
 
 ### 6.3 Email/Document Communications
-If original emails or documents are found in source, include TOP 3 most relevant:
+ONLY include this subsection if original emails/documents are found in source:
 
 **Email/Document 1:**
 [Include exact content if found in source]
@@ -296,12 +308,11 @@ If original emails or documents are found in source, include TOP 3 most relevant
 **Email/Document 3:**
 [Include exact content if found in source]
 
-If no communication details found: "No specific communication requirements provided in source"
-
 QUALITY CHECK:
 - Ensure error messages are exactly as specified in source
 - Verify communication requirements are specific and actionable
 - Confirm all content is traceable to source documents
+- ONLY include sections where source data exists
 """,
 
     "testing_final": """
@@ -314,12 +325,15 @@ SOURCE REQUIREMENTS:
 {requirements}
 
 CRITICAL INSTRUCTIONS:
-- For sections 8.0-11.0: Extract information ONLY from the provided source requirements
-- For section 7.0: Generate COMPREHENSIVE and REALISTIC test scenarios based on the CORRECTLY IDENTIFIED business logic from previous sections
+- For section 7.0: ONLY generate if business logic exists in previous sections to test
+- For sections 8.0-11.0: ONLY include sections if information exists in source requirements
+- Extract information ONLY from the provided source requirements
 - Ensure test scenarios cover ALL business rules, validation logic, and error conditions identified
 - Create detailed test cases that developers and testers can actually execute
 
 ## 7.0 Test Scenarios
+
+ONLY include this section if business requirements and logic were identified in previous sections:
 
 Based on the business requirements and logic identified in previous sections, create comprehensive test scenarios:
 
@@ -331,95 +345,99 @@ Based on the business requirements and logic identified in previous sections, cr
 | TC004 | [Boundary Condition] | Test [edge case or boundary from requirements] | [Boundary setup] | 1. [Boundary test steps] | [Boundary result] | [Boundary data] | Boundary |
 | TC005 | [Integration Testing] | Verify [system integration mentioned in requirements] | [Integration setup] | 1. [Integration steps] | [Integration result] | [Integration data] | Integration |
 
-
 ## 8.0 Questions / Suggestions
 
-Extract ONLY questions and suggestions if mentioned in source:
+ONLY include this section if questions/suggestions exist in source:
 
 **Open Questions:**
+ONLY include if questions are mentioned in source:
 - [Question 1 from source if present]
 - [Question 2 from source if present]
 
 **Assumptions to Validate:**
+ONLY include if assumptions are mentioned in source:
 - [Assumption 1 if mentioned]
 - [Assumption 2 if mentioned]
 
 **Improvement Suggestions:**
+ONLY include if suggestions are provided in source:
 - [Suggestion 1 if provided]
 - [Suggestion 2 if provided]
 
-If none found: "No specific questions or suggestions provided in source requirements"
-
 ## 9.0 Reference Document
 
-Extract ONLY reference documents mentioned in source:
+ONLY include this section if reference documents are mentioned in source:
 
 **Source Documents:**
+ONLY include if source documents are mentioned:
 - [Document 1 name and reference if mentioned]
 - [Document 2 name and reference if mentioned]
 
 **Related Standards or Policies:**
+ONLY include if standards/policies are mentioned in source:
 - [Standard 1 if mentioned]
 - [Policy 1 if mentioned]
 
 **External References:**
+ONLY include if external references are mentioned in source:
 - [External reference 1 if mentioned]
 - [External reference 2 if mentioned]
 
-If none found: "No specific reference documents provided in source requirements"
-
 ## 10.0 Appendix
 
-Extract ONLY supporting information from source:
+ONLY include this section if supporting information exists in source:
 
 **Supporting Information:**
+ONLY include if supporting details are present in source:
 - [Supporting detail 1 if present]
 - [Supporting detail 2 if present]
 
 **Technical Details:**
+ONLY include if technical details are mentioned in source:
 - [Technical detail 1 if mentioned]
 - [Technical detail 2 if mentioned]
 
 **Additional Context:**
+ONLY include if additional context is provided in source:
 - [Context 1 if provided]
 - [Context 2 if provided]
 
-If none found: "No specific appendix information provided in source requirements"
-
 ## 11.0 Risk Evaluation
 
-Extract ONLY risk information mentioned in source:
+ONLY include this section if risk information exists in source:
 
 **Identified Risks:**
+ONLY include if risks are mentioned in source:
 - [Risk 1 if mentioned in source]
 - [Risk 2 if mentioned in source]
 
 **Mitigation Strategies:**
+ONLY include if mitigation strategies are provided in source:
 - [Mitigation 1 if provided]
 - [Mitigation 2 if provided]
 
 **Risk Assessment Data:**
-If risk assessment tables/data found in source, preserve complete structure:
+ONLY include if risk assessment data is found in source:
 
 [Include exact table structure from source using markdown format]
 
 **Timeline and Technical Risks:**
+ONLY include if timeline/technical risks are mentioned in source:
 - [Timeline risk if mentioned]
 - [Technical risk if mentioned]
 
 **Business Continuity Risks:**
+ONLY include if business continuity risks are mentioned in source:
 - [Business continuity concern if mentioned]
 - [Operational risk if mentioned]
-
-If none found: "No specific risk evaluation provided in source requirements"
 
 QUALITY CHECK:
 - Ensure test scenarios cover ALL identified business rules
 - Verify test cases are detailed enough for execution
 - Confirm all extracted content is from source only
 - Check that risk evaluation captures actual risks from source
+- ONLY include sections where source data exists
 """
-
 }
 
 def estimate_content_size(text):
