@@ -210,32 +210,31 @@ Focus on extracting:
 
 ### 4.2 Functional Requirements
 
-Extract from source:
-- Core functionality that needs to be implemented
-- User interface or user experience requirements
-- System processing or computational requirements
-- Data handling, storage, or retrieval needs
-- Reporting, analytics, or monitoring capabilities
-- Any automation or workflow management features
+Extract BUSINESS functional requirements from source:
+- What specific business functions or capabilities need to be delivered?
+- What actions, operations, or tasks should users be able to perform?
+- What business processes or workflows need to be supported?
+- What decisions, approvals, or validations are required in the process?
+- What information needs to be captured, reviewed, or processed?
+- What business rules, policies, or compliance requirements must be enforced?
+- What notifications, communications, or alerts need to be generated?
+- What access controls, permissions, or restrictions are needed?
+- What calculations, computations, or business logic processing is required?
+- What reporting, tracking, or audit capabilities are needed for the business?
 
 ### 4.3 Business Rules and Logic
 
-Extract from source:
-- Conditional logic and decision rules
-- Validation criteria and acceptance conditions
-- Exception handling and error management
-- Status-based or state-dependent behaviors
-- Role-based or permission-based rules
-- Business process logic and workflow rules
-
-### 4.4 Performance, Security, and Compliance Requirements
-
-Extract any mentioned:
-- Performance expectations, response times, or throughput
-- Security controls, authentication, or authorization
-- Compliance standards, regulatory requirements, or audit needs
-- Data privacy, protection, or retention requirements
-- Availability, reliability, or disaster recovery needs
+Extract BUSINESS rules and decision logic from source:
+- What business decisions need to be made and under what conditions?
+- What criteria determine whether a business action is allowed or restricted?
+- What business policies or guidelines govern the process or workflow?
+- When should different business outcomes or paths be followed?
+- What business conditions trigger specific actions, approvals, or notifications?
+- What are the business exceptions, special cases, or override scenarios?
+- How do different user roles, responsibilities, or authorities affect business decisions?
+- What business validations ensure compliance with regulations or company policies?
+- What escalation rules or approval hierarchies apply to business decisions?
+- What business status changes or state transitions are required in the process?
 
 IMPORTANT:
 
@@ -364,38 +363,25 @@ Base test scenarios ONLY on what is explicitly described in the source requireme
 ## 8.0 Questions / Suggestions
 
 Extract ONLY the following if explicitly mentioned in the requirements:
-
-### 8.1 Open Questions
-- [List exact questions, clarifications, or unknowns from source]
-
-### 8.2 Assumptions to Validate
-- [List exact assumptions, dependencies, or prerequisites from source]
-
-### 8.3 Improvement Suggestions
-- [List exact suggestions, recommendations, or enhancements from source]
+- List exact questions, clarifications, or unknowns from source
+- List exact assumptions, dependencies, or prerequisites from source
+- List exact suggestions, recommendations, or enhancements from source
 
 ## 9.0 Reference Document
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-### 9.1 Source Documents
-- [List exact source documents, specifications, or references mentioned]
-
-### 9.2 Related Standards or Policies
-- [List exact standards, policies, or guidelines referenced]
-
-### 9.3 External References
-- [List exact external systems, APIs, or third-party references]
+- List exact source documents, specifications, or references mentioned
+- List exact standards, policies, or guidelines referenced
+- List exact external systems, APIs, or third-party references
 
 ## 10.0 Appendix
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-### 10.1 Supporting Information
-- [Include any additional details, context, or background from source]
+- Supporting information
 
-### 10.2 Technical Details
-- [Include technical specifications, configurations, or parameters if present]
+- Include any secondary or non important information from the source document.
 
 ## 11.0 Risk Evaluation
 
