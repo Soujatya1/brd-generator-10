@@ -404,7 +404,13 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-- If Risk Evaluation tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same.
+**FIRST, scan the source requirements for these keywords and related content:**
+- "Risk Evaluation"
+- "Risk Assessment"
+    
+**IF existing test scenarios/cases are found in source:**
+- Extract and preserve the EXACT risk evaluation from the source
+- Maintain original structure, format, and content
 
 IMPORTANT:
 
