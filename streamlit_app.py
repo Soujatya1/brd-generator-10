@@ -305,8 +305,24 @@ Extract from source:
 - Master data management or reference data needs
 
 ## 6.0 Communication Requirement
+Extract and include the top 3 most relevant original emails found EXCLUSIVELY from .msg files in the requirement/source documents. 
 
-Include top 3 most relevant original emails found from the requirement/source documents (especially from .msg files). DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
+CRITICAL REQUIREMENTS:
+- ONLY process .msg file types for this section
+- EXTRACT actual email content (headers, body, metadata) from .msg files
+- DO NOT generate, create, synthesize, or sample any communications
+- DO NOT pull content from PDFs, Word docs, or any non-.msg files
+- If fewer than 3 relevant emails exist in .msg files, include only what is available
+- If no .msg files contain relevant emails, state "No relevant emails found in .msg files"
+
+OUTPUT FORMAT for each email:
+- Email Subject: [actual subject line]
+- From: [actual sender]
+- To: [actual recipient(s)]
+- Date: [actual date sent]
+- Email Body: [actual email content - not summarized]
+
+VERIFICATION CHECK: Before including any email, confirm it was extracted from a .msg file and is not generated content.
 
 IMPORTANT:
 
@@ -345,38 +361,45 @@ Create ONLY the following sections with detailed content in markdown:
 
 ## 7.0 Test Scenarios
 
-**PRIMARY APPROACH - Check for Existing Test Scenarios:**
-
-FIRST, scan the source requirements for these keywords and related content:
+**PRIMARY APPROACH - Extract Existing Test Scenarios:**
+FIRST, thoroughly scan ALL source requirements documents for existing test content using these keywords:
 - "Test Scenarios" / "Test Scenario"
 - "Test Cases" / "Test Case" 
 - "Test case Scenarios"
+- "Testing" / "Test Plan"
+- "Verification" / "Validation"
 
-**IF existing test scenarios/cases are found in source, consider ALL:**
+**IF existing test scenarios/cases ARE FOUND in source documents:**
 - Extract and preserve the EXACT test scenarios from the source
 - Maintain original test structure, format, and content
-- Convert to markdown table format if needed:
+- Convert to standardized markdown table format:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 | [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
 
-ONLY IF PRIMARY APPROACH FAILS, **SECONDARY APPROACH - Generate from Functional Requirements:**
+**STOP HERE - Do not proceed to Secondary Approach if existing tests are found**
 
-ONLY IF NO existing test scenarios are found in source, then generate test scenarios based on EXACT functionality described in source requirements:
+---
+
+**SECONDARY APPROACH - Generate from Functional Requirements:**
+**ONLY EXECUTE IF PRIMARY APPROACH YIELDS NO RESULTS**
+
+IF NO existing test scenarios are found in ANY source documents, THEN generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 
-Create 5 test scenarios that cover:
+Create exactly 5 test scenarios covering:
 - Primary functional requirements mentioned in source
-- Different user roles, permissions, or access levels described
+- Different user roles, permissions, or access levels described  
 - Various input conditions, data scenarios, or edge cases noted
 - Error conditions, exceptions, or validation failures mentioned
 - Integration points, API calls, or system interactions described
-- Business rules, workflow steps, or decision logic outlined
 
-Base test scenarios ONLY on what is explicitly described in the source requirements.
+**CRITICAL:** Base ALL generated test scenarios ONLY on what is explicitly described in the source requirements. Do not infer or assume functionality not documented.
+
+**EXECUTION RULE:** Use Primary Approach OR Secondary Approach - NEVER BOTH.
 
 ## 8.0 Questions / Suggestions
 
