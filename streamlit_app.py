@@ -116,7 +116,7 @@ Extract SPECIFIC system impacts mentioned in the source:
 
 ### 2.2 Impacted Products
 
-List ONLY the products/services explicitly mentioned in the source:
+List ONLY the products/services explicitly mentioned in the source document with keywords like "Products Impacted":
 - Specific products, product lines, or offerings affected
 - Business processes or departments impacted
 - User groups, roles, or personas affected
@@ -315,7 +315,7 @@ CRITICAL REQUIREMENTS:
 - If fewer than 3 relevant emails exist in .msg files, include only what is available
 - If no .msg files contain relevant emails, state "No relevant emails found in .msg files"
 
-OUTPUT FORMAT for each email:
+EXAMPLE OUTPUT FORMAT for each email when found in the source .msg file to be drafted like:
 - Email Subject: [actual subject line]
 - From: [actual sender]
 - To: [actual recipient(s)]
