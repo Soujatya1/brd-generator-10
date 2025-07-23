@@ -801,19 +801,6 @@ def extract_content_from_pdf(pdf_file):
     return "\n".join(content)
 
 def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=False):
-    """
-    Extract and summarize content from Excel files.
-    Can process all sheets or only visible sheets based on preference.
-    
-    Args:
-        excel_file: Path to Excel file or file-like object
-        max_rows_per_sheet: Maximum rows to process per sheet (default: 70)
-        max_sample_rows: Maximum number of sample rows to display (default: 10)
-        visible_only: If True, only process visible sheets (default: False)
-    
-    Returns:
-        str: Formatted string containing Excel file analysis
-    """
     content = []
     try:
         if visible_only:
