@@ -44,7 +44,7 @@ SECTION_TEMPLATES = {
 
     "intro_impact": """
 
-You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD) in the style of AG-5620.
+You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD).
 
 IMPORTANT: Do not output any ``` code fences or Mermaid syntax.
 All text should be plain markdown (headings, lists, tables) only - no code blocks or fenced content.
@@ -56,11 +56,11 @@ SOURCE REQUIREMENTS:
 CRITICAL INSTRUCTIONS:
 
 - Extract information ONLY from the provided source requirements
-- Focus on VALIDATION LOGIC, HISTORICAL DATA CHECKS, and STATUS-BASED RESTRICTIONS
-- Look for cheque/payment validation, previous application checks, status conditions (CIA/CDA/Cancelled)
-- Pay special attention to IFSC codes, cheque numbers, and cross-application validation
-- Do NOT create, assume, or fabricate any content not explicitly present in the source
+- Identify the ACTUAL business problem being solved from the source
+- Focus on what is explicitly mentioned, not assumptions
+- Do NOT create, assume, or fabricate any content not present in the source
 - If a section has no relevant information in the source, leave it BLANK
+- Adapt to any domain (training, payments, integration, access control, etc.)
 
 Create ONLY the following sections with detailed content in markdown:
 
@@ -68,71 +68,76 @@ Create ONLY the following sections with detailed content in markdown:
 
 ### 1.1 Purpose
 
-Extract the EXACT business purpose focusing on:
-- Restriction mechanisms (self-receipting restrictions)
-- Validation requirements (cheque reuse prevention)
-- Cross-application checks
-- Historical data validation
-- Payment integrity measures
+Extract the EXACT business purpose from the source, focusing on:
+- What is the main business objective or problem being addressed?
+- What specific functionality or capability is being implemented?
+- What restrictions, validations, or controls are being introduced?
+- What business processes are being improved or changed?
+- What compliance, security, or operational requirements are being met?
 
-Look for phrases like "restrict", "prevent", "validate", "check", "previous application", "same cheque"
+Look for key phrases that indicate purpose: "purpose", "objective", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
 
 ### 1.2 As-is process
 
-Extract the CURRENT process that shows:
-- How users currently perform receipting
-- What validation checks (if any) are currently in place
-- What problems exist with current approach
-- Screenshots or process flows if mentioned
-- Current system behavior that needs to be changed
+Extract the CURRENT state/process from the source:
+- How does the current system/process work?
+- What are the existing workflows or user journeys?
+- What problems or limitations exist in the current approach?
+- What manual processes or workarounds are currently used?
+- What system behaviors need to be changed?
+- Any screenshots, process flows, or current state descriptions
 
-Look for "currently", "as-is", "existing process", "present system"
+Look for indicators: "currently", "as-is", "existing", "present", "manual", "workaround", "problem with current", "limitations"
 
 ### 1.3 To be process / High level solution
 
-Extract the PROPOSED solution focusing on:
-- Multi-step validation logic (Step A, Step B conditions)
-- Status-based exception handling (CIA/CDA/Cancelled)
-- Historical database checks
-- Error restriction mechanisms
-- Conditional logic flows
+Extract the PROPOSED solution from the source:
+- What is the new process or system behavior?
+- What workflow steps or validation logic will be implemented?
+- How will the new solution address current problems?
+- What automated processes will replace manual ones?
+- What new capabilities or features will be added?
+- Any conditional logic, decision trees, or multi-step processes
 
-Look for "to-be", "proposed", "solution", "check will be as follows", "if condition A", "if condition B"
+Look for indicators: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
 
 ## 2.0 Impact Analysis
 
 ### 2.1 System impacts – Primary and cross functional
 
-Extract SPECIFIC system impacts:
-- Primary systems (DigiAgency, Digi, etc.)
-- Cross-functional systems (Cashiering, Financial systems)
-- Database impacts (historical receipting database)
-- Integration points
-- Child call IDs or system dependencies
+Extract SPECIFIC system impacts mentioned in the source:
+- Which primary systems/applications will be modified?
+- What cross-functional or integrated systems are affected?
+- What databases, APIs, or services need changes?
+- What new integration points are required?
+- Any performance, security, or infrastructure impacts
+- Dependencies on other systems or services
 
 ### 2.2 Impacted Products
 
-List ONLY the products explicitly mentioned:
-- Insurance products (ULIP, Endowment, Term, INSTAB)
-- Business lines affected
-- Proposal types (OPUS/NGIN)
-- Generic vs specific product scope
+List ONLY the products/services explicitly mentioned in the source:
+- Specific products, product lines, or offerings affected
+- Business processes or departments impacted
+- User groups, roles, or personas affected
+- Proposal types, application types, or transaction types
+- Geographic or market scope if mentioned
 
 ### 2.3 List of APIs required
 
-Extract SPECIFIC technical requirements:
-- New service requirements for historical data lookup
-- API endpoints for status checking
-- Database query services
-- Integration services with existing systems
-- Service to identify previous applications
+Extract SPECIFIC technical requirements from the source:
+- New APIs or services that need to be created
+- Existing APIs that need modification
+- Third-party integrations or external system connections
+- Database access or query requirements
+- Authentication, authorization, or security services
+- Any technical specifications or interface requirements
 
 IMPORTANT:
 
 - Use markdown headings (##, ###)
 - Preserve any tables in markdown format
-- Focus on COMPLEX VALIDATION LOGIC rather than simple restrictions
-- Emphasize historical data checks and status-based conditions
+- Extract content based on what's ACTUALLY in the source, regardless of domain
+- Adapt language and focus to match the source content type
 - If no content found for a subsection, leave it blank
 
 VALIDATION CHECK:
@@ -143,7 +148,7 @@ Before finalizing each section, verify that every piece of information can be tr
 
     "process_requirements": """
 
-You are a Business Analyst expert creating sections 3.0–4.0 of a comprehensive BRD in the AG-5620 style.
+You are a Business Analyst expert creating sections 3.0–4.0 of a comprehensive BRD.
 
 PREVIOUS CONTENT:
 
@@ -156,84 +161,88 @@ SOURCE REQUIREMENTS:
 CRITICAL INSTRUCTIONS:
 
 - Extract information ONLY from the provided source requirements
-- Focus on COMPLEX VALIDATION WORKFLOWS with multiple conditions
-- Look for step-by-step validation logic (Condition A, Condition B)
-- Emphasize historical data checks and status-based decision trees
+- Identify ACTUAL workflows, processes, and business rules from the source
+- Focus on step-by-step logic, conditions, and decision points mentioned
+- Adapt to any business domain (training, validation, integration, access control, etc.)
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
 
 Create ONLY the following sections with detailed content in markdown:
 
 ## 3.0 Process / Data Flow diagram / Figma
 
-Extract DETAILED validation workflow:
+Extract DETAILED workflow/process information from the source:
 
 ### 3.1 Workflow Description
 
-Create step-by-step process focusing on:
-- User initiates receipting with cheque details
-- System performs Condition A check (historical lookup)
-- If Condition A true → proceed to Condition B
-- If Condition A false → allow receipting
-- Condition B: Status validation (CIA/CDA/Cancelled)
-- If Condition B true → restrict user
-- If Condition B false → allow receipting
-- Error handling and user restriction mechanisms
+Create step-by-step process based on what's described in the source:
+- What triggers the process or workflow?
+- What are the sequential steps or stages?
+- What decision points, conditions, or validations occur?
+- What are the different paths or outcomes?
+- How are errors, exceptions, or edge cases handled?
+- What user interactions or system responses are involved?
 
-Format as:
-- Step 1: [Action]
-  - If [condition]: [result]
-  - If [condition]: [result]
-- Step 2: [Action]
-  - If [condition]: [result]
+Format as logical flow:
+- Step 1: [Action/Trigger]
+  - If [condition mentioned in source]: [result/next step]
+  - If [alternative condition]: [alternative result]
+- Step 2: [Next Action]
+  - [Continue based on source content]
 
-Look for: "check will be as follows", "condition A", "condition B", "if true", "if false"
+Look for process indicators: "workflow", "process", "steps", "sequence", "flow", "journey", "condition", "if", "then", "when", "trigger", "action", "response"
 
 ## 4.0 Business / System Requirement
 
-### 4.1 Application / Module Name: [Extract exact module name]
+### 4.1 Application / Module Name: [Extract exact application/module name from source]
 
-Create detailed requirement table:
+Create detailed requirement table based on source content:
 
 | **Rule ID** | **Rule Description** | **Expected Result** | **Dependency** |
 |-------------|---------------------|-------------------|----------------|
-| **4.1.1** | [Complex validation rule with conditions] | [Multi-step expected behavior] | [Technical dependencies] |
+| **4.1.1** | [Extract specific business rule from source] | [Exact expected behavior mentioned] | [Technical/system dependencies noted] |
 
-Focus on:
-- Multi-condition validation rules
-- Historical data lookup requirements
-- Status-based exception handling
-- Error message specifications
-- Cross-application validation logic
+Focus on extracting:
+- Specific business rules, validations, or logic mentioned
+- Functional requirements and expected system behaviors
+- User access controls, permissions, or restrictions
+- Data validation, processing, or transformation rules
+- Integration requirements and system interactions
 
 ### 4.2 Functional Requirements
 
-Extract:
-- Complex validation functions
-- Historical data access requirements
-- Status checking mechanisms
-- Error handling specifications
+Extract from source:
+- Core functionality that needs to be implemented
+- User interface or user experience requirements
+- System processing or computational requirements
+- Data handling, storage, or retrieval needs
+- Reporting, analytics, or monitoring capabilities
+- Any automation or workflow management features
 
 ### 4.3 Business Rules and Logic
 
-Extract:
-- Conditional logic (if/then/else scenarios)
-- Status-based exceptions (CIA/CDA/Cancelled)
-- Historical validation rules
-- Cross-application checks
+Extract from source:
+- Conditional logic and decision rules
+- Validation criteria and acceptance conditions
+- Exception handling and error management
+- Status-based or state-dependent behaviors
+- Role-based or permission-based rules
+- Business process logic and workflow rules
 
 ### 4.4 Performance, Security, and Compliance Requirements
 
 Extract any mentioned:
-- Database performance requirements
-- Historical data access security
-- Compliance validation needs
+- Performance expectations, response times, or throughput
+- Security controls, authentication, or authorization
+- Compliance standards, regulatory requirements, or audit needs
+- Data privacy, protection, or retention requirements
+- Availability, reliability, or disaster recovery needs
 
 IMPORTANT:
 
 - Use markdown headings
 - Create detailed requirement tables with multiple columns
-- Focus on COMPLEX CONDITIONAL LOGIC
-- Emphasize historical validation and status checking
+- Base all content on what's explicitly stated in the source
+- Adapt terminology and focus to match the source domain
 - Leave blank if no content found
 
 VALIDATION CHECK:
@@ -244,7 +253,7 @@ Before finalizing each section, verify that every piece of information can be tr
 
     "data_communication": """
 
-You are a Business Analyst expert creating sections 5.0–6.0 of a comprehensive BRD in the AG-5620 style.
+You are a Business Analyst expert creating sections 5.0–6.0 of a comprehensive BRD.
 
 PREVIOUS CONTENT:
 
@@ -257,8 +266,8 @@ SOURCE REQUIREMENTS:
 CRITICAL INSTRUCTIONS:
 
 - Extract information ONLY from the provided source requirements
-- Focus on HISTORICAL DATA requirements and database access needs
-- Look for cashiering system integration, receipting database access
+- Identify ACTUAL data and communication needs from the source
+- Adapt to any type of data requirements (user data, transaction data, training data, etc.)
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
 
 Create ONLY the following sections with detailed content in markdown:
@@ -267,46 +276,52 @@ Create ONLY the following sections with detailed content in markdown:
 
 ### 5.1 Data Specifications
 
-Extract SPECIFIC data requirements:
-- Historical receipting database access
-- Cheque number and IFSC code lookup
-- Previous application status data
-- Cross-application data correlation
-- Database query requirements for validation
+Extract SPECIFIC data requirements from the source:
+- What data elements, fields, or attributes are needed?
+- What data sources, databases, or systems provide this data?
+- What data formats, structures, or schemas are required?
+- What data validation, quality, or integrity requirements exist?
+- What data processing, transformation, or calculation needs are mentioned?
+- Any data retention, archival, or lifecycle requirements
 
 ### 5.2 Reporting and Analytics Needs
 
 Extract any mentioned:
-- Receipt validation reporting
-- Error tracking analytics
-- Historical usage reports
-- Validation success/failure metrics
+- What reports, dashboards, or analytics are required?
+- What metrics, KPIs, or measurements need to be tracked?
+- What data visualization or presentation requirements exist?
+- What frequency or scheduling of reports is needed?
+- What user roles or audiences need access to reports?
+- Any real-time monitoring or alerting requirements
 
 ### 5.3 Data Sources and Destinations
 
-Extract:
-- Source: Historical receipting database
-- Source: Cashiering system
-- Source: Application status database
-- Destination: Validation service
-- Integration points with existing systems
+Extract from source:
+- Source systems, databases, or applications providing data
+- Target systems, repositories, or destinations for data
+- Integration points, APIs, or data exchange mechanisms
+- Data flow directions and transformation requirements
+- External systems, third-party sources, or partner integrations
+- Master data management or reference data needs
 
 ## 6.0 Communication Requirement
 
-Include EXACT communication requirements or emails found in the source documents.
+Extract EXACT communication requirements from the source documents:
 
-Extract:
-- Specific communication modes mentioned (CCM, Email, Whatsapp, Text, Letter, Call)
-- Error message specifications
-- User notification requirements
-- System communication needs
+- What specific communication channels or methods are mentioned?
+- What user notifications, alerts, or messaging requirements exist?
+- What error messages, status updates, or system responses are needed?
+- What communication triggers, events, or conditions are specified?
+- What user interface messages, prompts, or guidance is required?
+- Any email templates, SMS formats, or notification specifications
+- What communication protocols, standards, or formats are needed?
 
 IMPORTANT:
 
 - Use markdown headings
 - Preserve tables with pipe syntax
-- Focus on HISTORICAL DATA ACCESS requirements
-- Emphasize database integration needs
+- Extract content based on actual source requirements, regardless of domain
+- Focus on data and communication needs specific to the source requirements
 - Leave blank if no content found
 
 VALIDATION CHECK:
@@ -317,7 +332,7 @@ Before finalizing each section, verify that every piece of information can be tr
 
     "testing_final": """
 
-You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD in the AG-5620 style.
+You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD.
 
 PREVIOUS CONTENT:
 
@@ -327,91 +342,94 @@ SOURCE REQUIREMENTS:
 
 {requirements}
 
-CRITICAL INSTRUCTIONS FOR TEST SCENARIOS:
-
-- Extract EXACT test scenarios from source requirements
-- Focus on COMPLEX VALIDATION test cases with multiple conditions
-- Include historical data validation tests
-- Test status-based exception scenarios (CIA/CDA/Cancelled)
-
-CRITICAL INSTRUCTIONS FOR SECTIONS 8.0-11.0:
+CRITICAL INSTRUCTIONS FOR ALL SECTIONS:
 
 - Extract information ONLY from the provided source requirements
+- Create test scenarios based on ACTUAL functionality described in source
+- Adapt to any business domain or requirement type
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
 
 Create ONLY the following sections with detailed content in markdown:
 
 ## 7.0 Test Scenarios
 
-Generate test scenarios based on EXACT scenarios found in source requirements:
+Generate test scenarios based on EXACT functionality and requirements found in source:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
-| TC001 | New Cheque Receipting | Validate new cheque acceptance | 1. Enter new cheque details<br>2. Complete receipting process | Receipt generated successfully | New cheque number + IFSC | Functional |
-| TC002 | Previous Cheque - CI/CDA Status | Validate exception for cancelled receipts | 1. Enter previously used cheque<br>2. Verify old receipt in CI/CDA/Cancelled status | Receipt allowed successfully | Cheque with CI/CDA status | Functional |
-| TC003 | Previous Cheque - Active Status | Validate restriction for active receipts | 1. Enter previously used cheque<br>2. Verify old receipt in ACTIVE status | Error message displayed, receipting blocked | Cheque with ACTIVE status | Functional |
-| TC004 | Historical Data Lookup | Validate database query functionality | 1. Query historical receipting database<br>2. Check cheque + IFSC combination | Accurate historical data retrieved | Various cheque combinations | Integration |
-| TC005 | Cross-Application Validation | Validate checks across multiple applications | 1. Use cheque from different application<br>2. Verify cross-application detection | Proper validation across applications | Multi-application test data | System |
 
-Add more test scenarios ONLY if found in source requirements.
+Create test scenarios that cover:
+- 5 test scenarios
+- Primary functional requirements mentioned in source
+- Different user roles, permissions, or access levels described
+- Various input conditions, data scenarios, or edge cases noted
+- Error conditions, exceptions, or validation failures mentioned
+- Integration points, API calls, or system interactions described
+- Business rules, workflow steps, or decision logic outlined
+
+Base test scenarios ONLY on what is explicitly described in the source requirements.
 
 ## 8.0 Questions / Suggestions
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
 ### 8.1 Open Questions
-- [List exact questions from source]
+- [List exact questions, clarifications, or unknowns from source]
 
 ### 8.2 Assumptions to Validate
-- [List exact assumptions from source]
+- [List exact assumptions, dependencies, or prerequisites from source]
 
 ### 8.3 Improvement Suggestions
-- [List exact suggestions from source]
+- [List exact suggestions, recommendations, or enhancements from source]
 
 ## 9.0 Reference Document
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
 ### 9.1 Source Documents
-- [List exact source documents mentioned]
+- [List exact source documents, specifications, or references mentioned]
 
 ### 9.2 Related Standards or Policies
-- [List exact standards mentioned]
+- [List exact standards, policies, or guidelines referenced]
 
 ### 9.3 External References
-- [List exact external references]
+- [List exact external systems, APIs, or third-party references]
 
 ## 10.0 Appendix
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
 ### 10.1 Supporting Information
-- [Include any secondary information from source]
+- [Include any additional details, context, or background from source]
 
 ### 10.2 Technical Details
-- [Include technical specifications if present]
+- [Include technical specifications, configurations, or parameters if present]
 
 ## 11.0 Risk Evaluation
 
 Extract ONLY the following if explicitly mentioned in the requirements:
 
-- Identified risks & mitigation strategies
+### 11.1 Identified Risks & Mitigation Strategies
+- [List specific risks and mitigation approaches mentioned in source]
 
-- Timeline and technical risks
+### 11.2 Timeline and Technical Risks
+- [Include project timeline, delivery, or technical risks noted in source]
 
-- If Risk Assessment tables/data are found in source requirements, PRESERVE the complete table structure using markdown format and add the same.
+### 11.3 Risk Assessment
+- [If risk assessment tables or data are in source requirements, preserve the complete structure using markdown format]
 
 IMPORTANT:
 
 - Use markdown headings
 - Preserve tables with markdown table format using pipe syntax
 - Do NOT output code fences
-- Focus on COMPLEX VALIDATION test scenarios
-- For sections 8.0-11.0: Leave blank if no content found
+- Create test scenarios based on ACTUAL requirements described in source
+- For sections 8.0-11.0: Leave blank if no content found in source
+- Adapt all content to match the domain and scope of the source requirements
 
 VALIDATION CHECK:
 
-Before finalizing sections 8.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+Before finalizing sections 7.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
 
 """
 
