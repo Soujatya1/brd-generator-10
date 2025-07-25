@@ -329,6 +329,8 @@ Data flow directions and transformation requirements (only if described in sourc
 External systems, third-party sources, or partner integrations (only if mentioned in source)
 Master data management or reference data needs (only if stated in source)
 
+ALL POINTERS UNDER SECTIONS 5.1, 5.2, 5.3 should not be treated as headers, rather if content matching those pointers are available it should show, if not "None of those pointers should be displayed"
+
 ## 6.0 Communication Requirement
 Extract and include the top 3 most relevant original emails found EXCLUSIVELY from .msg files in the requirement/source documents. 
 
