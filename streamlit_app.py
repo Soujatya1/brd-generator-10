@@ -113,10 +113,10 @@ What new integration points are required?
 Any performance, security, or infrastructure impacts mentioned
 Dependencies on other systems or services listed
 
-### 2.2 Impacted Products and Applications
-Identify ONLY products/services that are EXPLICITLY marked as impacted in the source document by strictly adhering to the keywords "Products Impacted" and "Applications Impacted" from the source documents:
+### 2.2 Impacted Products
+Identify ONLY products/applications that are EXPLICITLY marked as impacted in the source document by strictly adhering to the keywords "Products" or "Products Impacted" and "Applications" or "Applications Impacted" from the source documents:
 
-Look for sections specifically titled or labeled "Products Impacted" and "Applications Impacted"
+Look for sections specifically titled or labeled "Products" or "Products Impacted" and "Applications Impacted" or "Applications"
 Extract content only from these designated sections
 Look for tables, lists, or sections with impact indicators (YES/NO, Impacted/Not Impacted, etc.) within these sections
 Extract specific products, product lines, or offerings marked as affected under "Products Impacted"
