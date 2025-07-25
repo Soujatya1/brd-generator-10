@@ -102,8 +102,8 @@ Extract the PROPOSED solution from the source:
 
 Look for indicators: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
 
-2.0 Impact Analysis
-2.1 System impacts – Primary and cross functional
+## 2.0 Impact Analysis
+### 2.1 System impacts – Primary and cross functional
 Extract SPECIFIC system impacts mentioned in the source document:
 
 Which primary systems/applications will be modified or affected?
@@ -113,17 +113,20 @@ What new integration points are required?
 Any performance, security, or infrastructure impacts mentioned
 Dependencies on other systems or services listed
 
-2.2 Impacted Products
-Identify ONLY products/services that are EXPLICITLY marked as impacted in the source document:
+### 2.2 Impacted Products and Applications
+Identify ONLY products/services that are EXPLICITLY marked as impacted in the source document by strictly adhering to the keywords "Products Impacted" and "Applications Impacted" from the source documents:
 
-Look for tables, lists, or sections with impact indicators (YES/NO, Impacted/Not Impacted, etc.)
-Extract specific products, product lines, or offerings marked as affected
-Include business processes or departments shown as impacted
-List user groups, roles, or personas marked as affected
-Note proposal types, application types, or transaction types with impact indicators
-Include geographic or market scope if impact is specified
+Look for sections specifically titled or labeled "Products Impacted" and "Applications Impacted"
+Extract content only from these designated sections
+Look for tables, lists, or sections with impact indicators (YES/NO, Impacted/Not Impacted, etc.) within these sections
+Extract specific products, product lines, or offerings marked as affected under "Products Impacted"
+Extract specific applications, systems, or software marked as affected under "Applications Impacted"
+Include business processes or departments shown as impacted within these sections
+List user groups, roles, or personas marked as affected in these designated areas
+Note proposal types, application types, or transaction types with impact indicators from these sections
+Include geographic or market scope if impact is specified under these headings
 
-2.3 List of APIs required
+### 2.3 List of APIs required
 Extract SPECIFIC technical API requirements from the source:
 
 New APIs or services that need to be created (as explicitly stated)
@@ -135,14 +138,15 @@ Technical specifications or interface requirements detailed
 
 CRITICAL INSTRUCTIONS:
 
-For section 2.2: ONLY list items that are explicitly marked as "impacted," "affected," "YES," or similar positive impact indicators in tables or lists
+For section 2.2: ONLY extract information from sections explicitly titled or labeled "Products Impacted" and "Applications Impacted"
+ONLY list items that are explicitly marked as "impacted," "affected," "YES," or similar positive impact indicators in tables or lists within these designated sections
 Do NOT include items marked as "Not Impacted," "NO," or similar negative indicators
-If source contains impact assessment tables, reproduce them in markdown format
+If source contains impact assessment tables under these headings, reproduce them in markdown format
 Use markdown headings (##, ###) for structure
 Preserve any tables showing impact status in markdown format
-Extract content based ONLY on what's explicitly stated in the source
+Extract content based ONLY on what's explicitly stated in the designated "Products Impacted" and "Applications Impacted" sections
 If no impacted items found for a subsection, state "No impacted items explicitly identified in source"
-Focus on factual extraction rather than interpretation
+Focus on factual extraction rather than interpretation from the specified keyword sections only
 
 VALIDATION CHECK:
 
