@@ -172,28 +172,47 @@ CRITICAL INSTRUCTIONS:
 
 Create ONLY the following sections with detailed content in markdown:
 
-## 3.0 Process / Data Flow diagram / Figma
+3.0 Process / Data Flow diagram / Figma
+Extract ONLY the workflow/process information that is EXPLICITLY described in the source document:
+3.1 Workflow Description
+Create step-by-step process based STRICTLY on what's described in the source:
+Process Identification:
 
-Extract DETAILED workflow/process information from the source:
+What specific triggers are mentioned for starting the process?
+What sequential steps, stages, or phases are explicitly listed?
+What decision points, conditions, or validations are stated?
+What different paths, branches, or outcomes are described?
+How are errors, exceptions, or edge cases specifically addressed?
+What user interactions or system responses are detailed?
 
-### 3.1 Workflow Description
+Format as logical flow (ONLY if information exists in source):
 
-Create step-by-step process based on what's described in the source:
-- What triggers the process or workflow?
-- What are the sequential steps or stages?
-- What decision points, conditions, or validations occur?
-- What are the different paths or outcomes?
-- How are errors, exceptions, or edge cases handled?
-- What user interactions or system responses are involved?
+Step 1: [Exact action/trigger as stated in source]
 
-Format as logical flow:
-- Step 1: [Action/Trigger]
-  - If [condition mentioned in source]: [result/next step]
-  - If [alternative condition]: [alternative result]
-- Step 2: [Next Action]
-  - [Continue based on source content]
+If [specific condition mentioned]: [exact result/next step from source]
+If [alternative condition from source]: [alternative result as stated]
 
-Look for process indicators: "workflow", "process", "steps", "sequence", "flow", "journey", "condition", "if", "then", "when", "trigger", "action", "response"
+
+Step 2: [Next action as described in source]
+
+[Continue only with content found in source]
+
+Search for these specific indicators in the source:
+
+Process keywords: "workflow", "process", "steps", "sequence", "flow", "journey"
+Conditional keywords: "condition", "if", "then", "when", "where"
+Action keywords: "trigger", "action", "response", "execute", "perform"
+Flow keywords: "next", "following", "subsequent", "after", "before"
+
+CRITICAL REQUIREMENTS:
+
+ONLY extract information that is explicitly written in the source document
+Do NOT infer, assume, or generate any process steps not mentioned
+If workflow information is not present in the source, state: "No workflow/process information available in source document"
+If only partial process information exists, extract only what is explicitly stated
+Use exact terminology and language from the source document
+Preserve any diagrams, flowcharts, or visual process representations in markdown format
+If source contains numbered steps, bulleted processes, or structured workflows, reproduce them exactly
 
 ## 4.0 Business / System Requirement
 
