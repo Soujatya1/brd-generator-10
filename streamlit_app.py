@@ -299,36 +299,35 @@ CRITICAL INSTRUCTIONS:
 Create ONLY the following sections with detailed content in markdown:
 
 ## 5.0 MIS / DATA Requirement
-
 ### 5.1 Data Specifications
+Extract SPECIFIC data requirements from the source only if explicitly mentioned:
 
-Extract SPECIFIC data requirements from the source:
-- What data elements, fields, or attributes are needed?
-- What data sources, databases, or systems provide this data?
-- What data formats, structures, or schemas are required?
-- What data validation, quality, or integrity requirements exist?
-- What data processing, transformation, or calculation needs are mentioned?
-- Any data retention, archival, or lifecycle requirements
+What data elements, fields, or attributes are needed? (only if specified in source)
+What data sources, databases, or systems provide this data? (only if identified in source)
+What data formats, structures, or schemas are required? (only if detailed in source)
+What data validation, quality, or integrity requirements exist? (only if stated in source)
+What data processing, transformation, or calculation needs are mentioned? (only if described in source)
+Any data retention, archival, or lifecycle requirements (only if outlined in source)
 
 ### 5.2 Reporting and Analytics Needs
+Extract only when specifically mentioned in the source:
 
-Extract any mentioned:
-- What reports, dashboards, or analytics are required?
-- What metrics, KPIs, or measurements need to be tracked?
-- What data visualization or presentation requirements exist?
-- What frequency or scheduling of reports is needed?
-- What user roles or audiences need access to reports?
-- Any real-time monitoring or alerting requirements
+What reports, dashboards, or analytics are required? (only if explicitly requested in source)
+What metrics, KPIs, or measurements need to be tracked? (only if defined in source)
+What data visualization or presentation requirements exist? (only if specified in source)
+What frequency or scheduling of reports is needed? (only if stated in source)
+What user roles or audiences need access to reports? (only if identified in source)
+Any real-time monitoring or alerting requirements (only if mentioned in source)
 
 ### 5.3 Data Sources and Destinations
+Extract from source only if explicitly documented:
 
-Extract from source:
-- Source systems, databases, or applications providing data
-- Target systems, repositories, or destinations for data
-- Integration points, APIs, or data exchange mechanisms
-- Data flow directions and transformation requirements
-- External systems, third-party sources, or partner integrations
-- Master data management or reference data needs
+Source systems, databases, or applications providing data (only if named in source)
+Target systems, repositories, or destinations for data (only if specified in source)
+Integration points, APIs, or data exchange mechanisms (only if detailed in source)
+Data flow directions and transformation requirements (only if described in source)
+External systems, third-party sources, or partner integrations (only if mentioned in source)
+Master data management or reference data needs (only if stated in source)
 
 ## 6.0 Communication Requirement
 Extract and include the top 3 most relevant original emails found EXCLUSIVELY from .msg files in the requirement/source documents. 
