@@ -102,44 +102,47 @@ Extract the PROPOSED solution from the source:
 
 Look for indicators: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
 
-## 2.0 Impact Analysis
+2.0 Impact Analysis
+2.1 System impacts – Primary and cross functional
+Extract SPECIFIC system impacts mentioned in the source document:
 
-### 2.1 System impacts – Primary and cross functional
+Which primary systems/applications will be modified or affected?
+What cross-functional or integrated systems are impacted?
+What databases, APIs, or services need changes?
+What new integration points are required?
+Any performance, security, or infrastructure impacts mentioned
+Dependencies on other systems or services listed
 
-Extract SPECIFIC system impacts mentioned in the source:
-- Which primary systems/applications will be modified?
-- What cross-functional or integrated systems are affected?
-- What databases, APIs, or services need changes?
-- What new integration points are required?
-- Any performance, security, or infrastructure impacts
-- Dependencies on other systems or services
+2.2 Impacted Products
+Identify ONLY products/services that are EXPLICITLY marked as impacted in the source document:
 
-### 2.2 Impacted Products
+Look for tables, lists, or sections with impact indicators (YES/NO, Impacted/Not Impacted, etc.)
+Extract specific products, product lines, or offerings marked as affected
+Include business processes or departments shown as impacted
+List user groups, roles, or personas marked as affected
+Note proposal types, application types, or transaction types with impact indicators
+Include geographic or market scope if impact is specified
 
-List ONLY the products/services explicitly mentioned in the source document with keywords like "Products Impacted":
-- List all the Specific products, product lines, or offerings affected
-- Business processes or departments impacted
-- User groups, roles, or personas affected
-- Proposal types, application types, or transaction types
-- Geographic or market scope if mentioned
+2.3 List of APIs required
+Extract SPECIFIC technical API requirements from the source:
 
-### 2.3 List of APIs required
+New APIs or services that need to be created (as explicitly stated)
+Existing APIs that require modification (specifically mentioned)
+Third-party integrations or external system connections listed
+Database access or query requirements specified
+Authentication, authorization, or security services mentioned
+Technical specifications or interface requirements detailed
 
-Extract SPECIFIC technical requirements from the source:
-- New APIs or services that need to be created
-- Existing APIs that need modification
-- Third-party integrations or external system connections
-- Database access or query requirements
-- Authentication, authorization, or security services
-- Any technical specifications or interface requirements
+CRITICAL INSTRUCTIONS:
 
-IMPORTANT:
-
-- Use markdown headings (##, ###)
-- Preserve any tables in markdown format
-- Extract content based on what's ACTUALLY in the source, regardless of domain
-- Adapt language and focus to match the source content type
-- If no content found for a subsection, leave it blank
+For section 2.2: ONLY list items that are explicitly marked as "impacted," "affected," "YES," or similar positive impact indicators in tables or lists
+Do NOT include items marked as "Not Impacted," "NO," or similar negative indicators
+If source contains impact assessment tables, reproduce them in markdown format
+Use markdown headings (##, ###) for structure
+Preserve any tables showing impact status in markdown format
+Extract content based ONLY on what's explicitly stated in the source
+If no impacted items found for a subsection, state "No impacted items explicitly identified in source"
+Focus on factual extraction rather than interpretation
 
 VALIDATION CHECK:
 
@@ -372,7 +375,7 @@ FIRST, thoroughly scan ALL source requirements documents for existing test conte
 - "Verification" / "Validation"
 
 **IF existing test scenarios/cases ARE FOUND in source documents:**
-- Extract and preserve the EXACT test scenarios from the source
+- Extract and preserve ALL the EXACT test scenarios from the source (require all the test scenarios from the source)
 - Maintain original test structure, format, and content
 - Convert to standardized markdown table format:
 
