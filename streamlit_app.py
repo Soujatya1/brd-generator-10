@@ -364,7 +364,7 @@ Create ONLY the following sections with detailed content in markdown:
 
 ## 7.0 Test Scenarios
 
-**PRIMARY APPROACH - Extract Existing Test Scenarios:**
+**PRIMARY APPROACH - Extract ALL Existing Test Scenarios:**
 FIRST, thoroughly scan ALL source requirements documents for existing test content using these keywords:
 - "Test Scenarios" / "Test Scenario"
 - "Test Cases" / "Test Case" 
