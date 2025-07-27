@@ -70,13 +70,14 @@ Create ONLY the following sections with detailed content in markdown:
 ### 1.1 Purpose
 
 Extract the EXACT business purpose from the source, focusing on:
+- Detailed Requirement section
 - What is the main business objective or problem being addressed?
 - What specific functionality or capability is being implemented?
 - What restrictions, validations, or controls are being introduced?
 - What business processes are being improved or changed?
 - What compliance, security, or operational requirements are being met?
 
-Look for key phrases that indicate purpose: "purpose", "objective", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
+Look for key phrases that indicate purpose: "purpose", "objective", "detailed requirement", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
 
 ### 1.2 As-is process
 
@@ -103,6 +104,7 @@ Extract the PROPOSED solution from the source:
 Look for indicators: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
 
 ## 2.0 Impact Analysis
+
 ### 2.1 System impacts – Primary and cross functional
 Extract SPECIFIC system impacts mentioned in the source document:
 
@@ -114,7 +116,7 @@ Any performance, security, or infrastructure impacts mentioned
 Dependencies on other systems or services listed
 
 ### 2.2 Impacted Products
-Identify ONLY products/applications that are EXPLICITLY marked as impacted in the source document by strictly adhering to the keywords "Products" or "Products Impacted" and "Applications" or "Applications Impacted" from the source documents:
+Identify ONLY products/applications that are EXPLICITLY marked as impacted in the source document by strictly adhering to the title keywords with 100% confidence "Products" or "Products Impacted" and "Applications" or "Applications Impacted" from the source documents:
 
 Look for sections specifically titled or labeled "Products" or "Products Impacted" and "Applications Impacted" or "Applications"
 Extract content only from these designated sections
@@ -234,34 +236,6 @@ Focus on extracting:
 - User access controls, permissions, or restrictions
 - Data validation, processing, or transformation rules
 - Integration requirements and system interactions
-
-### 4.2 Functional Requirements
-
-Extract BUSINESS functional requirements from source:
-- What specific business functions or capabilities need to be delivered?
-- What actions, operations, or tasks should users be able to perform?
-- What business processes or workflows need to be supported?
-- What decisions, approvals, or validations are required in the process?
-- What information needs to be captured, reviewed, or processed?
-- What business rules, policies, or compliance requirements must be enforced?
-- What notifications, communications, or alerts need to be generated?
-- What access controls, permissions, or restrictions are needed?
-- What calculations, computations, or business logic processing is required?
-- What reporting, tracking, or audit capabilities are needed for the business?
-
-### 4.3 Business Rules and Logic
-
-Extract BUSINESS rules and decision logic from source:
-- What business decisions need to be made and under what conditions?
-- What criteria determine whether a business action is allowed or restricted?
-- What business policies or guidelines govern the process or workflow?
-- When should different business outcomes or paths be followed?
-- What business conditions trigger specific actions, approvals, or notifications?
-- What are the business exceptions, special cases, or override scenarios?
-- How do different user roles, responsibilities, or authorities affect business decisions?
-- What business validations ensure compliance with regulations or company policies?
-- What escalation rules or approval hierarchies apply to business decisions?
-- What business status changes or state transitions are required in the process?
 
 IMPORTANT:
 
