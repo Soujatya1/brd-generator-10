@@ -433,32 +433,27 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 ## 11.0 Risk Evaluation
 
 **SEARCH STRATEGY:**
-- Scan the ENTIRE source document for sections containing keywords: "Risk Evaluation", "Risk Assessment", "Risk Analysis"
-- Look specifically for tables, charts, or structured formats under these sections
+- Scan for sections: "Risk Evaluation", "Risk Assessment", "Risk Analysis"
+- Look for ANY structured data that appears to be in rows and columns
 
-**EXTRACTION RULES:**
-- Copy the table content EXACTLY as it appears in the source document
-- Preserve ALL original table structure including:
-  * Exact column headers as shown in source
-  * All rows and columns in original order
-  * Original cell content without any modification
-  * Original table formatting and structure
-- Convert to markdown table format while maintaining the exact structure:
-  * Use pipe separators (|) for markdown compatibility
-  * Keep all original headers, rows, and cell content identical
-  * Maintain original column sequence and naming
+**EXTRACTION AND FORMATTING:**
+- **IF content appears to be tabular data (even if extracted as plain text):**
+  * Identify column headers from the source
+  * Identify data rows from the source  
+  * Convert to markdown table format using this structure:
 
-**IF Risk Evaluation table is found:**
-- Extract the COMPLETE table exactly as provided in source
-- Do not modify column names, add columns, or change structure
-- Include ALL rows of data as they appear
-- Maintain original sequence and order
+| [Header 1 from source] | [Header 2 from source] | [Header 3 from source] | [Additional headers as found] |
+|------------------------|------------------------|------------------------|------------------------------|
+| [Row 1 data from source] | [Row 1 data] | [Row 1 data] | [Row 1 data] |
+| [Row 2 data from source] | [Row 2 data] | [Row 2 data] | [Row 2 data] |
 
-**IF NO Risk Evaluation content is found:**
-- State explicitly: "No Risk Evaluation section found in source document"
-- Do not create or infer risk content
+- **Preserve exact content** from source but **force table formatting**
+- **Do not modify** any text content, only structure it into table format
 
-**CRITICAL:** Extract and preserve the exact table structure, column headers, and content as provided in the source documents. Do not standardize, modify, or reformat the table structure
+**IF NO Risk Evaluation content found:**
+- State: "No Risk Evaluation section found in source document"
+
+**CRITICAL:** Even if the source content appears as plain text, if it contains structured risk data, format it as a markdown table while preserving all original content exactly.
 
 IMPORTANT:
 
