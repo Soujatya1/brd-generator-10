@@ -372,7 +372,7 @@ FIRST, thoroughly scan ALL source requirements documents for existing test conte
 - Maintain original test structure, format, and content
 - Convert to standardized markdown table format:
 
-| **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
+| **Test ID** | **Test Scenario Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 | [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
 
