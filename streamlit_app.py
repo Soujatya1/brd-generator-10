@@ -70,14 +70,13 @@ Create ONLY the following sections with detailed content in markdown:
 ### 1.1 Purpose
 
 Extract the EXACT business purpose from the source, focusing on:
-- Detailed Requirement section
 - What is the main business objective or problem being addressed?
 - What specific functionality or capability is being implemented?
 - What restrictions, validations, or controls are being introduced?
 - What business processes are being improved or changed?
 - What compliance, security, or operational requirements are being met?
 
-Look for key phrases that indicate purpose: "purpose", "objective", "detailed requirement", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
+Look for key phrases that indicate purpose: "purpose", "objective", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
 
 ### 1.2 As-is process
 
@@ -106,49 +105,41 @@ Look for indicators: "to-be", "proposed", "solution", "new process", "will be", 
 ## 2.0 Impact Analysis
 
 ### 2.1 System impacts – Primary and cross functional
-Extract SPECIFIC system impacts mentioned in the source document:
 
-Which primary systems/applications will be modified or affected?
-What cross-functional or integrated systems are impacted?
-What databases, APIs, or services need changes?
-What new integration points are required?
-Any performance, security, or infrastructure impacts mentioned
-Dependencies on other systems or services listed
+Extract SPECIFIC system impacts mentioned in the source:
+- Which primary systems/applications will be modified?
+- What cross-functional or integrated systems are affected?
+- What databases, APIs, or services need changes?
+- What new integration points are required?
+- Any performance, security, or infrastructure impacts
+- Dependencies on other systems or services
 
 ### 2.2 Impacted Products
-Identify ONLY products/applications that are EXPLICITLY marked as impacted in the source document by strictly adhering to the title keywords with 100% confidence "Products" or "Products Impacted" and "Applications" or "Applications Impacted" from the source documents:
 
-Look for sections specifically titled or labeled "Products" or "Products Impacted" and "Applications Impacted" or "Applications"
-Extract content only from these designated sections
-Look for tables, lists, or sections with impact indicators (YES/NO, Impacted/Not Impacted, etc.) within these sections
-Extract specific products, product lines, or offerings marked as affected under "Products Impacted"
-Extract specific applications, systems, or software marked as affected under "Applications Impacted"
-Include business processes or departments shown as impacted within these sections
-List user groups, roles, or personas marked as affected in these designated areas
-Note proposal types, application types, or transaction types with impact indicators from these sections
-Include geographic or market scope if impact is specified under these headings
+List ONLY the products/services explicitly mentioned in the source:
+- Specific products, product lines, or offerings affected
+- Business processes or departments impacted
+- User groups, roles, or personas affected
+- Proposal types, application types, or transaction types
+- Geographic or market scope if mentioned
 
 ### 2.3 List of APIs required
-Extract SPECIFIC technical API requirements from the source:
 
-New APIs or services that need to be created (as explicitly stated)
-Existing APIs that require modification (specifically mentioned)
-Third-party integrations or external system connections listed
-Database access or query requirements specified
-Authentication, authorization, or security services mentioned
-Technical specifications or interface requirements detailed
+Extract SPECIFIC technical requirements from the source:
+- New APIs or services that need to be created
+- Existing APIs that need modification
+- Third-party integrations or external system connections
+- Database access or query requirements
+- Authentication, authorization, or security services
+- Any technical specifications or interface requirements
 
-CRITICAL INSTRUCTIONS:
+IMPORTANT:
 
-For section 2.2: ONLY extract information from sections explicitly titled or labeled "Products Impacted" and "Applications Impacted"
-ONLY list items that are explicitly marked as "impacted," "affected," "YES," or similar positive impact indicators in tables or lists within these designated sections
-Do NOT include items marked as "Not Impacted," "NO," or similar negative indicators
-If source contains impact assessment tables under these headings, reproduce them in markdown format
-Use markdown headings (##, ###) for structure
-Preserve any tables showing impact status in markdown format
-Extract content based ONLY on what's explicitly stated in the designated "Products Impacted" and "Applications Impacted" sections
-If no impacted items found for a subsection, state "No impacted items explicitly identified in source"
-Focus on factual extraction rather than interpretation from the specified keyword sections only
+- Use markdown headings (##, ###)
+- Preserve any tables in markdown format
+- Extract content based on what's ACTUALLY in the source, regardless of domain
+- Adapt language and focus to match the source content type
+- If no content found for a subsection, leave it blank
 
 VALIDATION CHECK:
 
@@ -178,47 +169,28 @@ CRITICAL INSTRUCTIONS:
 
 Create ONLY the following sections with detailed content in markdown:
 
-3.0 Process / Data Flow diagram / Figma
-Extract ONLY the workflow/process information that is EXPLICITLY described in the source document:
-3.1 Workflow Description
-Create step-by-step process based STRICTLY on what's described in the source:
-Process Identification:
+## 3.0 Process / Data Flow diagram / Figma
 
-What specific triggers are mentioned for starting the process?
-What sequential steps, stages, or phases are explicitly listed?
-What decision points, conditions, or validations are stated?
-What different paths, branches, or outcomes are described?
-How are errors, exceptions, or edge cases specifically addressed?
-What user interactions or system responses are detailed?
+Extract DETAILED workflow/process information from the source:
 
-Format as logical flow (ONLY if information exists in source):
+### 3.1 Workflow Description
 
-Step 1: [Exact action/trigger as stated in source]
+Create step-by-step process based on what's described in the source:
+- What triggers the process or workflow?
+- What are the sequential steps or stages?
+- What decision points, conditions, or validations occur?
+- What are the different paths or outcomes?
+- How are errors, exceptions, or edge cases handled?
+- What user interactions or system responses are involved?
 
-If [specific condition mentioned]: [exact result/next step from source]
-If [alternative condition from source]: [alternative result as stated]
+Format as logical flow:
+- Step 1: [Action/Trigger]
+  - If [condition mentioned in source]: [result/next step]
+  - If [alternative condition]: [alternative result]
+- Step 2: [Next Action]
+  - [Continue based on source content]
 
-
-Step 2: [Next action as described in source]
-
-[Continue only with content found in source]
-
-Search for these specific indicators in the source:
-
-Process keywords: "workflow", "process", "steps", "sequence", "flow", "journey"
-Conditional keywords: "condition", "if", "then", "when", "where"
-Action keywords: "trigger", "action", "response", "execute", "perform"
-Flow keywords: "next", "following", "subsequent", "after", "before"
-
-CRITICAL REQUIREMENTS:
-
-ONLY extract information that is explicitly written in the source document
-Do NOT infer, assume, or generate any process steps not mentioned
-If workflow information is not present in the source, state: "No workflow/process information available in source document"
-If only partial process information exists, extract only what is explicitly stated
-Use exact terminology and language from the source document
-Preserve any diagrams, flowcharts, or visual process representations in markdown format
-If source contains numbered steps, bulleted processes, or structured workflows, reproduce them exactly
+Look for process indicators: "workflow", "process", "steps", "sequence", "flow", "journey", "condition", "if", "then", "when", "trigger", "action", "response"
 
 ## 4.0 Business / System Requirement
 
@@ -236,6 +208,34 @@ Focus on extracting:
 - User access controls, permissions, or restrictions
 - Data validation, processing, or transformation rules
 - Integration requirements and system interactions
+
+### 4.2 Functional Requirements
+
+Extract BUSINESS functional requirements from source:
+- What specific business functions or capabilities need to be delivered?
+- What actions, operations, or tasks should users be able to perform?
+- What business processes or workflows need to be supported?
+- What decisions, approvals, or validations are required in the process?
+- What information needs to be captured, reviewed, or processed?
+- What business rules, policies, or compliance requirements must be enforced?
+- What notifications, communications, or alerts need to be generated?
+- What access controls, permissions, or restrictions are needed?
+- What calculations, computations, or business logic processing is required?
+- What reporting, tracking, or audit capabilities are needed for the business?
+
+### 4.3 Business Rules and Logic
+
+Extract BUSINESS rules and decision logic from source:
+- What business decisions need to be made and under what conditions?
+- What criteria determine whether a business action is allowed or restricted?
+- What business policies or guidelines govern the process or workflow?
+- When should different business outcomes or paths be followed?
+- What business conditions trigger specific actions, approvals, or notifications?
+- What are the business exceptions, special cases, or override scenarios?
+- How do different user roles, responsibilities, or authorities affect business decisions?
+- What business validations ensure compliance with regulations or company policies?
+- What escalation rules or approval hierarchies apply to business decisions?
+- What business status changes or state transitions are required in the process?
 
 IMPORTANT:
 
@@ -273,59 +273,40 @@ CRITICAL INSTRUCTIONS:
 Create ONLY the following sections with detailed content in markdown:
 
 ## 5.0 MIS / DATA Requirement
-### 5.1 Data Specifications
-Extract SPECIFIC data requirements from the source only if explicitly mentioned:
 
-What data elements, fields, or attributes are needed? (only if specified in source)
-What data sources, databases, or systems provide this data? (only if identified in source)
-What data formats, structures, or schemas are required? (only if detailed in source)
-What data validation, quality, or integrity requirements exist? (only if stated in source)
-What data processing, transformation, or calculation needs are mentioned? (only if described in source)
-Any data retention, archival, or lifecycle requirements (only if outlined in source)
+### 5.1 Data Specifications
+
+Extract SPECIFIC data requirements from the source:
+- What data elements, fields, or attributes are needed?
+- What data sources, databases, or systems provide this data?
+- What data formats, structures, or schemas are required?
+- What data validation, quality, or integrity requirements exist?
+- What data processing, transformation, or calculation needs are mentioned?
+- Any data retention, archival, or lifecycle requirements
 
 ### 5.2 Reporting and Analytics Needs
-Extract only when specifically mentioned in the source:
 
-What reports, dashboards, or analytics are required? (only if explicitly requested in source)
-What metrics, KPIs, or measurements need to be tracked? (only if defined in source)
-What data visualization or presentation requirements exist? (only if specified in source)
-What frequency or scheduling of reports is needed? (only if stated in source)
-What user roles or audiences need access to reports? (only if identified in source)
-Any real-time monitoring or alerting requirements (only if mentioned in source)
+Extract any mentioned:
+- What reports, dashboards, or analytics are required?
+- What metrics, KPIs, or measurements need to be tracked?
+- What data visualization or presentation requirements exist?
+- What frequency or scheduling of reports is needed?
+- What user roles or audiences need access to reports?
+- Any real-time monitoring or alerting requirements
 
 ### 5.3 Data Sources and Destinations
-Extract from source only if explicitly documented:
 
-Source systems, databases, or applications providing data (only if named in source)
-Target systems, repositories, or destinations for data (only if specified in source)
-Integration points, APIs, or data exchange mechanisms (only if detailed in source)
-Data flow directions and transformation requirements (only if described in source)
-External systems, third-party sources, or partner integrations (only if mentioned in source)
-Master data management or reference data needs (only if stated in source)
-
-ALL POINTERS UNDER SECTIONS 5.1, 5.2, 5.3 should not be treated as headers, rather if content matching those pointers are available it should show, if not "None of those pointers should be displayed"
+Extract from source:
+- Source systems, databases, or applications providing data
+- Target systems, repositories, or destinations for data
+- Integration points, APIs, or data exchange mechanisms
+- Data flow directions and transformation requirements
+- External systems, third-party sources, or partner integrations
+- Master data management or reference data needs
 
 ## 6.0 Communication Requirement
-Extract and include the top 3 most relevant original emails found EXCLUSIVELY from .msg files in the requirement/source documents. 
 
-CRITICAL REQUIREMENTS:
-- ONLY process .msg file types for this section
-- EXTRACT actual email content (headers, body, metadata) from .msg files
-- DO NOT generate, create, synthesize, or sample any communications
-- DO NOT pull content from PDFs, Word docs, or any non-.msg files
-- If fewer than 3 relevant emails exist in .msg files, include only what is available
-- If no .msg files contain relevant emails, state "No relevant emails found in .msg files"
-
-REQUIRED OUTPUT FORMAT (only when actual emails are found in .msg files):
-- Email Subject: [actual subject line]
-- From: [actual sender]
-- To: [actual recipient(s)]
-- Date: [actual date sent]
-- Email Body: [actual email content - not summarized]
-
-VERIFICATION CHECK: Before including any email, confirm it was extracted from a .msg file and is not generated content.
-
-IMPORTANT: Do NOT display the output format template if no emails are found. Only show actual extracted email content or the "No relevant emails found" message.
+Include top 3 most relevant original emails found from the requirement/source documents (especially from .msg files). DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
 
 IMPORTANT:
 
@@ -364,45 +345,38 @@ Create ONLY the following sections with detailed content in markdown:
 
 ## 7.0 Test Scenarios
 
-**PRIMARY APPROACH - Extract ALL Existing Test Scenarios:**
-FIRST, thoroughly scan ALL source requirements documents for existing test content using these keywords:
+**PRIMARY APPROACH - Check for Existing Test Scenarios:**
+
+FIRST, scan the source requirements for these keywords and related content:
 - "Test Scenarios" / "Test Scenario"
 - "Test Cases" / "Test Case" 
 - "Test case Scenarios"
-- "Testing" / "Test Plan"
-- "Verification" / "Validation"
 
-**IF existing test scenarios/cases ARE FOUND in source documents:**
-- Extract and preserve ALL the EXACT test scenarios from the source (require all the test scenarios from the source)
+**IF existing test scenarios/cases are found in source, consider ALL:**
+- Extract and preserve the EXACT test scenarios from the source
 - Maintain original test structure, format, and content
-- Convert to standardized markdown table format:
+- Convert to markdown table format if needed:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 | [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
 
-**STOP HERE - Do not proceed to Secondary Approach if existing tests are found**
-
----
-
 **SECONDARY APPROACH - Generate from Functional Requirements:**
-**ONLY EXECUTE IF PRIMARY APPROACH YIELDS NO RESULTS**
 
-IF NO existing test scenarios are found in ANY source documents, THEN generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements:
+ONLY IF no existing test scenarios are found in source, then generate test scenarios based on EXACT functionality described in source requirements:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 
-Create exactly 5 test scenarios covering:
+Create 5 test scenarios that cover:
 - Primary functional requirements mentioned in source
-- Different user roles, permissions, or access levels described  
+- Different user roles, permissions, or access levels described
 - Various input conditions, data scenarios, or edge cases noted
 - Error conditions, exceptions, or validation failures mentioned
 - Integration points, API calls, or system interactions described
+- Business rules, workflow steps, or decision logic outlined
 
-**CRITICAL:** Base ALL generated test scenarios ONLY on what is explicitly described in the source requirements. Do not infer or assume functionality not documented.
-
-**EXECUTION RULE:** Use Primary Approach OR Secondary Approach - NEVER BOTH.
+Base test scenarios ONLY on what is explicitly described in the source requirements.
 
 ## 8.0 Questions / Suggestions
 
@@ -1111,7 +1085,7 @@ if st.button("Generate BRD", type="primary"):
         st.error("Please upload files or enter requirements manually!")
     else:
         try:
-            with st.spinner("Initializing AI chains..."):
+            with st.spinner("Initializing AI chains"):
                 chains = initialize_sequential_chains(api_provider=api_provider,
             api_key=api_key,
             azure_endpoint=azure_endpoint,
