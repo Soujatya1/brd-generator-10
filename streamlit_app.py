@@ -418,11 +418,17 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 
 ## 10.0 Appendix
 
-Extract ONLY the following if explicitly mentioned in the requirements:
+**SEARCH STRATEGY:**
+- Scan ALL source documents for explicit appendix and supporting information
+- Look for keywords: "Appendix"
 
-- Supporting information
+**IF appendix/supporting information ARE FOUND in source:**
+- List exact appendix and supporting information
 
-- Include any secondary or non important information from the source document.
+**IF NO appendix/supporting information are found in source:**
+- Leave this section completely BLANK
+- Do NOT generate, create, or assume any appendix or supporting information
+- Do NOT infer potential supporting information
 
 ## 11.0 Risk Evaluation
 
