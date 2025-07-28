@@ -410,11 +410,9 @@ Create exactly 5 test scenarios covering:
 
 ## 9.0 Reference Document
 
-Extract ONLY the following if explicitly mentioned in the requirements:
+List exact source documents, specifications, or references mentioned
 
-- List exact source documents, specifications, or references mentioned
-- List exact standards, policies, or guidelines referenced
-- List exact external systems, APIs, or third-party references
+**CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate anything
 
 ## 10.0 Appendix
 
