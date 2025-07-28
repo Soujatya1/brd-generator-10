@@ -306,15 +306,20 @@ Extract from source:
 
 ## 6.0 Communication Requirement
 
-Include top 3 most relevant original emails found from the requirement/source documents (ONLY from .msg files). DO NOT GENERATE ANY SAMPLE COMMUNICATION OR EMAIL.
+**SEARCH FOR .MSG FILES ONLY:**
+- Scan ALL source documents for original email files (.msg format)
+- Extract ONLY emails that are explicitly provided in .msg file format
 
-IMPORTANT:
+**IF .msg files ARE FOUND:**
+- Include top 3 most relevant original emails from the .msg files
+- Preserve original email format and content
 
-- Use markdown headings
-- Preserve tables with pipe syntax
-- Extract content based on actual source requirements, regardless of domain
-- Focus on data and communication needs specific to the source requirements
-- Leave blank if no content found
+**IF NO .msg files are found:**
+- Leave this section completely BLANK
+- Do NOT generate, create, or simulate any email content
+- Do NOT include any sample communications
+
+**CRITICAL:** Never generate, create, assume, or fabricate any email content. Only extract from actual .msg source files.
 
 VALIDATION CHECK:
 
@@ -387,10 +392,21 @@ Create exactly 5 test scenarios covering:
 
 ## 8.0 Questions / Suggestions
 
-Extract ONLY the following if explicitly mentioned in the requirements:
+**SEARCH STRATEGY:**
+- Scan ALL source documents for explicit questions, suggestions, or clarifications
+- Look for keywords: "Question", "Clarification", "Unknown", "Assumption", "Dependency", "Suggestion", "Recommendation"
+
+**IF questions/suggestions ARE FOUND in source:**
 - List exact questions, clarifications, or unknowns from source
-- List exact assumptions, dependencies, or prerequisites from source
+- List exact assumptions, dependencies, or prerequisites from source  
 - List exact suggestions, recommendations, or enhancements from source
+
+**IF NO questions/suggestions are found in source:**
+- Leave this section completely BLANK
+- Do NOT generate, create, or assume any questions or suggestions
+- Do NOT infer potential issues or recommendations
+
+**CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate any questions, suggestions, or recommendations not present in the source.
 
 ## 9.0 Reference Document
 
@@ -410,32 +426,33 @@ Extract ONLY the following if explicitly mentioned in the requirements:
 
 ## 11.0 Risk Evaluation
 
-Extract ONLY the following if explicitly mentioned in the source document:
-
 **SEARCH STRATEGY:**
 - Scan the ENTIRE source document for sections containing keywords: "Risk Evaluation", "Risk Assessment", "Risk Analysis"
-- Check for tables, charts, or structured formats under these sections
+- Look specifically for tables, charts, or structured formats under these sections
 
 **EXTRACTION RULES:**
-- Copy the content VERBATIM - do not paraphrase, summarize, or reformat
-- Preserve ALL original formatting including:
-  * Tables (maintain rows, columns, headers)
-  * Bullet points and numbering
-  * Bold/italic text formatting
-  * Indentation and spacing
-- Include complete sections from header to end
-- If content spans multiple pages/sections, extract ALL related portions
-- Maintain original sequence and order
+- Copy the table content EXACTLY as it appears in the source document
+- Preserve ALL original table structure including:
+  * Exact column headers as shown in source
+  * All rows and columns in original order
+  * Original cell content without any modification
+  * Original table formatting and structure
+- Convert to markdown table format while maintaining the exact structure:
+  * Use pipe separators (|) for markdown compatibility
+  * Keep all original headers, rows, and cell content identical
+  * Maintain original column sequence and naming
 
-**IF Risk Evaluation content is found:**
-- Start extraction with the exact section header as it appears
-- Include ALL subsections, tables, and associated content
-- Stop only when the section clearly ends or new major section begins
-- Use markdown code blocks to preserve formatting if necessary
+**IF Risk Evaluation table is found:**
+- Extract the COMPLETE table exactly as provided in source
+- Do not modify column names, add columns, or change structure
+- Include ALL rows of data as they appear
+- Maintain original sequence and order
 
 **IF NO Risk Evaluation content is found:**
 - State explicitly: "No Risk Evaluation section found in source document"
 - Do not create or infer risk content
+
+**CRITICAL:** Extract and preserve the exact table structure, column headers, and content as provided in the source documents. Do not standardize, modify, or reformat the table structure
 
 IMPORTANT:
 
