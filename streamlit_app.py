@@ -145,6 +145,9 @@ VALIDATION CHECK:
 
 Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
 
+OUTPUT FORMAT:
+Provide ONLY the markdown sections (## 1.0 Introduction, ### 1.1 Purpose, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
+
 """,
 
     "process_requirements": """
@@ -249,6 +252,9 @@ VALIDATION CHECK:
 
 Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
 
+OUTPUT FORMAT:
+Provide ONLY the markdown sections (## 3.0, ### 3.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
+
 """,
 
     "data_communication": """
@@ -324,6 +330,9 @@ Extract from source:
 VALIDATION CHECK:
 
 Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
+OUTPUT FORMAT:
+Provide ONLY the markdown sections (## 5.0, ### 5.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
 
 """,
 
@@ -410,7 +419,7 @@ Create exactly 5 test scenarios covering:
 
 ## 9.0 Reference Document
 
-List exact source documents, specifications, or references mentioned
+List exact source documents
 
 **CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate anything
 
@@ -465,6 +474,9 @@ IMPORTANT:
 VALIDATION CHECK:
 
 Before finalizing sections 8.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
+OUTPUT FORMAT:
+Provide ONLY the markdown sections (## 7.0, ### 7.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
 
 """
 
