@@ -345,38 +345,45 @@ Create ONLY the following sections with detailed content in markdown:
 
 ## 7.0 Test Scenarios
 
-**PRIMARY APPROACH - Check for Existing Test Scenarios:**
-
-FIRST, scan the source requirements for these keywords and related content:
+**PRIMARY APPROACH - Extract Existing Test Scenarios:**
+FIRST, thoroughly scan ALL source requirements documents for existing test content using these keywords:
 - "Test Scenarios" / "Test Scenario"
 - "Test Cases" / "Test Case" 
 - "Test case Scenarios"
+- "Testing" / "Test Plan"
+- "Verification" / "Validation"
 
-**IF existing test scenarios/cases are found in source, consider ALL:**
-- Extract and preserve the EXACT test scenarios from the source
+**IF existing test scenarios/cases ARE FOUND in source documents:**
+- Extract and preserve ALL the EXACT test scenarios from the source (require all the test scenarios from the source)
 - Maintain original test structure, format, and content
-- Convert to markdown table format if needed:
+- Convert to standardized markdown table format:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 | [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
 
-**SECONDARY APPROACH - Generate from Functional Requirements:**
+**STOP HERE - Do not proceed to Secondary Approach if existing tests are found**
 
-ONLY IF no existing test scenarios are found in source, then generate test scenarios based on EXACT functionality described in source requirements:
+---
+
+**SECONDARY APPROACH - Generate from Functional Requirements:**
+**ONLY EXECUTE IF PRIMARY APPROACH YIELDS NO RESULTS**
+
+IF NO existing test scenarios are found in ANY source documents, THEN generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements:
 
 | **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|---------------|----------|
 
-Create 5 test scenarios that cover:
+Create exactly 5 test scenarios covering:
 - Primary functional requirements mentioned in source
-- Different user roles, permissions, or access levels described
+- Different user roles, permissions, or access levels described  
 - Various input conditions, data scenarios, or edge cases noted
 - Error conditions, exceptions, or validation failures mentioned
 - Integration points, API calls, or system interactions described
-- Business rules, workflow steps, or decision logic outlined
 
-Base test scenarios ONLY on what is explicitly described in the source requirements.
+**CRITICAL:** Base ALL generated test scenarios ONLY on what is explicitly described in the source requirements. Do not infer or assume functionality not documented.
+
+**EXECUTION RULE:** Use Primary Approach OR Secondary Approach - NEVER BOTH.
 
 ## 8.0 Questions / Suggestions
 
