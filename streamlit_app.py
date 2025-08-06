@@ -460,33 +460,47 @@ List exact source documents
 
 ## 11.0 Risk Evaluation
 
-**SEARCH STRATEGY:**
-- Scan ALL source documents for risk-related content
-- Look for keywords: "Risk Evaluation", "Risk Assessment", "Risk Analysis", "Ops Risk", "Business Risk"
-- Check for any tabular data related to risks
+**CRITICAL EXTRACTION RULE:** 
+Extract the EXACT table content from the source documents. Do NOT modify, interpret, or reformat the content.
 
-**EXTRACTION RULES:**
-- **IF risk content is found in source documents:**
-  * Extract the EXACT content from the source
-  * If the content is in table format, convert to clean markdown table
-  * If the content is in paragraph format, preserve as paragraphs
-  * Include all risk-related information found
+**SEARCH FOR RISK CONTENT:**
+- Look for any sheet named "Ops Risk Assessment", "Risk Evaluation", "Risk Assessment", or similar
+- Look for any table or structured data containing risk-related information
+- Search for keywords: "risk", "evaluation", "assessment", "impact", "controls"
 
-**IF NO risk content found in source:**
-- State: "No Risk Evaluation content found in source documents"
-- Do NOT create placeholder tables or empty structures
-- Do NOT generate sample risk data
+**EXTRACTION PROCESS:**
+1. **IF a risk table/data is found in the source:**
+   - Copy the EXACT column headers from the source
+   - Copy the EXACT row data from the source
+   - Maintain the EXACT table structure and content
+   - Convert to clean markdown table format WITHOUT changing any text content
+   - Include ALL rows and columns as they appear in the source
 
-**CRITICAL:** Only extract content that actually exists in the source documents. Never create placeholder or template content.
+2. **EXAMPLE - If source has this table:**
+   ```
+   | Risk Type | Impact | Mitigation | Status |
+   | High Risk | Operational | Control A | Active |
+   ```
+   
+   **OUTPUT EXACTLY:**
+   ```
+   | Risk Type | Impact | Mitigation | Status |
+   |-----------|--------|------------|---------|
+   | High Risk | Operational | Control A | Active |
+   ```
 
-IMPORTANT:
+3. **IF NO risk content found:**
+   - State: "No Risk Evaluation content found in source documents"
+   - Do NOT create any template or sample content
 
-- Use markdown headings
-- Preserve tables with markdown table format using pipe syntax
-- Do NOT output code fences
-- Create test scenarios based on ACTUAL requirements described in source
-- For sections 8.0-11.0: Leave blank if no content found in source
-- Adapt all content to match the domain and scope of the source requirements
+**FORBIDDEN:**
+- Do NOT generate placeholder text like "List down the business risks"
+- Do NOT create template structures 
+- Do NOT interpret or modify the source content
+- Do NOT add explanatory text or instructions in table cells
+
+**VALIDATION:**
+Every piece of content in this section must be traceable to the exact source document content.
 
 VALIDATION CHECK:
 
