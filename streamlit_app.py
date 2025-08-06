@@ -141,6 +141,10 @@ IMPORTANT:
 - Adapt language and focus to match the source content type
 - If no content found for a subsection, leave it blank
 
+IMPORTANT:
+
+If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
+
 VALIDATION CHECK:
 
 Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
@@ -225,20 +229,6 @@ Extract BUSINESS functional requirements from source:
 - What access controls, permissions, or restrictions are needed?
 - What calculations, computations, or business logic processing is required?
 - What reporting, tracking, or audit capabilities are needed for the business?
-
-### 4.3 Business Rules and Logic
-
-Extract BUSINESS rules and decision logic from source:
-- What business decisions need to be made and under what conditions?
-- What criteria determine whether a business action is allowed or restricted?
-- What business policies or guidelines govern the process or workflow?
-- When should different business outcomes or paths be followed?
-- What business conditions trigger specific actions, approvals, or notifications?
-- What are the business exceptions, special cases, or override scenarios?
-- How do different user roles, responsibilities, or authorities affect business decisions?
-- What business validations ensure compliance with regulations or company policies?
-- What escalation rules or approval hierarchies apply to business decisions?
-- What business status changes or state transitions are required in the process?
 
 IMPORTANT:
 
