@@ -62,7 +62,6 @@ CRITICAL INSTRUCTIONS:
 - Do NOT create, assume, or fabricate any content not present in the source
 - If a section has no relevant information in the source, leave it BLANK
 - Adapt to any domain (training, payments, integration, access control, etc.)
-- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 
 Create ONLY the following sections with detailed content in markdown:
 
@@ -71,6 +70,7 @@ Create ONLY the following sections with detailed content in markdown:
 ### 1.1 Purpose
 
 Extract the EXACT business purpose from the source, focusing on:
+- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - What is the main business objective or problem being addressed?
 - What specific functionality or capability is being implemented?
 - What restrictions, validations, or controls are being introduced?
@@ -82,6 +82,7 @@ Look for key phrases that indicate purpose: "purpose", "objective", "requirement
 ### 1.2 As-is process
 
 Extract the CURRENT state/process from the source:
+- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - How does the current system/process work?
 - What are the existing workflows or user journeys?
 - What problems or limitations exist in the current approach?
@@ -94,6 +95,7 @@ Look for indicators: "currently", "as-is", "existing", "present", "manual", "wor
 ### 1.3 To be process / High level solution
 
 Extract the PROPOSED solution from the source:
+- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - What is the new process or system behavior?
 - What workflow steps or validation logic will be implemented?
 - How will the new solution address current problems?
@@ -108,6 +110,7 @@ Look for indicators: "to-be", "proposed", "solution", "new process", "will be", 
 ### 2.1 System impacts – Primary and cross functional
 
 Extract SPECIFIC system impacts mentioned in the source:
+- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - Which primary systems/applications will be modified?
 - What cross-functional or integrated systems are affected?
 - What databases, APIs, or services need changes?
@@ -216,6 +219,7 @@ Focus on extracting:
 ### 4.2 Functional Requirements
 
 Extract BUSINESS functional requirements from source:
+- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - What specific business functions or capabilities need to be delivered?
 - What actions, operations, or tasks should users be able to perform?
 - What business processes or workflows need to be supported?
@@ -568,13 +572,13 @@ def generate_brd_sequentially(chains, requirements):
     combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
     
     # Print the combined requirements being sent to the first chain
-    print("="*80)
+    st.write("="*80)
     st.write("COMBINED REQUIREMENTS SENT TO LLM:")
-    print("="*80)
-    print(combined_requirements)
-    print("="*80)
+    st.write("="*80)
+    st.write(combined_requirements)
+    st.write("="*80)
     st.write(f"Total characters: {len(combined_requirements)}")
-    print("="*80)
+    st.write("="*80)
     
     previous_content = ""
     final_sections = []
