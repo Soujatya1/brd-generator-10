@@ -873,9 +873,9 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         if visible_only:
             # Read only visible sheets
             excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
-        else:
+        #else:
             # Read all sheets (including hidden ones) - use only if explicitly requested
-            excel_data = pd.read_excel(excel_file, sheet_name=None)
+            #excel_data = pd.read_excel(excel_file, sheet_name=None)
         
         if not isinstance(excel_data, dict):
             excel_data = {visible_sheets[0] if visible_only else list(excel_data.keys())[0]: excel_data}
