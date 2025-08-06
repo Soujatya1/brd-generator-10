@@ -572,76 +572,77 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
     return [chain1, chain2, chain3, chain4]
 
 def generate_brd_sequentially(chains, requirements):
+    
     req_chunks = chunk_requirements(requirements)
-    
-    if len(req_chunks) > 1:
-        st.info(f"Large content detected. Processing in {len(req_chunks)} chunks...")
-    
-    combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
-    
-    # Print the combined requirements being sent to the first chain
-    st.write("="*80)
-    st.write("COMBINED REQUIREMENTS SENT TO LLM:")
-    st.write("="*80)
-    st.write(combined_requirements)
-    st.write("="*80)
-    st.write(f"Total characters: {len(combined_requirements)}")
-    st.write("="*80)
-    
-    previous_content = ""
-    final_sections = []
-    
-    for i, chain in enumerate(chains):
-        try:
-            print(f"\n{'='*60}")
-            print(f"CHAIN {i+1} INPUT:")
-            print(f"{'='*60}")
-            
-            if i == 0:
-                print("Input to Chain 1 (intro_impact):")
-                print(f"Requirements length: {len(combined_requirements)} characters")
-                print("First 500 characters of requirements:")
-                print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
-                
-                result = chain.run(requirements=combined_requirements)
-            else:
-                print(f"Input to Chain {i+1}:")
-                print(f"Previous content length: {len(previous_content)} characters")
-                print(f"Requirements length: {len(combined_requirements)} characters")
-                print("Previous content (first 300 chars):")
-                print(previous_content[:300] + "..." if len(previous_content) > 300 else previous_content)
-                print("\nRequirements (first 300 chars):")
-                print(combined_requirements[:300] + "..." if len(combined_requirements) > 300 else combined_requirements)
-                
-                result = chain.run(previous_content=previous_content, requirements=combined_requirements)
-            
-            print(f"\nCHAIN {i+1} OUTPUT:")
-            print(f"Response length: {len(result)} characters")
-            print("First 500 characters of response:")
-            print(result[:500] + "..." if len(result) > 500 else result)
-            print(f"{'='*60}")
-            
-            final_sections.append(result)
-            previous_content += "\n\n" + result
-            
-            st.write(f"✓ Completed section group {i+1}/4")
-            
-        except Exception as e:
-            print(f"ERROR in chain {i+1}: {str(e)}")
-            st.error(f"Error in chain {i+1}: {str(e)}")
-            final_sections.append(f"## Error in section group {i+1}\nError processing this section: {str(e)}")
-    
-    final_brd = "\n\n".join(final_sections)
-    
-    st.write("\n" + "="*80)
-    st.write("FINAL BRD CONTENT:")
-    st.write("="*80)
-    st.write(f"Total final BRD length: {len(final_brd)} characters")
-    st.write("Final BRD (first 1000 characters):")
-    st.write(final_brd[:1000] + "..." if len(final_brd) > 1000 else final_brd)
-    st.write("="*80)
-    
-    return final_brd
+    
+    if len(req_chunks) > 1:
+        st.info(f"Large content detected. Processing in {len(req_chunks)} chunks...")
+    
+    combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
+    
+    # Print the combined requirements being sent to the first chain
+    st.write("="*80)
+    st.write("COMBINED REQUIREMENTS SENT TO LLM:")
+    st.write("="*80)
+    st.write(combined_requirements)
+    st.write("="*80)
+    st.write(f"Total characters: {len(combined_requirements)}")
+    st.write("="*80)
+    
+    previous_content = ""
+    final_sections = []
+    
+    for i, chain in enumerate(chains):
+        try:
+            print(f"\n{'='*60}")
+            print(f"CHAIN {i+1} INPUT:")
+            print(f"{'='*60}")
+            
+            if i == 0:
+                print("Input to Chain 1 (intro_impact):")
+                print(f"Requirements length: {len(combined_requirements)} characters")
+                print("First 500 characters of requirements:")
+                print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
+                
+                result = chain.run(requirements=combined_requirements)
+            else:
+                print(f"Input to Chain {i+1}:")
+                print(f"Previous content length: {len(previous_content)} characters")
+                print(f"Requirements length: {len(combined_requirements)} characters")
+                print("Previous content (first 300 chars):")
+                print(previous_content[:300] + "..." if len(previous_content) > 300 else previous_content)
+                print("\nRequirements (first 300 chars):")
+                print(combined_requirements[:300] + "..." if len(combined_requirements) > 300 else combined_requirements)
+                
+                result = chain.run(previous_content=previous_content, requirements=combined_requirements)
+            
+            print(f"\nCHAIN {i+1} OUTPUT:")
+            print(f"Response length: {len(result)} characters")
+            print("First 500 characters of response:")
+            print(result[:500] + "..." if len(result) > 500 else result)
+            print(f"{'='*60}")
+            
+            final_sections.append(result)
+            previous_content += "\n\n" + result
+            
+            st.write(f"✓ Completed section group {i+1}/4")
+            
+        except Exception as e:
+            print(f"ERROR in chain {i+1}: {str(e)}")
+            st.error(f"Error in chain {i+1}: {str(e)}")
+            final_sections.append(f"## Error in section group {i+1}\nError processing this section: {str(e)}")
+    
+    final_brd = "\n\n".join(final_sections)
+    
+    print("\n" + "="*80)
+    print("FINAL BRD CONTENT:")
+    print("="*80)
+    print(f"Total final BRD length: {len(final_brd)} characters")
+    print("Final BRD (first 1000 characters):")
+    print(final_brd[:1000] + "..." if len(final_brd) > 1000 else final_brd)
+    print("="*80)
+    
+    return final_brd
 
 def create_toc_styles(doc):
     styles = doc.styles
