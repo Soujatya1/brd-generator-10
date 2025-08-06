@@ -20,6 +20,7 @@ from docx.enum.text import WD_BREAK
 from docx.enum.style import WD_STYLE_TYPE
 from langchain_openai import AzureChatOpenAI
 from openpyxl import load_workbook
+import json
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -868,8 +869,17 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=False):
-    content = []
+def extract_content_from_excel_as_json(excel_file, max_rows_per_sheet=None, visible_only=False):
+
+    result = {
+        "sheets": {},
+        "metadata": {
+            "total_sheets": 0,
+            "processed_sheets": 0,
+            "errors": []
+        }
+    }
+    
     try:
         if visible_only:
             wb = load_workbook(excel_file)
@@ -883,95 +893,104 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             if visible_sheets:
                 excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
             else:
-                return "No visible sheets found in the Excel file"
+                result["metadata"]["errors"].append("No visible sheets found in the Excel file")
+                return result
             
             if not isinstance(excel_data, dict):
                 excel_data = {visible_sheets[0]: excel_data}
         else:
             excel_data = pd.read_excel(excel_file, sheet_name=None)
         
+        result["metadata"]["total_sheets"] = len(excel_data)
+        
         for sheet_name, df in excel_data.items():
-            if df.empty:
-                continue
-            
-            if max_rows_per_sheet and len(df) > max_rows_per_sheet:
-                df = df.head(max_rows_per_sheet)
-                content.append(f"Note: Processing first {max_rows_per_sheet} rows only")
+            try:
+                # Initialize sheet data structure
+                sheet_data = {
+                    "name": sheet_name,
+                    "dimensions": {
+                        "rows": len(df),
+                        "columns": len(df.columns)
+                    },
+                    "columns": df.columns.tolist(),
+                    "data": [],
+                    "data_types": {},
+                    "summary": {
+                        "numeric_columns": [],
+                        "missing_data": {},
+                        "unique_values": {}
+                    }
+                }
                 
-            content.append(f"=== EXCEL SHEET: {sheet_name} ===")
-            content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
-            
-            content.append(f"Columns ({len(df.columns)}): {', '.join(df.columns.tolist())}")
-            
-            data_types = df.dtypes.to_dict()
-            type_summary = []
-            for col, dtype in data_types.items():
-                type_summary.append(f"{col}: {str(dtype)}")
-            content.append(f"Data Types: {', '.join(type_summary[:10])}...")
-            
-            numeric_cols = df.select_dtypes(include=['number']).columns
-            if len(numeric_cols) > 0:
-                content.append(f"Numeric Columns: {', '.join(numeric_cols.tolist()[:5])}...")
-            
-            sample_size = min(max_sample_rows, len(df))
-            if sample_size > 0:
-                content.append(f"\nSample Data (first {sample_size} rows):")
-                content.append("TABLE:")
+                # Handle empty sheets
+                if df.empty:
+                    sheet_data["data"] = []
+                    result["sheets"][sheet_name] = sheet_data
+                    continue
                 
-                display_df = df.head(sample_size)
+                # Apply row limit if specified
+                original_rows = len(df)
+                if max_rows_per_sheet and len(df) > max_rows_per_sheet:
+                    df = df.head(max_rows_per_sheet)
+                    sheet_data["truncated"] = {
+                        "original_rows": original_rows,
+                        "extracted_rows": max_rows_per_sheet
+                    }
                 
-                if len(df.columns) > 10:
-                    display_cols = df.columns[:8].tolist() + [f"... +{len(df.columns)-8} more columns"]
-                    display_df = df[df.columns[:8]].head(sample_size)
-                    header_row = " | ".join(display_cols)
-                    content.append(header_row)
-                else:
-                    header_row = " | ".join(df.columns.tolist())
-                    content.append(header_row)
+                # Convert data to JSON-serializable format
+                # Handle NaN, NaT, and other pandas-specific values
+                df_clean = df.copy()
                 
-                for _, row in display_df.iterrows():
-                    row_data = []
-                    for val in row:
-                        str_val = str(val)
-                        if len(str_val) > 50:
-                            str_val = str_val[:47] + "..."
-                        row_data.append(str_val)
-                    content.append(" | ".join(row_data))
+                # Replace NaN and NaT with None for JSON compatibility
+                df_clean = df_clean.where(pd.notna(df_clean), None)
                 
-                if len(df) > sample_size:
-                    content.append(f"... and {len(df) - sample_size} more rows")
-            
-            content.append(f"\nData Summary:")
-            
-            key_columns = []
-            for col in df.columns:
-                col_lower = col.lower()
-                if any(keyword in col_lower for keyword in ['id', 'name', 'title', 'status', 'type', 'category', 'priority', 'requirement']):
-                    key_columns.append(col)
-            
-            if key_columns:
-                content.append(f"Key Columns Identified: {', '.join(key_columns[:5])}")
+                # Convert datetime columns to string
+                for col in df_clean.columns:
+                    if pd.api.types.is_datetime64_any_dtype(df_clean[col]):
+                        df_clean[col] = df_clean[col].dt.strftime('%Y-%m-%d %H:%M:%S')
+                        df_clean[col] = df_clean[col].where(df_clean[col] != 'NaT', None)
                 
-                for col in key_columns[:3]:
-                    if df[col].dtype == 'object':
+                # Convert DataFrame to list of dictionaries (records)
+                sheet_data["data"] = df_clean.to_dict('records')
+                
+                # Add data types information
+                for col, dtype in df.dtypes.items():
+                    sheet_data["data_types"][col] = str(dtype)
+                
+                # Add numeric columns
+                numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+                sheet_data["summary"]["numeric_columns"] = numeric_cols
+                
+                # Add missing data information
+                missing_data = df.isnull().sum()
+                for col, missing_count in missing_data.items():
+                    if missing_count > 0:
+                        sheet_data["summary"]["missing_data"][col] = int(missing_count)
+                
+                # Add unique values for categorical columns (limit to reasonable size)
+                for col in df.columns:
+                    if df[col].dtype == 'object' and not df[col].empty:
                         unique_vals = df[col].dropna().unique()
-                        if len(unique_vals) <= 20:
-                            content.append(f"{col} Values: {', '.join(map(str, unique_vals[:10]))}")
+                        if len(unique_vals) <= 50:  # Only store if reasonable number
+                            sheet_data["summary"]["unique_values"][col] = unique_vals.tolist()
                         else:
-                            content.append(f"{col}: {len(unique_vals)} unique values")
-            
-            missing_data = df.isnull().sum()
-            if missing_data.sum() > 0:
-                missing_cols = missing_data[missing_data > 0].head(5)
-                missing_info = [f"{col}: {count} missing" for col, count in missing_cols.items()]
-                content.append(f"Missing Data: {', '.join(missing_info)}")
-            
-            content.append("="*50)
+                            sheet_data["summary"]["unique_values"][col] = {
+                                "count": len(unique_vals),
+                                "sample": unique_vals[:10].tolist()
+                            }
+                
+                result["sheets"][sheet_name] = sheet_data
+                result["metadata"]["processed_sheets"] += 1
+                
+            except Exception as sheet_error:
+                error_msg = f"Error processing sheet '{sheet_name}': {str(sheet_error)}"
+                result["metadata"]["errors"].append(error_msg)
     
     except Exception as e:
-        content.append(f"Error processing Excel file: {str(e)}")
+        error_msg = f"Error processing Excel file: {str(e)}"
+        result["metadata"]["errors"].append(error_msg)
     
-    return "\n".join(content)
+    return result
 
 def extract_content_from_msg(msg_file):
     try:
