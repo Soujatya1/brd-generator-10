@@ -952,7 +952,7 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10):
+def extract_content_from_excel(excel_file, max_rows_per_sheet=100, max_sample_rows=50):
     content = []
     try:
         # Load workbook and identify only visible sheets
@@ -971,154 +971,83 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         for sheet_name in visible_sheets:
             sheet = wb[sheet_name]
             
-            # Find the actual data range (ignore empty rows/columns)
-            data_rows = []
+            content.append(f"=== EXCEL SHEET: {sheet_name} ===")
+            
+            # Get all data including headers
+            all_data = []
             headers = []
             
-            # Find first non-empty row for headers
-            header_row = None
+            # Find the first row with data
+            first_data_row = None
             for row_idx, row in enumerate(sheet.iter_rows(values_only=True), 1):
                 if any(cell is not None and str(cell).strip() for cell in row):
-                    header_row = row
+                    first_data_row = row_idx
+                    headers = [str(cell).strip() if cell is not None else f"Column_{i+1}" 
+                             for i, cell in enumerate(row)]
                     break
             
-            if not header_row:
-                continue  # Skip empty sheets
+            if not first_data_row:
+                content.append("No data found in this sheet")
+                continue
             
-            # Extract non-empty headers only
-            temp_headers = []
-            last_non_empty_col = 0
-            for i, cell in enumerate(header_row):
-                if cell is not None and str(cell).strip():
-                    temp_headers.append(str(cell).strip())
-                    last_non_empty_col = i
-                elif i <= last_non_empty_col:  # Keep columns between non-empty ones
-                    temp_headers.append(f"Column_{i+1}")
-                else:
-                    break  # Stop at first trailing empty column
+            # Remove empty trailing columns from headers
+            while headers and (not headers[-1] or headers[-1].startswith("Column_")):
+                headers.pop()
             
-            headers = temp_headers
             if not headers:
                 continue
             
-            # Get data rows (skip header row)
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                # Only include columns up to the last meaningful header
-                row_data = []
-                has_data = False
-                
-                for i in range(len(headers)):
-                    if i < len(row) and row[i] is not None:
-                        cell_value = str(row[i]).strip()
+            content.append(f"Headers: {', '.join(headers)}")
+            
+            # Get all data rows (including the first row as header)
+            all_rows = []
+            for row_idx, row in enumerate(sheet.iter_rows(values_only=True), 1):
+                if row_idx >= first_data_row:
+                    row_data = []
+                    for i in range(len(headers)):
+                        if i < len(row) and row[i] is not None:
+                            cell_value = str(row[i]).strip()
+                        else:
+                            cell_value = ""
                         row_data.append(cell_value)
-                        if cell_value:  # Non-empty cell
-                            has_data = True
-                    else:
-                        row_data.append("")
-                
-                # Only add rows that have at least one non-empty cell
-                if has_data:
-                    data_rows.append(row_data)
+                    
+                    # Only include rows that have at least one non-empty cell
+                    if any(cell for cell in row_data):
+                        all_rows.append(row_data)
             
-            # Create DataFrame with clean data
-            if data_rows:
-                df = pd.DataFrame(data_rows, columns=headers)
-                # Remove completely empty columns
-                df = df.dropna(axis=1, how='all')
-                # Remove columns that are all empty strings
-                df = df.loc[:, (df != '').any(axis=0)]
-            else:
-                df = pd.DataFrame(columns=headers)
-            
-            if df.empty:
+            if not all_rows:
+                content.append("No data rows found")
                 continue
             
-            # Limit rows if specified
-            if max_rows_per_sheet and len(df) > max_rows_per_sheet:
-                df = df.head(max_rows_per_sheet)
-                content.append(f"Note: Processing first {max_rows_per_sheet} rows only")
-                
-            content.append(f"=== EXCEL SHEET: {sheet_name} ===")
-            content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
-            
-            # Only show meaningful columns
-            actual_columns = [col for col in df.columns if not col.startswith("Column_")]
-            if actual_columns:
-                content.append(f"Columns ({len(actual_columns)}): {', '.join(actual_columns)}")
-            
-            # Sample data with cleaned format
-            sample_size = min(max_sample_rows, len(df))
-            if sample_size > 0:
-                content.append(f"\nActual Data Content:")
+            # For sheets that might contain risk assessment tables, extract ALL data
+            if any(keyword in sheet_name.lower() for keyword in ['risk', 'assessment', 'evaluation']):
+                content.append(f"\n**COMPLETE TABLE DATA FOR {sheet_name}:**")
                 content.append("TABLE:")
                 
-                # Create clean table - limit display columns
-                max_display_cols = 8  # Reduced from 10
-                display_df = df.iloc[:sample_size]
+                # Add header row
+                content.append(" | ".join(headers))
+                content.append(" | ".join(["-" * len(header) for header in headers]))
                 
-                if len(df.columns) > max_display_cols:
-                    # Show first few columns and most important ones
-                    important_cols = []
-                    for col in df.columns:
-                        col_lower = col.lower()
-                        if any(keyword in col_lower for keyword in ['id', 'name', 'risk', 'eval', 'description', 'impact', 'type']):
-                            important_cols.append(col)
-                    
-                    # Combine first columns with important ones
-                    display_cols = list(df.columns[:3])  # First 3 columns
-                    for col in important_cols[:3]:  # Up to 3 important columns
-                        if col not in display_cols:
-                            display_cols.append(col)
-                    
-                    # Fill remaining slots with next columns
-                    for col in df.columns:
-                        if len(display_cols) >= max_display_cols:
-                            break
-                        if col not in display_cols:
-                            display_cols.append(col)
-                    
-                    display_df = display_df[display_cols]
-                    remaining_cols = len(df.columns) - len(display_cols)
-                    if remaining_cols > 0:
-                        truncated_note = f"(+{remaining_cols} more columns)"
-                    else:
-                        truncated_note = None
-                else:
-                    display_cols = df.columns.tolist()
-                    truncated_note = None
-                
-                # Create header row
-                header_parts = [str(col)[:20] for col in display_cols]  # Limit header length
-                if truncated_note:
-                    header_parts.append(truncated_note)
-                content.append(" | ".join(header_parts))
-                
-                # Add separator
-                separator_parts = ["-" * min(len(str(col)), 15) for col in display_cols]
-                if truncated_note:
-                    separator_parts.append("-" * len(truncated_note))
-                content.append(" | ".join(separator_parts))
-                
-                # Add data rows with better cleaning
-                for _, row in display_df.iterrows():
-                    row_data = []
-                    for val in row:
-                        str_val = str(val).strip()
-                        # Better handling of empty/null values
-                        if str_val.lower() in ['nan', 'none', 'nat', ''] or not str_val:
-                            str_val = "-"  # Use dash instead of empty
-                        # Limit cell content length
-                        elif len(str_val) > 25:
-                            str_val = str_val[:22] + "..."
-                        row_data.append(str_val)
-                    
-                    if truncated_note:
-                        row_data.append("...")
-                    
+                # Add all data rows
+                for row_data in all_rows:
                     content.append(" | ".join(row_data))
                 
-                if len(df) > sample_size:
-                    content.append(f"... ({len(df) - sample_size} more rows not shown)")
+            else:
+                # For other sheets, limit the sample
+                sample_size = min(max_sample_rows, len(all_rows))
+                content.append(f"\nSample Data ({sample_size} of {len(all_rows)} rows):")
+                content.append("TABLE:")
+                
+                # Add header row
+                content.append(" | ".join(headers))
+                content.append(" | ".join(["-" * len(header) for header in headers]))
+                
+                # Add sample rows
+                for row_data in all_rows[:sample_size]:
+                    content.append(" | ".join(row_data))
+                
+                if len(all_rows) > sample_size:
+                    content.append(f"... ({len(all_rows) - sample_size} more rows not shown)")
             
             content.append("="*50)
     
