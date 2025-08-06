@@ -62,6 +62,7 @@ CRITICAL INSTRUCTIONS:
 - Do NOT create, assume, or fabricate any content not present in the source
 - If a section has no relevant information in the source, leave it BLANK
 - Adapt to any domain (training, payments, integration, access control, etc.)
+- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 
 Create ONLY the following sections with detailed content in markdown:
 
@@ -140,10 +141,6 @@ IMPORTANT:
 - Extract content based on what's ACTUALLY in the source, regardless of domain
 - Adapt language and focus to match the source content type
 - If no content found for a subsection, leave it blank
-
-IMPORTANT:
-
-If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 
 VALIDATION CHECK:
 
