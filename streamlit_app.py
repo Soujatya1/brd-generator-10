@@ -106,15 +106,6 @@ Look for indicators: "to-be", "proposed", "solution", "new process", "will be", 
 
 ### 2.1 System impacts – Primary and cross functional
 
-Extract SPECIFIC system impacts mentioned in the source:
-- If explicitly mentioned in the source
-- Which primary systems/applications will be modified?
-- What cross-functional or integrated systems are affected?
-- What databases, APIs, or services need changes?
-- What new integration points are required?
-- Any performance, security, or infrastructure impacts
-- Dependencies on other systems or services
-
 ### 2.2 Impacted Products
 
 List ONLY the products/services explicitly mentioned in the source which are impacted
