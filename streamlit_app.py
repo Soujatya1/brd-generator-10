@@ -123,6 +123,7 @@ List ONLY the products/services explicitly mentioned in the source:
 - User groups, roles, or personas affected
 - Proposal types, application types, or transaction types
 - Geographic or market scope if mentioned
+- DO NOT extract this information from Test Scenarios section
 
 ### 2.3 List of APIs required
 
