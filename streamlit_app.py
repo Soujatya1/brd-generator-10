@@ -835,25 +835,69 @@ def create_table_in_doc(doc, table_data):
     return table
 
 def parse_markdown_table(table_text):
+    """Parse markdown table and clean empty columns"""
     lines = [line.strip() for line in table_text.split('\n') if line.strip()]
     
     if len(lines) < 2:
         return None
     
+    # Remove separator line
     if len(lines) >= 2 and '---' in lines[1]:
         lines.pop(1)
     
     table_data = []
+    max_cols = 0
+    
     for line in lines:
+        # Handle lines with outer pipes
         if line.startswith('|') and line.endswith('|'):
             line = line[1:-1]
-            cells = [cell.strip() for cell in line.split('|')]
+        
+        # Split by pipe and clean
+        cells = [cell.strip() for cell in line.split('|')]
+        
+        # Remove trailing empty cells
+        while cells and not cells[-1]:
+            cells.pop()
+        
+        if cells:  # Only add non-empty rows
             table_data.append(cells)
-        else:
-            cells = [cell.strip() for cell in line.split('|')]
-            table_data.append(cells)
+            max_cols = max(max_cols, len(cells))
     
-    return table_data if table_data else None
+    if not table_data:
+        return None
+    
+    # Normalize all rows to have the same number of columns (max_cols)
+    # Fill missing cells with empty strings
+    normalized_data = []
+    for row in table_data:
+        normalized_row = row + [''] * (max_cols - len(row))
+        normalized_data.append(normalized_row)
+    
+    # Remove completely empty columns from the right
+    while max_cols > 1:  # Keep at least 1 column
+        last_col_has_data = False
+        for row in normalized_data:
+            if len(row) >= max_cols and row[max_cols-1].strip():
+                last_col_has_data = True
+                break
+        
+        if last_col_has_data:
+            break
+        else:
+            # Remove the last column from all rows
+            for row in normalized_data:
+                if len(row) >= max_cols:
+                    row.pop()
+            max_cols -= 1
+    
+    # Final cleanup - ensure all rows have the same length
+    final_data = []
+    for row in normalized_data:
+        final_row = row[:max_cols] + [''] * max(0, max_cols - len(row))
+        final_data.append(final_row)
+    
+    return final_data if final_data else None
 
 def extract_content_from_docx(doc_file):
     doc = Document(doc_file)
