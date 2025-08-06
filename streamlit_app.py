@@ -107,6 +107,7 @@ Look for indicators: "to-be", "proposed", "solution", "new process", "will be", 
 ### 2.1 System impacts – Primary and cross functional
 
 Extract SPECIFIC system impacts mentioned in the source:
+- If explicitly mentioned in the source
 - Which primary systems/applications will be modified?
 - What cross-functional or integrated systems are affected?
 - What databases, APIs, or services need changes?
@@ -215,22 +216,7 @@ Focus on extracting:
 ### 4.2 Functional Requirements
 
 Extract BUSINESS functional requirements from source:
-- Extract information from "PART B : (Mandatory) Detailed Requirement" from the excel (if uploaded as the source document)
-- What specific business functions or capabilities need to be delivered?
-
-### 4.3 Business Rules and Logic
-
-Extract BUSINESS rules and decision logic from source:
-- What business decisions need to be made and under what conditions?
-- What criteria determine whether a business action is allowed or restricted?
-- What business policies or guidelines govern the process or workflow?
-- When should different business outcomes or paths be followed?
-- What business conditions trigger specific actions, approvals, or notifications?
-- What are the business exceptions, special cases, or override scenarios?
-- How do different user roles, responsibilities, or authorities affect business decisions?
-- What business validations ensure compliance with regulations or company policies?
-- What escalation rules or approval hierarchies apply to business decisions?
-- What business status changes or state transitions are required in the process?
+- Extract information ONLY from "PART B : (Mandatory) Detailed Requirement" from the excel (if uploaded as the source document)
 
 IMPORTANT:
 
