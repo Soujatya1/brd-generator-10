@@ -323,6 +323,23 @@ Extract from ALL processed sheets:
 
 Search across ALL sheets for system names, database references, integration points, and data flow information.
 
+## 6.0 Communication Requirement
+
+**SEARCH FOR .MSG FILES ONLY:**
+- Scan ALL source documents for original email files (.msg format)
+- Extract ONLY emails that are explicitly provided in .msg file format
+
+**IF .msg files ARE FOUND:**
+- Include top 3 most relevant original emails from the .msg files
+- Preserve original email format and content
+
+**IF NO .msg files are found:**
+- Leave this section completely BLANK
+- Do NOT generate, create, or simulate any email content
+- Do NOT include any sample communications
+
+**CRITICAL:** Never generate, create, assume, or fabricate any email content. Only extract from actual .msg source files.
+
 IMPORTANT:
 
 - Use markdown headings
