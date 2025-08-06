@@ -236,7 +236,7 @@ Extract BUSINESS functional requirements from ALL processed sheets:
 
 **SPECIFIC FOR EXCEL:** 
 - If there's a "Requirement" sheet, prioritize extracting from detailed requirement sections
-- Check for columns like "Requirement Description", "Business Rule", "Functional Spec", etc.
+- Check for cells like "Detailed Requirement", "Business Rule", "Functional Spec", etc.
 - Process other sheets for supplementary functional requirements
 
 IMPORTANT:
