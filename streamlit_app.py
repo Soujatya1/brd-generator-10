@@ -453,10 +453,10 @@ List exact source documents
   * Identify data rows from the source  
   * Convert to markdown table format using this structure:
 
-| [Header 1 from source] | [Header 2 from source] | [Header 3 from source] | [Additional headers as found] |
-|------------------------|------------------------|------------------------|------------------------------|
-| [Row 1 data from source] | [Row 1 data] | [Row 1 data] | [Row 1 data] |
-| [Row 2 data from source] | [Row 2 data] | [Row 2 data] | [Row 2 data] |
+| [Header 1 from source] | [Header 2 from source] |
+|------------------------|------------------------|
+| [Row 1 data from source] | [Row 1 data] |
+| [Row 2 data from source] | [Row 2 data] |
 
 - **Preserve exact content** from source but **force table formatting**
 - **Do not modify** any text content, only structure it into table format
