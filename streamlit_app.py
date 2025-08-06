@@ -572,7 +572,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
     return [chain1, chain2, chain3, chain4]
 
 def generate_brd_sequentially(chains, requirements):
-    req_chunks = chunk_requirements(requirements)
+    req_chunks = chunk_requirements(requirements)
     
     if len(req_chunks) > 1:
         st.info(f"Large content detected. Processing in {len(req_chunks)} chunks...")
