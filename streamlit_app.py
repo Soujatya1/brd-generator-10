@@ -20,7 +20,6 @@ from docx.enum.text import WD_BREAK
 from docx.enum.style import WD_STYLE_TYPE
 from langchain_openai import AzureChatOpenAI
 from openpyxl import load_workbook
-import json
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -71,7 +70,6 @@ Create ONLY the following sections with detailed content in markdown:
 ### 1.1 Purpose
 
 Extract the EXACT business purpose from the source, focusing on:
-- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - What is the main business objective or problem being addressed?
 - What specific functionality or capability is being implemented?
 - What restrictions, validations, or controls are being introduced?
@@ -83,7 +81,6 @@ Look for key phrases that indicate purpose: "purpose", "objective", "requirement
 ### 1.2 As-is process
 
 Extract the CURRENT state/process from the source:
-- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - How does the current system/process work?
 - What are the existing workflows or user journeys?
 - What problems or limitations exist in the current approach?
@@ -96,7 +93,6 @@ Look for indicators: "currently", "as-is", "existing", "present", "manual", "wor
 ### 1.3 To be process / High level solution
 
 Extract the PROPOSED solution from the source:
-- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - What is the new process or system behavior?
 - What workflow steps or validation logic will be implemented?
 - How will the new solution address current problems?
@@ -111,7 +107,6 @@ Look for indicators: "to-be", "proposed", "solution", "new process", "will be", 
 ### 2.1 System impacts – Primary and cross functional
 
 Extract SPECIFIC system impacts mentioned in the source:
-- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - Which primary systems/applications will be modified?
 - What cross-functional or integrated systems are affected?
 - What databases, APIs, or services need changes?
@@ -220,7 +215,6 @@ Focus on extracting:
 ### 4.2 Functional Requirements
 
 Extract BUSINESS functional requirements from source:
-- If an excel is uploaded as source document, please concentrate on information from "PART B : (Mandatory)" and align the extracted information as required.
 - What specific business functions or capabilities need to be delivered?
 - What actions, operations, or tasks should users be able to perform?
 - What business processes or workflows need to be supported?
@@ -231,6 +225,20 @@ Extract BUSINESS functional requirements from source:
 - What access controls, permissions, or restrictions are needed?
 - What calculations, computations, or business logic processing is required?
 - What reporting, tracking, or audit capabilities are needed for the business?
+
+### 4.3 Business Rules and Logic
+
+Extract BUSINESS rules and decision logic from source:
+- What business decisions need to be made and under what conditions?
+- What criteria determine whether a business action is allowed or restricted?
+- What business policies or guidelines govern the process or workflow?
+- When should different business outcomes or paths be followed?
+- What business conditions trigger specific actions, approvals, or notifications?
+- What are the business exceptions, special cases, or override scenarios?
+- How do different user roles, responsibilities, or authorities affect business decisions?
+- What business validations ensure compliance with regulations or company policies?
+- What escalation rules or approval hierarchies apply to business decisions?
+- What business status changes or state transitions are required in the process?
 
 IMPORTANT:
 
@@ -564,77 +572,77 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
     return [chain1, chain2, chain3, chain4]
 
 def generate_brd_sequentially(chains, requirements):
-    
-    req_chunks = chunk_requirements(requirements)
-    
-    if len(req_chunks) > 1:
-        st.info(f"Large content detected. Processing in {len(req_chunks)} chunks...")
-    
-    combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
-    
-    # Print the combined requirements being sent to the first chain
-    st.write("="*80)
-    st.write("COMBINED REQUIREMENTS SENT TO LLM:")
-    st.write("="*80)
-    st.write(combined_requirements)
-    st.write("="*80)
-    st.write(f"Total characters: {len(combined_requirements)}")
-    st.write("="*80)
-    
-    previous_content = ""
-    final_sections = []
-    
-    for i, chain in enumerate(chains):
-        try:
-            print(f"\n{'='*60}")
-            print(f"CHAIN {i+1} INPUT:")
-            print(f"{'='*60}")
-            
-            if i == 0:
-                print("Input to Chain 1 (intro_impact):")
-                print(f"Requirements length: {len(combined_requirements)} characters")
-                print("First 500 characters of requirements:")
-                print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
-                
-                result = chain.run(requirements=combined_requirements)
-            else:
-                print(f"Input to Chain {i+1}:")
-                print(f"Previous content length: {len(previous_content)} characters")
-                print(f"Requirements length: {len(combined_requirements)} characters")
-                print("Previous content (first 300 chars):")
-                print(previous_content[:300] + "..." if len(previous_content) > 300 else previous_content)
-                print("\nRequirements (first 300 chars):")
-                print(combined_requirements[:300] + "..." if len(combined_requirements) > 300 else combined_requirements)
-                
-                result = chain.run(previous_content=previous_content, requirements=combined_requirements)
-            
-            print(f"\nCHAIN {i+1} OUTPUT:")
-            print(f"Response length: {len(result)} characters")
-            print("First 500 characters of response:")
-            print(result[:500] + "..." if len(result) > 500 else result)
-            print(f"{'='*60}")
-            
-            final_sections.append(result)
-            previous_content += "\n\n" + result
-            
-            st.write(f"✓ Completed section group {i+1}/4")
-            
-        except Exception as e:
-            print(f"ERROR in chain {i+1}: {str(e)}")
-            st.error(f"Error in chain {i+1}: {str(e)}")
-            final_sections.append(f"## Error in section group {i+1}\nError processing this section: {str(e)}")
-    
-    final_brd = "\n\n".join(final_sections)
-    
-    print("\n" + "="*80)
-    print("FINAL BRD CONTENT:")
-    print("="*80)
-    print(f"Total final BRD length: {len(final_brd)} characters")
-    print("Final BRD (first 1000 characters):")
-    print(final_brd[:1000] + "..." if len(final_brd) > 1000 else final_brd)
-    print("="*80)
-    
-    return final_brd
+    
+    req_chunks = chunk_requirements(requirements)
+    
+    if len(req_chunks) > 1:
+        st.info(f"Large content detected. Processing in {len(req_chunks)} chunks...")
+    
+    combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
+    
+    # Print the combined requirements being sent to the first chain
+    st.write("="*80)
+    st.write("COMBINED REQUIREMENTS SENT TO LLM:")
+    st.write("="*80)
+    st.write(combined_requirements)
+    st.write("="*80)
+    st.write(f"Total characters: {len(combined_requirements)}")
+    st.write("="*80)
+    
+    previous_content = ""
+    final_sections = []
+    
+    for i, chain in enumerate(chains):
+        try:
+            print(f"\n{'='*60}")
+            print(f"CHAIN {i+1} INPUT:")
+            print(f"{'='*60}")
+            
+            if i == 0:
+                print("Input to Chain 1 (intro_impact):")
+                print(f"Requirements length: {len(combined_requirements)} characters")
+                print("First 500 characters of requirements:")
+                print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
+                
+                result = chain.run(requirements=combined_requirements)
+            else:
+                print(f"Input to Chain {i+1}:")
+                print(f"Previous content length: {len(previous_content)} characters")
+                print(f"Requirements length: {len(combined_requirements)} characters")
+                print("Previous content (first 300 chars):")
+                print(previous_content[:300] + "..." if len(previous_content) > 300 else previous_content)
+                print("\nRequirements (first 300 chars):")
+                print(combined_requirements[:300] + "..." if len(combined_requirements) > 300 else combined_requirements)
+                
+                result = chain.run(previous_content=previous_content, requirements=combined_requirements)
+            
+            print(f"\nCHAIN {i+1} OUTPUT:")
+            print(f"Response length: {len(result)} characters")
+            print("First 500 characters of response:")
+            print(result[:500] + "..." if len(result) > 500 else result)
+            print(f"{'='*60}")
+            
+            final_sections.append(result)
+            previous_content += "\n\n" + result
+            
+            st.write(f"✓ Completed section group {i+1}/4")
+            
+        except Exception as e:
+            print(f"ERROR in chain {i+1}: {str(e)}")
+            st.error(f"Error in chain {i+1}: {str(e)}")
+            final_sections.append(f"## Error in section group {i+1}\nError processing this section: {str(e)}")
+    
+    final_brd = "\n\n".join(final_sections)
+    
+    st.write("\n" + "="*80)
+    st.write("FINAL BRD CONTENT:")
+    st.write("="*80)
+    st.write(f"Total final BRD length: {len(final_brd)} characters")
+    st.write("Final BRD (first 1000 characters):")
+    st.write(final_brd[:1000] + "..." if len(final_brd) > 1000 else final_brd)
+    st.write("="*80)
+    
+    return final_brd
 
 def create_toc_styles(doc):
     styles = doc.styles
@@ -869,28 +877,8 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel(excel_file, max_rows_per_sheet=None, visible_only=False, safe_mode=True):
-    """
-    Extract all data from Excel file and return as JSON format.
-    
-    Args:
-        excel_file: Path to Excel file
-        max_rows_per_sheet: Maximum rows to extract per sheet (None for all rows)
-        visible_only: Whether to extract only visible sheets
-        safe_mode: If True, handles data type errors more gracefully
-    
-    Returns:
-        dict: JSON-serializable dictionary with sheet data and metadata
-    """
-    result = {
-        "sheets": {},
-        "metadata": {
-            "total_sheets": 0,
-            "processed_sheets": 0,
-            "errors": []
-        }
-    }
-    
+def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=False):
+    content = []
     try:
         if visible_only:
             wb = load_workbook(excel_file)
@@ -904,146 +892,95 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=None, visible_only
             if visible_sheets:
                 excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
             else:
-                result["metadata"]["errors"].append("No visible sheets found in the Excel file")
-                return result
+                return "No visible sheets found in the Excel file"
             
             if not isinstance(excel_data, dict):
                 excel_data = {visible_sheets[0]: excel_data}
         else:
-            # Read Excel with error handling for problematic data
-            try:
-                excel_data = pd.read_excel(excel_file, sheet_name=None)
-            except Exception as read_error:
-                if safe_mode:
-                    # Try reading with different options if initial read fails
-                    try:
-                        excel_data = pd.read_excel(
-                            excel_file, 
-                            sheet_name=None, 
-                            dtype=str,  # Read everything as strings initially
-                            na_filter=False  # Don't convert to NaN
-                        )
-                    except Exception:
-                        raise read_error
-                else:
-                    raise read_error
-        
-        result["metadata"]["total_sheets"] = len(excel_data)
+            excel_data = pd.read_excel(excel_file, sheet_name=None)
         
         for sheet_name, df in excel_data.items():
-            try:
-                # Initialize sheet data structure
-                sheet_data = {
-                    "name": sheet_name,
-                    "dimensions": {
-                        "rows": len(df),
-                        "columns": len(df.columns)
-                    },
-                    "columns": df.columns.tolist(),
-                    "data": [],
-                    "data_types": {},
-                    "summary": {
-                        "numeric_columns": [],
-                        "missing_data": {},
-                        "unique_values": {}
-                    }
-                }
+            if df.empty:
+                continue
+            
+            if max_rows_per_sheet and len(df) > max_rows_per_sheet:
+                df = df.head(max_rows_per_sheet)
+                content.append(f"Note: Processing first {max_rows_per_sheet} rows only")
                 
-                # Handle empty sheets
-                if df.empty:
-                    sheet_data["data"] = []
-                    result["sheets"][sheet_name] = sheet_data
-                    continue
+            content.append(f"=== EXCEL SHEET: {sheet_name} ===")
+            content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
+            
+            content.append(f"Columns ({len(df.columns)}): {', '.join(df.columns.tolist())}")
+            
+            data_types = df.dtypes.to_dict()
+            type_summary = []
+            for col, dtype in data_types.items():
+                type_summary.append(f"{col}: {str(dtype)}")
+            content.append(f"Data Types: {', '.join(type_summary[:10])}...")
+            
+            numeric_cols = df.select_dtypes(include=['number']).columns
+            if len(numeric_cols) > 0:
+                content.append(f"Numeric Columns: {', '.join(numeric_cols.tolist()[:5])}...")
+            
+            sample_size = min(max_sample_rows, len(df))
+            if sample_size > 0:
+                content.append(f"\nSample Data (first {sample_size} rows):")
+                content.append("TABLE:")
                 
-                # Apply row limit if specified
-                original_rows = len(df)
-                if max_rows_per_sheet and len(df) > max_rows_per_sheet:
-                    df = df.head(max_rows_per_sheet)
-                    sheet_data["truncated"] = {
-                        "original_rows": original_rows,
-                        "extracted_rows": max_rows_per_sheet
-                    }
+                display_df = df.head(sample_size)
                 
-                # Convert data to JSON-serializable format
-                # Handle NaN, NaT, and other pandas-specific values
-                df_clean = df.copy()
+                if len(df.columns) > 10:
+                    display_cols = df.columns[:8].tolist() + [f"... +{len(df.columns)-8} more columns"]
+                    display_df = df[df.columns[:8]].head(sample_size)
+                    header_row = " | ".join(display_cols)
+                    content.append(header_row)
+                else:
+                    header_row = " | ".join(df.columns.tolist())
+                    content.append(header_row)
                 
-                # Clean and convert each column individually
-                for col in df_clean.columns:
-                    try:
-                        # Handle datetime columns
-                        if pd.api.types.is_datetime64_any_dtype(df_clean[col]):
-                            df_clean[col] = df_clean[col].dt.strftime('%Y-%m-%d %H:%M:%S')
-                            df_clean[col] = df_clean[col].where(df_clean[col] != 'NaT', None)
-                        
-                        # Convert complex objects to strings
-                        elif df_clean[col].dtype == 'object':
-                            df_clean[col] = df_clean[col].apply(
-                                lambda x: str(x) if x is not None and pd.notna(x) else None
-                            )
-                    except Exception as col_error:
-                        # If there's an issue with a specific column, convert all values to strings
-                        df_clean[col] = df_clean[col].astype(str)
-                        df_clean[col] = df_clean[col].replace(['nan', 'NaT', 'None'], None)
+                for _, row in display_df.iterrows():
+                    row_data = []
+                    for val in row:
+                        str_val = str(val)
+                        if len(str_val) > 50:
+                            str_val = str_val[:47] + "..."
+                        row_data.append(str_val)
+                    content.append(" | ".join(row_data))
                 
-                # Replace remaining NaN and NaT with None for JSON compatibility
-                df_clean = df_clean.where(pd.notna(df_clean), None)
+                if len(df) > sample_size:
+                    content.append(f"... and {len(df) - sample_size} more rows")
+            
+            content.append(f"\nData Summary:")
+            
+            key_columns = []
+            for col in df.columns:
+                col_lower = col.lower()
+                if any(keyword in col_lower for keyword in ['id', 'name', 'title', 'status', 'type', 'category', 'priority', 'requirement']):
+                    key_columns.append(col)
+            
+            if key_columns:
+                content.append(f"Key Columns Identified: {', '.join(key_columns[:5])}")
                 
-                # Convert DataFrame to list of dictionaries (records)
-                sheet_data["data"] = df_clean.to_dict('records')
-                
-                # Add data types information
-                for col, dtype in df.dtypes.items():
-                    sheet_data["data_types"][col] = str(dtype)
-                
-                # Add numeric columns
-                numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-                sheet_data["summary"]["numeric_columns"] = numeric_cols
-                
-                # Add missing data information
-                missing_data = df.isnull().sum()
-                for col, missing_count in missing_data.items():
-                    if missing_count > 0:
-                        sheet_data["summary"]["missing_data"][col] = int(missing_count)
-                
-                # Add unique values for categorical columns (limit to reasonable size)
-                for col in df.columns:
-                    try:
-                        if df[col].dtype == 'object' and not df[col].empty:
-                            # Clean the data before getting unique values
-                            clean_col = df[col].dropna()
-                            if len(clean_col) > 0:
-                                # Convert complex objects to strings if needed
-                                clean_col = clean_col.apply(
-                                    lambda x: str(x) if not isinstance(x, str) else x
-                                )
-                                unique_vals = clean_col.unique()
-                                
-                                if len(unique_vals) <= 50:  # Only store if reasonable number
-                                    sheet_data["summary"]["unique_values"][col] = [
-                                        str(val) for val in unique_vals if val is not None
-                                    ]
-                                else:
-                                    sheet_data["summary"]["unique_values"][col] = {
-                                        "count": len(unique_vals),
-                                        "sample": [str(val) for val in unique_vals[:10] if val is not None]
-                                    }
-                    except Exception as unique_error:
-                        # Skip this column if there's an error processing unique values
-                        continue
-                
-                result["sheets"][sheet_name] = sheet_data
-                result["metadata"]["processed_sheets"] += 1
-                
-            except Exception as sheet_error:
-                error_msg = f"Error processing sheet '{sheet_name}': {str(sheet_error)}"
-                result["metadata"]["errors"].append(error_msg)
+                for col in key_columns[:3]:
+                    if df[col].dtype == 'object':
+                        unique_vals = df[col].dropna().unique()
+                        if len(unique_vals) <= 20:
+                            content.append(f"{col} Values: {', '.join(map(str, unique_vals[:10]))}")
+                        else:
+                            content.append(f"{col}: {len(unique_vals)} unique values")
+            
+            missing_data = df.isnull().sum()
+            if missing_data.sum() > 0:
+                missing_cols = missing_data[missing_data > 0].head(5)
+                missing_info = [f"{col}: {count} missing" for col, count in missing_cols.items()]
+                content.append(f"Missing Data: {', '.join(missing_info)}")
+            
+            content.append("="*50)
     
     except Exception as e:
-        error_msg = f"Error processing Excel file: {str(e)}"
-        result["metadata"]["errors"].append(error_msg)
+        content.append(f"Error processing Excel file: {str(e)}")
     
-    return result
+    return "\n".join(content)
 
 def extract_content_from_msg(msg_file):
     try:
