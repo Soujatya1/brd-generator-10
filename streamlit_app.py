@@ -215,17 +215,8 @@ Focus on extracting:
 ### 4.2 Functional Requirements
 
 Extract BUSINESS functional requirements from source:
-- "PART B : (Mandatory) Detailed Requirement" information from the excel (if uploaded as the source document)
+- Extract information from "PART B : (Mandatory) Detailed Requirement" from the excel (if uploaded as the source document)
 - What specific business functions or capabilities need to be delivered?
-- What actions, operations, or tasks should users be able to perform?
-- What business processes or workflows need to be supported?
-- What decisions, approvals, or validations are required in the process?
-- What information needs to be captured, reviewed, or processed?
-- What business rules, policies, or compliance requirements must be enforced?
-- What notifications, communications, or alerts need to be generated?
-- What access controls, permissions, or restrictions are needed?
-- What calculations, computations, or business logic processing is required?
-- What reporting, tracking, or audit capabilities are needed for the business?
 
 ### 4.3 Business Rules and Logic
 
