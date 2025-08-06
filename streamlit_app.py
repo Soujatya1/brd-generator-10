@@ -869,8 +869,19 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel(excel_file, max_rows_per_sheet=None, visible_only=False):
-
+def extract_content_from_excel(excel_file, max_rows_per_sheet=None, visible_only=False, safe_mode=True):
+    """
+    Extract all data from Excel file and return as JSON format.
+    
+    Args:
+        excel_file: Path to Excel file
+        max_rows_per_sheet: Maximum rows to extract per sheet (None for all rows)
+        visible_only: Whether to extract only visible sheets
+        safe_mode: If True, handles data type errors more gracefully
+    
+    Returns:
+        dict: JSON-serializable dictionary with sheet data and metadata
+    """
     result = {
         "sheets": {},
         "metadata": {
@@ -899,7 +910,23 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=None, visible_only
             if not isinstance(excel_data, dict):
                 excel_data = {visible_sheets[0]: excel_data}
         else:
-            excel_data = pd.read_excel(excel_file, sheet_name=None)
+            # Read Excel with error handling for problematic data
+            try:
+                excel_data = pd.read_excel(excel_file, sheet_name=None)
+            except Exception as read_error:
+                if safe_mode:
+                    # Try reading with different options if initial read fails
+                    try:
+                        excel_data = pd.read_excel(
+                            excel_file, 
+                            sheet_name=None, 
+                            dtype=str,  # Read everything as strings initially
+                            na_filter=False  # Don't convert to NaN
+                        )
+                    except Exception:
+                        raise read_error
+                else:
+                    raise read_error
         
         result["metadata"]["total_sheets"] = len(excel_data)
         
@@ -941,14 +968,26 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=None, visible_only
                 # Handle NaN, NaT, and other pandas-specific values
                 df_clean = df.copy()
                 
-                # Replace NaN and NaT with None for JSON compatibility
-                df_clean = df_clean.where(pd.notna(df_clean), None)
-                
-                # Convert datetime columns to string
+                # Clean and convert each column individually
                 for col in df_clean.columns:
-                    if pd.api.types.is_datetime64_any_dtype(df_clean[col]):
-                        df_clean[col] = df_clean[col].dt.strftime('%Y-%m-%d %H:%M:%S')
-                        df_clean[col] = df_clean[col].where(df_clean[col] != 'NaT', None)
+                    try:
+                        # Handle datetime columns
+                        if pd.api.types.is_datetime64_any_dtype(df_clean[col]):
+                            df_clean[col] = df_clean[col].dt.strftime('%Y-%m-%d %H:%M:%S')
+                            df_clean[col] = df_clean[col].where(df_clean[col] != 'NaT', None)
+                        
+                        # Convert complex objects to strings
+                        elif df_clean[col].dtype == 'object':
+                            df_clean[col] = df_clean[col].apply(
+                                lambda x: str(x) if x is not None and pd.notna(x) else None
+                            )
+                    except Exception as col_error:
+                        # If there's an issue with a specific column, convert all values to strings
+                        df_clean[col] = df_clean[col].astype(str)
+                        df_clean[col] = df_clean[col].replace(['nan', 'NaT', 'None'], None)
+                
+                # Replace remaining NaN and NaT with None for JSON compatibility
+                df_clean = df_clean.where(pd.notna(df_clean), None)
                 
                 # Convert DataFrame to list of dictionaries (records)
                 sheet_data["data"] = df_clean.to_dict('records')
@@ -969,15 +1008,29 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=None, visible_only
                 
                 # Add unique values for categorical columns (limit to reasonable size)
                 for col in df.columns:
-                    if df[col].dtype == 'object' and not df[col].empty:
-                        unique_vals = df[col].dropna().unique()
-                        if len(unique_vals) <= 50:  # Only store if reasonable number
-                            sheet_data["summary"]["unique_values"][col] = unique_vals.tolist()
-                        else:
-                            sheet_data["summary"]["unique_values"][col] = {
-                                "count": len(unique_vals),
-                                "sample": unique_vals[:10].tolist()
-                            }
+                    try:
+                        if df[col].dtype == 'object' and not df[col].empty:
+                            # Clean the data before getting unique values
+                            clean_col = df[col].dropna()
+                            if len(clean_col) > 0:
+                                # Convert complex objects to strings if needed
+                                clean_col = clean_col.apply(
+                                    lambda x: str(x) if not isinstance(x, str) else x
+                                )
+                                unique_vals = clean_col.unique()
+                                
+                                if len(unique_vals) <= 50:  # Only store if reasonable number
+                                    sheet_data["summary"]["unique_values"][col] = [
+                                        str(val) for val in unique_vals if val is not None
+                                    ]
+                                else:
+                                    sheet_data["summary"]["unique_values"][col] = {
+                                        "count": len(unique_vals),
+                                        "sample": [str(val) for val in unique_vals[:10] if val is not None]
+                                    }
+                    except Exception as unique_error:
+                        # Skip this column if there's an error processing unique values
+                        continue
                 
                 result["sheets"][sheet_name] = sheet_data
                 result["metadata"]["processed_sheets"] += 1
