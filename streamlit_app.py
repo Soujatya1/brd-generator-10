@@ -338,6 +338,150 @@ Before finalizing each section, verify that every piece of information can be tr
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 5.0, ### 5.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
 
+""",
+
+    "testing_final": """
+
+You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD.
+
+PREVIOUS CONTENT:
+
+{previous_content}
+
+SOURCE REQUIREMENTS:
+
+{requirements}
+
+CRITICAL INSTRUCTIONS FOR ALL SECTIONS:
+
+- Extract information ONLY from the provided source requirements
+- For Test Scenarios: PRIORITY CHECK - First look for existing test scenarios in source
+- Adapt to any business domain or requirement type
+- Do NOT create, assume, or fabricate any content not explicitly present in the source
+
+Create ONLY the following sections with detailed content in markdown:
+
+## 7.0 Test Scenarios
+
+**PRIMARY APPROACH - Extract Existing Test Scenarios:**
+FIRST, thoroughly scan ALL source requirements documents for existing test content using these keywords:
+- "Test Scenarios" / "Test Scenario"
+- "Test Cases" / "Test Case" 
+- "Test case Scenarios"
+- "Testing" / "Test Plan"
+- "Verification" / "Validation"
+
+**IF existing test scenarios/cases ARE FOUND in source documents:**
+- Extract and preserve ALL the EXACT test scenarios from the source (require all the test scenarios from the source)
+- Maintain original test structure, format, and content
+- Convert to standardized markdown table format:
+
+| **Test ID** | **Test Scenario Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
+|-------------|---------------|---------------|----------------|---------------------|---------------|----------|
+| [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
+
+**STOP HERE - Do not proceed to Secondary Approach if existing tests are found**
+
+---
+
+**SECONDARY APPROACH - Generate from Functional Requirements:**
+**ONLY EXECUTE IF PRIMARY APPROACH YIELDS NO RESULTS**
+
+IF NO existing test scenarios are found in ANY source documents, THEN generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements:
+
+| **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
+|-------------|---------------|---------------|----------------|---------------------|---------------|----------|
+
+Create exactly 5 test scenarios covering:
+- Primary functional requirements mentioned in source
+- Different user roles, permissions, or access levels described  
+- Various input conditions, data scenarios, or edge cases noted
+- Error conditions, exceptions, or validation failures mentioned
+- Integration points, API calls, or system interactions described
+
+**CRITICAL:** Base ALL generated test scenarios ONLY on what is explicitly described in the source requirements. Do not infer or assume functionality not documented.
+
+**EXECUTION RULE:** Use Primary Approach OR Secondary Approach - NEVER BOTH.
+
+## 8.0 Questions / Suggestions
+
+**SEARCH STRATEGY:**
+- Scan ALL source documents for explicit questions, suggestions, or clarifications
+- Look for keywords: "Question", "Clarification", "Unknown", "Assumption", "Dependency", "Suggestion", "Recommendation"
+
+**IF questions/suggestions ARE FOUND in source:**
+- List exact questions, clarifications, or unknowns from source
+- List exact assumptions, dependencies, or prerequisites from source  
+- List exact suggestions, recommendations, or enhancements from source
+
+**IF NO questions/suggestions are found in source:**
+- Leave this section completely BLANK
+- Do NOT generate, create, or assume any questions or suggestions
+- Do NOT infer potential issues or recommendations
+
+**CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate any questions, suggestions, or recommendations not present in the source.
+
+## 9.0 Reference Document
+
+List exact source documents
+
+**CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate anything
+
+## 10.0 Appendix
+
+**SEARCH STRATEGY:**
+- Scan ALL source documents for explicit appendix and supporting information
+- Look for keywords: "Appendix"
+
+**IF appendix/supporting information ARE FOUND in source:**
+- List exact appendix and supporting information
+
+**IF NO appendix/supporting information are found in source:**
+- Leave this section completely BLANK
+- Do NOT generate, create, or assume any appendix or supporting information
+- Do NOT infer potential supporting information
+
+## 11.0 Risk Evaluation
+
+**SEARCH STRATEGY:**
+- Scan for sections: "Risk Evaluation", "Risk Assessment", "Risk Analysis"
+- Look for ANY structured data that appears to be in rows and columns
+
+**EXTRACTION AND FORMATTING:**
+- **IF content appears to be tabular data (even if extracted as plain text):**
+  * Identify column headers from the source
+  * Identify data rows from the source  
+  * Convert to markdown table format using this structure:
+
+| [Header 1 from source] | [Header 2 from source] | [Header 3 from source] | [Additional headers as found] |
+|------------------------|------------------------|------------------------|------------------------------|
+| [Row 1 data from source] | [Row 1 data] | [Row 1 data] | [Row 1 data] |
+| [Row 2 data from source] | [Row 2 data] | [Row 2 data] | [Row 2 data] |
+
+- **Preserve exact content** from source but **force table formatting**
+- **Do not modify** any text content, only structure it into table format
+
+**IF NO Risk Evaluation content found:**
+- State: "No Risk Evaluation section found in source document"
+
+**CRITICAL:** Even if the source content appears as plain text, if it contains structured risk data, format it as a markdown table while preserving all original content exactly.
+
+IMPORTANT:
+
+- Use markdown headings
+- Preserve tables with markdown table format using pipe syntax
+- Do NOT output code fences
+- Create test scenarios based on ACTUAL requirements described in source
+- For sections 8.0-11.0: Leave blank if no content found in source
+- Adapt all content to match the domain and scope of the source requirements
+
+VALIDATION CHECK:
+
+Before finalizing sections 8.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+
+OUTPUT FORMAT:
+Provide ONLY the markdown sections (## 7.0, ### 7.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
+
 """
 
 }
