@@ -117,13 +117,8 @@ Extract SPECIFIC system impacts mentioned in the source:
 
 ### 2.2 Impacted Products
 
-List ONLY the products/services explicitly mentioned in the source:
-- Specific products, product lines, or offerings affected
-- Business processes or departments impacted
-- User groups, roles, or personas affected
-- Proposal types, application types, or transaction types
-- Geographic or market scope if mentioned
-- DO NOT extract this information from Test Scenarios section
+List ONLY the products/services explicitly mentioned in the source which are impacted
+Also look for indicator like "Functionality in which the change has to be done"
 
 ### 2.3 List of APIs required
 
