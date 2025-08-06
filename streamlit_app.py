@@ -54,13 +54,22 @@ SOURCE REQUIREMENTS:
 
 {requirements}
 
+EXCEL FILE PROCESSING INSTRUCTIONS:
+
+**FOR EXCEL FILES (.xlsx/.xls):**
+- Process ALL sheets EXCEPT "Test Scenarios" sheet
+- Include data from sheets: "Requirement", "Ops Risk Assessment", and any other available sheets
+- Extract content from ALL relevant columns and rows in each sheet
+- Look for business requirements, processes, impacts, and technical specifications across all sheets
+- If sheet names are different from expected, process all sheets except those explicitly containing test scenarios
+
 CRITICAL INSTRUCTIONS:
 
-- Extract information ONLY from the provided source requirements
-- Identify the ACTUAL business problem being solved from the source
-- Focus on what is explicitly mentioned, not assumptions
+- Extract information from ALL available sheets (except Test Scenarios sheet)
+- Identify the ACTUAL business problem being solved from any relevant sheet
+- Focus on what is explicitly mentioned across all processed sheets
 - Do NOT create, assume, or fabricate any content not present in the source
-- If a section has no relevant information in the source, leave it BLANK
+- If a section has no relevant information across ALL processed sheets, leave it BLANK
 - Adapt to any domain (training, payments, integration, access control, etc.)
 
 Create ONLY the following sections with detailed content in markdown:
@@ -69,18 +78,18 @@ Create ONLY the following sections with detailed content in markdown:
 
 ### 1.1 Purpose
 
-Extract the EXACT business purpose from the source, focusing on:
+Extract the EXACT business purpose from ANY relevant sheet (Requirement, Ops Risk Assessment, etc.), focusing on:
 - What is the main business objective or problem being addressed?
 - What specific functionality or capability is being implemented?
 - What restrictions, validations, or controls are being introduced?
 - What business processes are being improved or changed?
 - What compliance, security, or operational requirements are being met?
 
-Look for key phrases that indicate purpose: "purpose", "objective", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
+Search across ALL processed sheets for key phrases: "purpose", "objective", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
 
 ### 1.2 As-is process
 
-Extract the CURRENT state/process from the source:
+Extract the CURRENT state/process from ANY relevant sheet:
 - How does the current system/process work?
 - What are the existing workflows or user journeys?
 - What problems or limitations exist in the current approach?
@@ -88,11 +97,11 @@ Extract the CURRENT state/process from the source:
 - What system behaviors need to be changed?
 - Any screenshots, process flows, or current state descriptions
 
-Look for indicators: "currently", "as-is", "existing", "present", "manual", "workaround", "problem with current", "limitations"
+Look for indicators across ALL sheets: "currently", "as-is", "existing", "present", "manual", "workaround", "problem with current", "limitations"
 
 ### 1.3 To be process / High level solution
 
-Extract the PROPOSED solution from the source:
+Extract the PROPOSED solution from ANY relevant sheet:
 - What is the new process or system behavior?
 - What workflow steps or validation logic will be implemented?
 - How will the new solution address current problems?
@@ -100,20 +109,29 @@ Extract the PROPOSED solution from the source:
 - What new capabilities or features will be added?
 - Any conditional logic, decision trees, or multi-step processes
 
-Look for indicators: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
+Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
 
 ## 2.0 Impact Analysis
 
 ### 2.1 System impacts – Primary and cross functional
 
+Extract system impact information from ANY relevant sheet (particularly Ops Risk Assessment if available):
+- What systems will be affected by the change?
+- What are the primary impacts on existing functionality?
+- What cross-functional impacts exist across departments/teams?
+- What integration points will be affected?
+- Any operational or infrastructure impacts mentioned
+
 ### 2.2 Impacted Products
 
-List ONLY the products/services explicitly mentioned in the source which are impacted
-Also look for indicator like "Functionality in which the change has to be done"
+List ONLY the products/services explicitly mentioned across ALL processed sheets which are impacted:
+- Extract from any column/row mentioning affected products
+- Look for "Functionality in which the change has to be done"
+- Check all sheets for product names, service names, or system names
 
 ### 2.3 List of APIs required
 
-Extract SPECIFIC technical requirements from the source:
+Extract SPECIFIC technical requirements from ALL processed sheets:
 - New APIs or services that need to be created
 - Existing APIs that need modification
 - Third-party integrations or external system connections
@@ -124,14 +142,14 @@ Extract SPECIFIC technical requirements from the source:
 IMPORTANT:
 
 - Use markdown headings (##, ###)
-- Preserve any tables in markdown format
-- Extract content based on what's ACTUALLY in the source, regardless of domain
+- Preserve any tables in markdown format from ANY processed sheet
+- Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
-- If no content found for a subsection, leave it blank
+- If no content found for a subsection after checking ALL sheets, leave it blank
 
 VALIDATION CHECK:
 
-Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). Remove any content that cannot be directly attributed to the source documents.
 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 1.0 Introduction, ### 1.1 Purpose, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
@@ -150,11 +168,19 @@ SOURCE REQUIREMENTS:
 
 {requirements}
 
+EXCEL FILE PROCESSING INSTRUCTIONS:
+
+**FOR EXCEL FILES (.xlsx/.xls):**
+- Process ALL sheets EXCEPT "Test Scenarios" sheet
+- Include data from sheets: "Requirement", "Ops Risk Assessment", and any other available sheets
+- Extract workflow, process, and business rule information from ALL relevant columns and rows
+- Look for step-by-step processes, business rules, and functional requirements across all sheets
+
 CRITICAL INSTRUCTIONS:
 
-- Extract information ONLY from the provided source requirements
-- Identify ACTUAL workflows, processes, and business rules from the source
-- Focus on step-by-step logic, conditions, and decision points mentioned
+- Extract information from ALL available sheets (except Test Scenarios sheet)
+- Identify ACTUAL workflows, processes, and business rules from ANY relevant sheet
+- Focus on step-by-step logic, conditions, and decision points mentioned across ALL processed sheets
 - Adapt to any business domain (training, validation, integration, access control, etc.)
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
 
@@ -162,11 +188,11 @@ Create ONLY the following sections with detailed content in markdown:
 
 ## 3.0 Process / Data Flow diagram / Figma
 
-Extract DETAILED workflow/process information from the source:
+Extract DETAILED workflow/process information from ALL processed sheets:
 
 ### 3.1 Workflow Description
 
-Create step-by-step process based on what's described in the source:
+Create step-by-step process based on what's described across ALL processed sheets:
 - What triggers the process or workflow?
 - What are the sequential steps or stages?
 - What decision points, conditions, or validations occur?
@@ -175,25 +201,25 @@ Create step-by-step process based on what's described in the source:
 - What user interactions or system responses are involved?
 
 Format as logical flow:
-- Step 1: [Action/Trigger]
-  - If [condition mentioned in source]: [result/next step]
+- Step 1: [Action/Trigger from any relevant sheet]
+  - If [condition mentioned in any sheet]: [result/next step]
   - If [alternative condition]: [alternative result]
-- Step 2: [Next Action]
-  - [Continue based on source content]
+- Step 2: [Next Action from any relevant sheet]
+  - [Continue based on source content from processed sheets]
 
-Look for process indicators: "workflow", "process", "steps", "sequence", "flow", "journey", "condition", "if", "then", "when", "trigger", "action", "response"
+Look for process indicators across ALL sheets: "workflow", "process", "steps", "sequence", "flow", "journey", "condition", "if", "then", "when", "trigger", "action", "response"
 
 ## 4.0 Business / System Requirement
 
-### 4.1 Application / Module Name: [Extract exact application/module name from source]
+### 4.1 Application / Module Name: [Extract exact application/module name from ANY processed sheet]
 
-Create detailed requirement table based on source content:
+Create detailed requirement table based on content from ALL processed sheets:
 
 | **Rule ID** | **Rule Description** | **Expected Result** | **Dependency** |
 |-------------|---------------------|-------------------|----------------|
-| **4.1.1** | [Extract specific business rule from source] | [Exact expected behavior mentioned] | [Technical/system dependencies noted] |
+| **4.1.1** | [Extract specific business rule from ANY processed sheet] | [Exact expected behavior mentioned in ANY sheet] | [Technical/system dependencies noted in ANY sheet] |
 
-Focus on extracting:
+Focus on extracting from ALL processed sheets:
 - Specific business rules, validations, or logic mentioned
 - Functional requirements and expected system behaviors
 - User access controls, permissions, or restrictions
@@ -202,20 +228,28 @@ Focus on extracting:
 
 ### 4.2 Functional Requirements
 
-Extract BUSINESS functional requirements from source:
-- Extract information ONLY from "PART B : (Mandatory) Detailed Requirement" from the excel (if uploaded as the source document)
+Extract BUSINESS functional requirements from ALL processed sheets:
+- Look for detailed requirement sections in the "Requirement" sheet primarily
+- Also check other sheets for additional functional requirements
+- Extract information from any columns containing requirement descriptions
+- Include business rules, validation requirements, and functional specifications
+
+**SPECIFIC FOR EXCEL:** 
+- If there's a "Requirement" sheet, prioritize extracting from detailed requirement sections
+- Check for columns like "Requirement Description", "Business Rule", "Functional Spec", etc.
+- Process other sheets for supplementary functional requirements
 
 IMPORTANT:
 
 - Use markdown headings
 - Create detailed requirement tables with multiple columns
-- Base all content on what's explicitly stated in the source
+- Base all content on what's explicitly stated across ALL processed sheets
 - Adapt terminology and focus to match the source domain
-- Leave blank if no content found
+- Leave blank if no content found after checking ALL relevant sheets
 
 VALIDATION CHECK:
 
-Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). Remove any content that cannot be directly attributed to the source documents.
 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 3.0, ### 3.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
@@ -224,7 +258,7 @@ Provide ONLY the markdown sections (## 3.0, ### 3.1, etc.) with the extracted co
 
     "data_communication": """
 
-You are a Business Analyst expert creating sections 5.0–6.0 of a comprehensive BRD.
+You are a Business Analyst expert creating section 5.0 of a comprehensive BRD.
 
 PREVIOUS CONTENT:
 
@@ -234,20 +268,28 @@ SOURCE REQUIREMENTS:
 
 {requirements}
 
+EXCEL FILE PROCESSING INSTRUCTIONS:
+
+**FOR EXCEL FILES (.xlsx/.xls):**
+- Process ALL sheets EXCEPT "Test Scenarios" sheet
+- Include data from sheets: "Requirement", "Ops Risk Assessment", and any other available sheets
+- Extract data requirements, specifications, and communication needs from ALL relevant sheets
+- Look for data-related requirements across all processed sheets
+
 CRITICAL INSTRUCTIONS:
 
-- Extract information ONLY from the provided source requirements
-- Identify ACTUAL data and communication needs from the source
+- Extract information from ALL available sheets (except Test Scenarios sheet)
+- Identify ACTUAL data and communication needs from ANY relevant sheet
 - Adapt to any type of data requirements (user data, transaction data, training data, etc.)
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
 
-Create ONLY the following sections with detailed content in markdown:
+Create ONLY the following section with detailed content in markdown:
 
 ## 5.0 MIS / DATA Requirement
 
 ### 5.1 Data Specifications
 
-Extract SPECIFIC data requirements from the source:
+Extract SPECIFIC data requirements from ALL processed sheets:
 - What data elements, fields, or attributes are needed?
 - What data sources, databases, or systems provide this data?
 - What data formats, structures, or schemas are required?
@@ -255,9 +297,11 @@ Extract SPECIFIC data requirements from the source:
 - What data processing, transformation, or calculation needs are mentioned?
 - Any data retention, archival, or lifecycle requirements
 
+Look across ALL sheets for data-related content in any columns or sections.
+
 ### 5.2 Reporting and Analytics Needs
 
-Extract any mentioned:
+Extract any mentioned across ALL processed sheets:
 - What reports, dashboards, or analytics are required?
 - What metrics, KPIs, or measurements need to be tracked?
 - What data visualization or presentation requirements exist?
@@ -265,9 +309,11 @@ Extract any mentioned:
 - What user roles or audiences need access to reports?
 - Any real-time monitoring or alerting requirements
 
+Check all processed sheets for reporting requirements, analytics needs, or dashboard specifications.
+
 ### 5.3 Data Sources and Destinations
 
-Extract from source:
+Extract from ALL processed sheets:
 - Source systems, databases, or applications providing data
 - Target systems, repositories, or destinations for data
 - Integration points, APIs, or data exchange mechanisms
@@ -275,173 +321,22 @@ Extract from source:
 - External systems, third-party sources, or partner integrations
 - Master data management or reference data needs
 
-## 6.0 Communication Requirement
-
-**SEARCH FOR .MSG FILES ONLY:**
-- Scan ALL source documents for original email files (.msg format)
-- Extract ONLY emails that are explicitly provided in .msg file format
-
-**IF .msg files ARE FOUND:**
-- Include top 3 most relevant original emails from the .msg files
-- Preserve original email format and content
-
-**IF NO .msg files are found:**
-- Leave this section completely BLANK
-- Do NOT generate, create, or simulate any email content
-- Do NOT include any sample communications
-
-**CRITICAL:** Never generate, create, assume, or fabricate any email content. Only extract from actual .msg source files.
-
-VALIDATION CHECK:
-
-Before finalizing each section, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
-
-OUTPUT FORMAT:
-Provide ONLY the markdown sections (## 5.0, ### 5.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
-
-""",
-
-    "testing_final": """
-
-You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD.
-
-PREVIOUS CONTENT:
-
-{previous_content}
-
-SOURCE REQUIREMENTS:
-
-{requirements}
-
-CRITICAL INSTRUCTIONS FOR ALL SECTIONS:
-
-- Extract information ONLY from the provided source requirements
-- For Test Scenarios: PRIORITY CHECK - First look for existing test scenarios in source
-- Adapt to any business domain or requirement type
-- Do NOT create, assume, or fabricate any content not explicitly present in the source
-
-Create ONLY the following sections with detailed content in markdown:
-
-## 7.0 Test Scenarios
-
-**PRIMARY APPROACH - Extract Existing Test Scenarios:**
-FIRST, thoroughly scan ALL source requirements documents for existing test content using these keywords:
-- "Test Scenarios" / "Test Scenario"
-- "Test Cases" / "Test Case" 
-- "Test case Scenarios"
-- "Testing" / "Test Plan"
-- "Verification" / "Validation"
-
-**IF existing test scenarios/cases ARE FOUND in source documents:**
-- Extract and preserve ALL the EXACT test scenarios from the source (require all the test scenarios from the source)
-- Maintain original test structure, format, and content
-- Convert to standardized markdown table format:
-
-| **Test ID** | **Test Scenario Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
-|-------------|---------------|---------------|----------------|---------------------|---------------|----------|
-| [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
-
-**STOP HERE - Do not proceed to Secondary Approach if existing tests are found**
-
----
-
-**SECONDARY APPROACH - Generate from Functional Requirements:**
-**ONLY EXECUTE IF PRIMARY APPROACH YIELDS NO RESULTS**
-
-IF NO existing test scenarios are found in ANY source documents, THEN generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements:
-
-| **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
-|-------------|---------------|---------------|----------------|---------------------|---------------|----------|
-
-Create exactly 5 test scenarios covering:
-- Primary functional requirements mentioned in source
-- Different user roles, permissions, or access levels described  
-- Various input conditions, data scenarios, or edge cases noted
-- Error conditions, exceptions, or validation failures mentioned
-- Integration points, API calls, or system interactions described
-
-**CRITICAL:** Base ALL generated test scenarios ONLY on what is explicitly described in the source requirements. Do not infer or assume functionality not documented.
-
-**EXECUTION RULE:** Use Primary Approach OR Secondary Approach - NEVER BOTH.
-
-## 8.0 Questions / Suggestions
-
-**SEARCH STRATEGY:**
-- Scan ALL source documents for explicit questions, suggestions, or clarifications
-- Look for keywords: "Question", "Clarification", "Unknown", "Assumption", "Dependency", "Suggestion", "Recommendation"
-
-**IF questions/suggestions ARE FOUND in source:**
-- List exact questions, clarifications, or unknowns from source
-- List exact assumptions, dependencies, or prerequisites from source  
-- List exact suggestions, recommendations, or enhancements from source
-
-**IF NO questions/suggestions are found in source:**
-- Leave this section completely BLANK
-- Do NOT generate, create, or assume any questions or suggestions
-- Do NOT infer potential issues or recommendations
-
-**CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate any questions, suggestions, or recommendations not present in the source.
-
-## 9.0 Reference Document
-
-List exact source documents
-
-**CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate anything
-
-## 10.0 Appendix
-
-**SEARCH STRATEGY:**
-- Scan ALL source documents for explicit appendix and supporting information
-- Look for keywords: "Appendix"
-
-**IF appendix/supporting information ARE FOUND in source:**
-- List exact appendix and supporting information
-
-**IF NO appendix/supporting information are found in source:**
-- Leave this section completely BLANK
-- Do NOT generate, create, or assume any appendix or supporting information
-- Do NOT infer potential supporting information
-
-## 11.0 Risk Evaluation
-
-**SEARCH STRATEGY:**
-- Scan for sections: "Risk Evaluation", "Risk Assessment", "Risk Analysis"
-- Look for ANY structured data that appears to be in rows and columns
-
-**EXTRACTION AND FORMATTING:**
-- **IF content appears to be tabular data (even if extracted as plain text):**
-  * Identify column headers from the source
-  * Identify data rows from the source  
-  * Convert to markdown table format using this structure:
-
-| [Header 1 from source] | [Header 2 from source] | [Header 3 from source] | [Additional headers as found] |
-|------------------------|------------------------|------------------------|------------------------------|
-| [Row 1 data from source] | [Row 1 data] | [Row 1 data] | [Row 1 data] |
-| [Row 2 data from source] | [Row 2 data] | [Row 2 data] | [Row 2 data] |
-
-- **Preserve exact content** from source but **force table formatting**
-- **Do not modify** any text content, only structure it into table format
-
-**IF NO Risk Evaluation content found:**
-- State: "No Risk Evaluation section found in source document"
-
-**CRITICAL:** Even if the source content appears as plain text, if it contains structured risk data, format it as a markdown table while preserving all original content exactly.
+Search across ALL sheets for system names, database references, integration points, and data flow information.
 
 IMPORTANT:
 
 - Use markdown headings
-- Preserve tables with markdown table format using pipe syntax
-- Do NOT output code fences
-- Create test scenarios based on ACTUAL requirements described in source
-- For sections 8.0-11.0: Leave blank if no content found in source
-- Adapt all content to match the domain and scope of the source requirements
+- Preserve any tables in markdown format from ANY processed sheet
+- Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
+- Adapt language and focus to match the source content type
+- If no content found for a subsection after checking ALL sheets, leave it blank
 
 VALIDATION CHECK:
 
-Before finalizing sections 8.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). Remove any content that cannot be directly attributed to the source documents.
 
 OUTPUT FORMAT:
-Provide ONLY the markdown sections (## 7.0, ### 7.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
+Provide ONLY the markdown sections (## 5.0, ### 5.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
 
 """
 
