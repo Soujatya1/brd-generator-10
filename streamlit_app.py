@@ -927,24 +927,46 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                 content.append(f"\nSample Data (first {sample_size} rows):")
                 content.append("TABLE:")
                 
-                display_df = df.head(sample_size)
-                
-                if len(df.columns) > 10:
-                    display_cols = df.columns[:8].tolist() + [f"... +{len(df.columns)-8} more columns"]
-                    display_df = df[df.columns[:8]].head(sample_size)
-                    header_row = " | ".join(display_cols)
-                    content.append(header_row)
+                # Determine which columns to display
+                max_display_cols = 10
+                if len(df.columns) > max_display_cols:
+                    display_cols = df.columns[:max_display_cols].tolist()
+                    display_df = df[display_cols].head(sample_size)
+                    truncated_note = f"... +{len(df.columns) - max_display_cols} more columns"
                 else:
-                    header_row = " | ".join(df.columns.tolist())
-                    content.append(header_row)
+                    display_cols = df.columns.tolist()
+                    display_df = df[display_cols].head(sample_size)
+                    truncated_note = None
                 
+                # Create header row
+                header_parts = display_cols.copy()
+                if truncated_note:
+                    header_parts.append(truncated_note)
+                content.append(" | ".join(header_parts))
+                
+                # Add separator line for better readability
+                separator_parts = ["-" * min(len(col), 20) for col in display_cols]
+                if truncated_note:
+                    separator_parts.append("-" * len(truncated_note))
+                content.append(" | ".join(separator_parts))
+                
+                # Add data rows
                 for _, row in display_df.iterrows():
                     row_data = []
                     for val in row:
                         str_val = str(val)
-                        if len(str_val) > 50:
-                            str_val = str_val[:47] + "..."
+                        # Truncate long values but keep reasonable length
+                        if len(str_val) > 30:
+                            str_val = str_val[:27] + "..."
+                        # Handle NaN/None values more clearly
+                        if str_val.lower() in ['nan', 'none', 'nat']:
+                            str_val = ""
                         row_data.append(str_val)
+                    
+                    # Add truncation indicator if columns were truncated
+                    if truncated_note:
+                        row_data.append("...")
+                    
                     content.append(" | ".join(row_data))
                 
                 if len(df) > sample_size:
@@ -952,6 +974,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             
             content.append(f"\nData Summary:")
             
+            # Identify key columns
             key_columns = []
             for col in df.columns:
                 col_lower = col.lower()
@@ -965,10 +988,14 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                     if df[col].dtype == 'object':
                         unique_vals = df[col].dropna().unique()
                         if len(unique_vals) <= 20:
-                            content.append(f"{col} Values: {', '.join(map(str, unique_vals[:10]))}")
+                            # Clean up unique values display
+                            clean_vals = [str(val) for val in unique_vals[:10] if str(val).lower() not in ['nan', 'none', 'nat']]
+                            if clean_vals:
+                                content.append(f"{col} Values: {', '.join(clean_vals)}")
                         else:
                             content.append(f"{col}: {len(unique_vals)} unique values")
             
+            # Missing data analysis
             missing_data = df.isnull().sum()
             if missing_data.sum() > 0:
                 missing_cols = missing_data[missing_data > 0].head(5)
