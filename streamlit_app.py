@@ -858,8 +858,8 @@ def extract_content_from_pdf(pdf_file):
 def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10):
     content = []
     try:
-        # Only read visible sheets
-        wb = load_workbook(excel_file)
+        # Load workbook and identify only visible sheets
+        wb = load_workbook(excel_file, data_only=True)
         visible_sheets = []
         
         for sheet_name in wb.sheetnames:
@@ -870,13 +870,38 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         if not visible_sheets:
             return "No visible sheets found in the Excel file"
         
-        # Read only visible sheets
-        excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
-        
-        if not isinstance(excel_data, dict):
-            excel_data = {visible_sheets[0]: excel_data}
-        
-        for sheet_name, df in excel_data.items():
+        # Process only visible sheets using openpyxl directly
+        for sheet_name in visible_sheets:
+            sheet = wb[sheet_name]
+            
+            # Convert sheet to DataFrame manually to ensure we only get visible sheet data
+            data = []
+            headers = []
+            
+            # Get headers from first row
+            first_row = next(sheet.iter_rows(min_row=1, max_row=1, values_only=True), None)
+            if first_row:
+                headers = [str(cell) if cell is not None else f"Column_{i+1}" for i, cell in enumerate(first_row)]
+            
+            # Get data rows
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                if any(cell is not None for cell in row):  # Skip completely empty rows
+                    data.append([cell for cell in row])
+            
+            # Create DataFrame
+            if data:
+                # Ensure all rows have the same number of columns as headers
+                max_cols = len(headers)
+                for i, row in enumerate(data):
+                    if len(row) < max_cols:
+                        data[i] = list(row) + [None] * (max_cols - len(row))
+                    elif len(row) > max_cols:
+                        data[i] = list(row)[:max_cols]
+                
+                df = pd.DataFrame(data, columns=headers)
+            else:
+                df = pd.DataFrame(columns=headers if headers else [])
+            
             if df.empty:
                 continue
             
