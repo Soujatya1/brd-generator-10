@@ -461,27 +461,23 @@ List exact source documents
 ## 11.0 Risk Evaluation
 
 **SEARCH STRATEGY:**
-- Scan for sections: "Risk Evaluation", "Risk Assessment", "Risk Analysis"
-- Look for ANY structured data that appears to be in rows and columns
+- Scan ALL source documents for risk-related content
+- Look for keywords: "Risk Evaluation", "Risk Assessment", "Risk Analysis", "Ops Risk", "Business Risk"
+- Check for any tabular data related to risks
 
-**EXTRACTION AND FORMATTING:**
-- **IF content appears to be tabular data (even if extracted as plain text):**
-  * Identify column headers from the source
-  * Identify data rows from the source  
-  * Convert to markdown table format using this structure:
+**EXTRACTION RULES:**
+- **IF risk content is found in source documents:**
+  * Extract the EXACT content from the source
+  * If the content is in table format, convert to clean markdown table
+  * If the content is in paragraph format, preserve as paragraphs
+  * Include all risk-related information found
 
-| [Header 1 from source] | [Header 2 from source] |
-|------------------------|------------------------|
-| [Row 1 data from source] | [Row 1 data] |
-| [Row 2 data from source] | [Row 2 data] |
+**IF NO risk content found in source:**
+- State: "No Risk Evaluation content found in source documents"
+- Do NOT create placeholder tables or empty structures
+- Do NOT generate sample risk data
 
-- **Preserve exact content** from source but **force table formatting**
-- **Do not modify** any text content, only structure it into table format
-
-**IF NO Risk Evaluation content found:**
-- State: "No Risk Evaluation section found in source document"
-
-**CRITICAL:** Even if the source content appears as plain text, if it contains structured risk data, format it as a markdown table while preserving all original content exactly.
+**CRITICAL:** Only extract content that actually exists in the source documents. Never create placeholder or template content.
 
 IMPORTANT:
 
