@@ -869,7 +869,7 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel_as_json(excel_file, max_rows_per_sheet=None, visible_only=False):
+def extract_content_from_excel(excel_file, max_rows_per_sheet=None, visible_only=False):
 
     result = {
         "sheets": {},
