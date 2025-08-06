@@ -855,10 +855,10 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=True):
+def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10):
     content = []
     try:
-        # Always check for visible sheets first
+        # Only read visible sheets
         wb = load_workbook(excel_file)
         visible_sheets = []
         
@@ -870,15 +870,11 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         if not visible_sheets:
             return "No visible sheets found in the Excel file"
         
-        if visible_only:
-            # Read only visible sheets
-            excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
-        #else:
-            # Read all sheets (including hidden ones) - use only if explicitly requested
-            #excel_data = pd.read_excel(excel_file, sheet_name=None)
+        # Read only visible sheets
+        excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
         
         if not isinstance(excel_data, dict):
-            excel_data = {visible_sheets[0] if visible_only else list(excel_data.keys())[0]: excel_data}
+            excel_data = {visible_sheets[0]: excel_data}
         
         for sheet_name, df in excel_data.items():
             if df.empty:
