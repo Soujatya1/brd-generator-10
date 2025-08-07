@@ -324,38 +324,39 @@ Extract from ALL processed sheets:
 
 Search across ALL sheets for system names, database references, integration points, and data flow information.
 
-## 6.0 Communication Requirement
-
 **EMAIL CONTENT EXTRACTION:**
-- Look for any content marked as "EMAIL CONTENT FROM .MSG FILE:" in the source requirements
-- Look for email-like content including From, To, Subject, Date headers
-- Search for any communication content, email threads, or correspondence
+- Look for email communication patterns in the source requirements including:
+  - Email addresses (containing @ symbol)
+  - Email headers like "From:", "To:", "Subject:", "Date:"
+  - Email greetings like "Hi [Name]", "Hello [Name]", "Dear [Name]"
+  - Email signatures with names, titles, phone numbers
+  - Reply chains and conversation threads
+  - Email closings like "Regards", "Thanks", "Best Regards"
+  - Corporate email signatures with company names
 
-**IF email content IS FOUND:**
+**SEARCH FOR EMAIL PATTERNS:**
+- @ symbols indicating email addresses
+- Phone numbers in signatures
+- Corporate titles and designations
+- Email thread conversations
+- Any communication that looks like email correspondence
+
+**IF email-like content IS FOUND:**
 - Extract and include all email communications found in the source
-- Preserve original email format including headers (From, To, Subject, Date, etc.)
-- Include the complete email body content
-- Maintain chronological order if multiple emails are present
+- Preserve the conversation flow and chronological order
+- Include email addresses, names, and contact information
+- Maintain the original format and structure
 - Format as:
 
-### Email 1: [Subject Line]
-**From:** [sender email/name]  
-**To:** [recipient email/name]  
-**Date:** [date]  
-**Subject:** [subject line]
+### Email Communication Thread
 
-[Complete email body content]
+[Extract and preserve the complete email conversation as it appears in the source, maintaining the original format, names, email addresses, signatures, and conversation flow]
 
----
-
-### Email 2: [Subject Line]
-[Continue with same format for additional emails]
-
-**IF NO email content is found:**
+**IF NO email-like content is found:**
 - State: "No communication requirement content found in source documents"
 - Do NOT generate, create, or simulate any email content
 
-**CRITICAL:** Only extract actual email content that exists in the source requirements. Never generate, create, assume, or fabricate any email content.
+**CRITICAL:** Only extract actual email-like content that exists in the source requirements. Never generate, create, assume, or fabricate any email content.
 
 IMPORTANT:
 
