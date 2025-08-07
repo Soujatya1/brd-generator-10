@@ -829,6 +829,20 @@ def add_section_with_bookmark(doc, heading_text, bookmark_name, level=1):
     return heading
 
 def create_table_in_doc(doc, table_data):
+    def clean_table_cell_value(cell_text):
+        if cell_text is None:
+            return "-"
+        
+        str_val = str(cell_text).strip()
+        
+        if str_val.lower() == 'nan':
+            return "-"
+        
+        if str_val.startswith("**Unnamed"):
+            return "Insert Column Name"
+        
+        return str_val
+    
     if not table_data or len(table_data) < 2:
         return None
     
@@ -837,7 +851,8 @@ def create_table_in_doc(doc, table_data):
     
     for i, cell_text in enumerate(table_data[0]):
         cell = table.rows[0].cells[i]
-        cell.text = str(cell_text) if cell_text else ""
+        cleaned_text = clean_table_cell_value(cell_text)
+        cell.text = cleaned_text
         for paragraph in cell.paragraphs:
             for run in paragraph.runs:
                 run.bold = True
@@ -845,18 +860,31 @@ def create_table_in_doc(doc, table_data):
     for row_idx, row_data in enumerate(table_data[1:], 1):
         for col_idx, cell_text in enumerate(row_data):
             if row_idx < len(table.rows) and col_idx < len(table.rows[row_idx].cells):
-                table.rows[row_idx].cells[col_idx].text = str(cell_text) if cell_text else ""
+                cleaned_text = clean_table_cell_value(cell_text)  # Apply cleaning
+                table.rows[row_idx].cells[col_idx].text = cleaned_text
     
     return table
 
 def parse_markdown_table(table_text):
-    """Parse markdown table and clean empty columns"""
+    def clean_cell_value(cell_text):
+        if cell_text is None:
+            return "-"
+        
+        str_val = str(cell_text).strip()
+        
+        if str_val.lower() == 'nan':
+            return "-"
+        
+        if str_val.startswith("**Unnamed"):
+            return "Insert Column Name"
+        
+        return str_val
+    
     lines = [line.strip() for line in table_text.split('\n') if line.strip()]
     
     if len(lines) < 2:
         return None
     
-    # Remove separator line
     if len(lines) >= 2 and '---' in lines[1]:
         lines.pop(1)
     
@@ -864,52 +892,45 @@ def parse_markdown_table(table_text):
     max_cols = 0
     
     for line in lines:
-        # Handle lines with outer pipes
         if line.startswith('|') and line.endswith('|'):
             line = line[1:-1]
         
-        # Split by pipe and clean
-        cells = [cell.strip() for cell in line.split('|')]
+        cells = [clean_cell_value(cell.strip()) for cell in line.split('|')]
         
-        # Remove trailing empty cells
         while cells and not cells[-1]:
             cells.pop()
         
-        if cells:  # Only add non-empty rows
+        if cells:
             table_data.append(cells)
             max_cols = max(max_cols, len(cells))
     
     if not table_data:
         return None
     
-    # Normalize all rows to have the same number of columns (max_cols)
-    # Fill missing cells with empty strings
+
     normalized_data = []
     for row in table_data:
-        normalized_row = row + [''] * (max_cols - len(row))
+        normalized_row = row + ['-'] * (max_cols - len(row))
         normalized_data.append(normalized_row)
     
-    # Remove completely empty columns from the right
-    while max_cols > 1:  # Keep at least 1 column
+    while max_cols > 1:
         last_col_has_data = False
         for row in normalized_data:
-            if len(row) >= max_cols and row[max_cols-1].strip():
+            if len(row) >= max_cols and row[max_cols-1].strip() and row[max_cols-1] != '-':
                 last_col_has_data = True
                 break
         
         if last_col_has_data:
             break
         else:
-            # Remove the last column from all rows
             for row in normalized_data:
                 if len(row) >= max_cols:
                     row.pop()
             max_cols -= 1
     
-    # Final cleanup - ensure all rows have the same length
     final_data = []
     for row in normalized_data:
-        final_row = row[:max_cols] + [''] * max(0, max_cols - len(row))
+        final_row = row[:max_cols] + ['-'] * max(0, max_cols - len(row))
         final_data.append(final_row)
     
     return final_data if final_data else None
@@ -954,6 +975,23 @@ def extract_content_from_pdf(pdf_file):
     return "\n".join(content)
 
 def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=True):
+    def clean_cell_value(cell_text):
+        """Clean table cell values by replacing nan and Unnamed columns"""
+        if cell_text is None:
+            return "-"
+        
+        str_val = str(cell_text).strip()
+        
+        # Replace nan values with dash
+        if str_val.lower() == 'nan':
+            return "-"
+        
+        # Replace Unnamed columns
+        if str_val.startswith("**Unnamed"):
+            return "Insert Column Name"
+        
+        return str_val
+    
     content = []
     try:
         if visible_only:
@@ -986,17 +1024,21 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             content.append(f"=== EXCEL SHEET: {sheet_name} ===")
             content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
             
-            content.append(f"Columns ({len(df.columns)}): {', '.join(df.columns.tolist())}")
+            # Clean column names before displaying
+            cleaned_columns = [clean_cell_value(col) for col in df.columns.tolist()]
+            content.append(f"Columns ({len(df.columns)}): {', '.join(cleaned_columns)}")
             
             data_types = df.dtypes.to_dict()
             type_summary = []
             for col, dtype in data_types.items():
-                type_summary.append(f"{col}: {str(dtype)}")
+                cleaned_col = clean_cell_value(col)
+                type_summary.append(f"{cleaned_col}: {str(dtype)}")
             content.append(f"Data Types: {', '.join(type_summary[:10])}...")
             
             numeric_cols = df.select_dtypes(include=['number']).columns
             if len(numeric_cols) > 0:
-                content.append(f"Numeric Columns: {', '.join(numeric_cols.tolist()[:5])}...")
+                cleaned_numeric_cols = [clean_cell_value(col) for col in numeric_cols.tolist()]
+                content.append(f"Numeric Columns: {', '.join(cleaned_numeric_cols[:5])}...")
             
             sample_size = min(max_sample_rows, len(df))
             if sample_size > 0:
@@ -1006,21 +1048,23 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                 display_df = df.head(sample_size)
                 
                 if len(df.columns) > 10:
-                    display_cols = df.columns[:8].tolist() + [f"... +{len(df.columns)-8} more columns"]
+                    cleaned_display_cols = [clean_cell_value(col) for col in df.columns[:8].tolist()]
+                    display_cols = cleaned_display_cols + [f"... +{len(df.columns)-8} more columns"]
                     display_df = df[df.columns[:8]].head(sample_size)
                     header_row = " | ".join(display_cols)
                     content.append(header_row)
                 else:
-                    header_row = " | ".join(df.columns.tolist())
+                    cleaned_header_cols = [clean_cell_value(col) for col in df.columns.tolist()]
+                    header_row = " | ".join(cleaned_header_cols)
                     content.append(header_row)
                 
                 for _, row in display_df.iterrows():
                     row_data = []
                     for val in row:
-                        str_val = str(val)
-                        if len(str_val) > 50:
-                            str_val = str_val[:47] + "..."
-                        row_data.append(str_val)
+                        cleaned_val = clean_cell_value(val)  # Clean each cell value
+                        if len(cleaned_val) > 50:
+                            cleaned_val = cleaned_val[:47] + "..."
+                        row_data.append(cleaned_val)
                     content.append(" | ".join(row_data))
                 
                 if len(df) > sample_size:
@@ -1030,25 +1074,29 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             
             key_columns = []
             for col in df.columns:
-                col_lower = col.lower()
+                col_lower = str(col).lower()
                 if any(keyword in col_lower for keyword in ['id', 'name', 'title', 'status', 'type', 'category', 'priority', 'requirement']):
                     key_columns.append(col)
             
             if key_columns:
-                content.append(f"Key Columns Identified: {', '.join(key_columns[:5])}")
+                cleaned_key_cols = [clean_cell_value(col) for col in key_columns[:5]]
+                content.append(f"Key Columns Identified: {', '.join(cleaned_key_cols)}")
                 
                 for col in key_columns[:3]:
                     if df[col].dtype == 'object':
                         unique_vals = df[col].dropna().unique()
                         if len(unique_vals) <= 20:
-                            content.append(f"{col} Values: {', '.join(map(str, unique_vals[:10]))}")
+                            cleaned_unique_vals = [clean_cell_value(val) for val in unique_vals[:10]]
+                            cleaned_col_name = clean_cell_value(col)
+                            content.append(f"{cleaned_col_name} Values: {', '.join(map(str, cleaned_unique_vals))}")
                         else:
-                            content.append(f"{col}: {len(unique_vals)} unique values")
+                            cleaned_col_name = clean_cell_value(col)
+                            content.append(f"{cleaned_col_name}: {len(unique_vals)} unique values")
             
             missing_data = df.isnull().sum()
             if missing_data.sum() > 0:
                 missing_cols = missing_data[missing_data > 0].head(5)
-                missing_info = [f"{col}: {count} missing" for col, count in missing_cols.items()]
+                missing_info = [f"{clean_cell_value(col)}: {count} missing" for col, count in missing_cols.items()]
                 content.append(f"Missing Data: {', '.join(missing_info)}")
             
             content.append("="*50)
