@@ -838,7 +838,7 @@ def create_table_in_doc(doc, table_data):
         if str_val.lower() == 'nan':
             return "-"
         
-        if str_val.startswith("**Unnamed"):
+        if str_val.startswith("Unnamed"):
             return "Insert Column Name"
         
         return str_val
@@ -875,7 +875,7 @@ def parse_markdown_table(table_text):
         if str_val.lower() == 'nan':
             return "-"
         
-        if str_val.startswith("**Unnamed"):
+        if str_val.startswith("Unnamed"):
             return "Insert Column Name"
         
         return str_val
@@ -987,7 +987,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             return "-"
         
         # Replace Unnamed columns
-        if str_val.startswith("**Unnamed"):
+        if str_val.startswith("Unnamed"):
             return "Insert Column Name"
         
         return str_val
