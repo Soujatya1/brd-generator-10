@@ -326,20 +326,36 @@ Search across ALL sheets for system names, database references, integration poin
 
 ## 6.0 Communication Requirement
 
-**SEARCH FOR .MSG FILES ONLY:**
-- Scan ALL source documents for original email files (.msg format)
-- Extract ONLY emails that are explicitly provided in .msg file format
+**EMAIL CONTENT EXTRACTION:**
+- Look for any content marked as "EMAIL CONTENT FROM .MSG FILE:" in the source requirements
+- Look for email-like content including From, To, Subject, Date headers
+- Search for any communication content, email threads, or correspondence
 
-**IF .msg files ARE FOUND:**
-- Include top 3 most relevant original emails from the .msg files
-- Preserve original email format and content
+**IF email content IS FOUND:**
+- Extract and include all email communications found in the source
+- Preserve original email format including headers (From, To, Subject, Date, etc.)
+- Include the complete email body content
+- Maintain chronological order if multiple emails are present
+- Format as:
 
-**IF NO .msg files are found:**
-- Leave this section completely BLANK
+### Email 1: [Subject Line]
+**From:** [sender email/name]  
+**To:** [recipient email/name]  
+**Date:** [date]  
+**Subject:** [subject line]
+
+[Complete email body content]
+
+---
+
+### Email 2: [Subject Line]
+[Continue with same format for additional emails]
+
+**IF NO email content is found:**
+- State: "No communication requirement content found in source documents"
 - Do NOT generate, create, or simulate any email content
-- Do NOT include any sample communications
 
-**CRITICAL:** Never generate, create, assume, or fabricate any email content. Only extract from actual .msg source files.
+**CRITICAL:** Only extract actual email content that exists in the source requirements. Never generate, create, assume, or fabricate any email content.
 
 IMPORTANT:
 
