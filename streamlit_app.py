@@ -124,9 +124,9 @@ Extract system impact information:
 
 ### 2.2 Impacted Products
 
-List ONLY the products/services explicitly mentioned across ALL processed sheets which are impacted:
-- Extract from any column/row mentioning affected products
-- Check all sheets for product names, service names, or system names
+List ONLY the products/platforms/applications explicitly mentioned across ALL processed sheets which are impacted:
+- Extract from any column/row mentioning affected products/platforms/applications
+- Check all sheets for product names, service names, or system names, platform names, application names
 
 ### 2.3 List of APIs required
 
