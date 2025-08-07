@@ -127,7 +127,8 @@ Extract system impact information:
 List ONLY the products/platforms/applications explicitly mentioned across ALL processed sheets which are impacted:
 - Extract from any column/row mentioning affected products/platforms/applications
 - Check all sheets for product names, service names, or system names, platform names, application names
-- FIRST ALWAYS TRY TO EXTRACT THE INFORMATION FROM THE "REQUIREMENT" SHEET OF THE excel (if uploaded)
+
+CRUCIAL: DO NOT PICK THIS INFORMATION FROM THE "Test Scenarios" sheet of the excel source document
 
 ### 2.3 List of APIs required
 
