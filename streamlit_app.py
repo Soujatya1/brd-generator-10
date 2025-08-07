@@ -952,102 +952,103 @@ def extract_content_from_pdf(pdf_file):
     
     return "\n".join(content)
 
-def extract_content_from_excel(excel_file, max_rows_per_sheet=100, max_sample_rows=50):
+def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=True):
     content = []
     try:
-        # Load workbook and identify only visible sheets
-        wb = load_workbook(excel_file, data_only=True)
-        visible_sheets = []
-        
-        for sheet_name in wb.sheetnames:
-            sheet = wb[sheet_name]
-            if sheet.sheet_state == 'visible':
-                visible_sheets.append(sheet_name)
-        
-        if not visible_sheets:
-            return "No visible sheets found in the Excel file"
-        
-        # Process only visible sheets using openpyxl directly
-        for sheet_name in visible_sheets:
-            sheet = wb[sheet_name]
+        if visible_only:
+            wb = load_workbook(excel_file)
+            visible_sheets = []
             
-            content.append(f"=== EXCEL SHEET: {sheet_name} ===")
+            for sheet_name in wb.sheetnames:
+                sheet = wb[sheet_name]
+                if sheet.sheet_state == 'visible':
+                    visible_sheets.append(sheet_name)
             
-            # Get all data including headers
-            all_data = []
-            headers = []
-            
-            # Find the first row with data
-            first_data_row = None
-            for row_idx, row in enumerate(sheet.iter_rows(values_only=True), 1):
-                if any(cell is not None and str(cell).strip() for cell in row):
-                    first_data_row = row_idx
-                    headers = [str(cell).strip() if cell is not None else f"Column_{i+1}" 
-                             for i, cell in enumerate(row)]
-                    break
-            
-            if not first_data_row:
-                content.append("No data found in this sheet")
-                continue
-            
-            # Remove empty trailing columns from headers
-            while headers and (not headers[-1] or headers[-1].startswith("Column_")):
-                headers.pop()
-            
-            if not headers:
-                continue
-            
-            content.append(f"Headers: {', '.join(headers)}")
-            
-            # Get all data rows (including the first row as header)
-            all_rows = []
-            for row_idx, row in enumerate(sheet.iter_rows(values_only=True), 1):
-                if row_idx >= first_data_row:
-                    row_data = []
-                    for i in range(len(headers)):
-                        if i < len(row) and row[i] is not None:
-                            cell_value = str(row[i]).strip()
-                        else:
-                            cell_value = ""
-                        row_data.append(cell_value)
-                    
-                    # Only include rows that have at least one non-empty cell
-                    if any(cell for cell in row_data):
-                        all_rows.append(row_data)
-            
-            if not all_rows:
-                content.append("No data rows found")
-                continue
-            
-            # For sheets that might contain risk assessment tables, extract ALL data
-            if any(keyword in sheet_name.lower() for keyword in ['risk', 'assessment', 'evaluation']):
-                content.append(f"\n**COMPLETE TABLE DATA FOR {sheet_name}:**")
-                content.append("TABLE:")
-                
-                # Add header row
-                content.append(" | ".join(headers))
-                content.append(" | ".join(["-" * len(header) for header in headers]))
-                
-                # Add all data rows
-                for row_data in all_rows:
-                    content.append(" | ".join(row_data))
-                
+            if visible_sheets:
+                excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
             else:
-                # For other sheets, limit the sample
-                sample_size = min(max_sample_rows, len(all_rows))
-                content.append(f"\nSample Data ({sample_size} of {len(all_rows)} rows):")
+                return "No visible sheets found in the Excel file"
+            
+            if not isinstance(excel_data, dict):
+                excel_data = {visible_sheets[0]: excel_data}
+        else:
+            excel_data = pd.read_excel(excel_file, sheet_name=None)
+        
+        for sheet_name, df in excel_data.items():
+            if df.empty:
+                continue
+            
+            if max_rows_per_sheet and len(df) > max_rows_per_sheet:
+                df = df.head(max_rows_per_sheet)
+                content.append(f"Note: Processing first {max_rows_per_sheet} rows only")
+                
+            content.append(f"=== EXCEL SHEET: {sheet_name} ===")
+            content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
+            
+            content.append(f"Columns ({len(df.columns)}): {', '.join(df.columns.tolist())}")
+            
+            data_types = df.dtypes.to_dict()
+            type_summary = []
+            for col, dtype in data_types.items():
+                type_summary.append(f"{col}: {str(dtype)}")
+            content.append(f"Data Types: {', '.join(type_summary[:10])}...")
+            
+            numeric_cols = df.select_dtypes(include=['number']).columns
+            if len(numeric_cols) > 0:
+                content.append(f"Numeric Columns: {', '.join(numeric_cols.tolist()[:5])}...")
+            
+            sample_size = min(max_sample_rows, len(df))
+            if sample_size > 0:
+                content.append(f"\nSample Data (first {sample_size} rows):")
                 content.append("TABLE:")
                 
-                # Add header row
-                content.append(" | ".join(headers))
-                content.append(" | ".join(["-" * len(header) for header in headers]))
+                display_df = df.head(sample_size)
                 
-                # Add sample rows
-                for row_data in all_rows[:sample_size]:
+                if len(df.columns) > 10:
+                    display_cols = df.columns[:8].tolist() + [f"... +{len(df.columns)-8} more columns"]
+                    display_df = df[df.columns[:8]].head(sample_size)
+                    header_row = " | ".join(display_cols)
+                    content.append(header_row)
+                else:
+                    header_row = " | ".join(df.columns.tolist())
+                    content.append(header_row)
+                
+                for _, row in display_df.iterrows():
+                    row_data = []
+                    for val in row:
+                        str_val = str(val)
+                        if len(str_val) > 50:
+                            str_val = str_val[:47] + "..."
+                        row_data.append(str_val)
                     content.append(" | ".join(row_data))
                 
-                if len(all_rows) > sample_size:
-                    content.append(f"... ({len(all_rows) - sample_size} more rows not shown)")
+                if len(df) > sample_size:
+                    content.append(f"... and {len(df) - sample_size} more rows")
+            
+            content.append(f"\nData Summary:")
+            
+            key_columns = []
+            for col in df.columns:
+                col_lower = col.lower()
+                if any(keyword in col_lower for keyword in ['id', 'name', 'title', 'status', 'type', 'category', 'priority', 'requirement']):
+                    key_columns.append(col)
+            
+            if key_columns:
+                content.append(f"Key Columns Identified: {', '.join(key_columns[:5])}")
+                
+                for col in key_columns[:3]:
+                    if df[col].dtype == 'object':
+                        unique_vals = df[col].dropna().unique()
+                        if len(unique_vals) <= 20:
+                            content.append(f"{col} Values: {', '.join(map(str, unique_vals[:10]))}")
+                        else:
+                            content.append(f"{col}: {len(unique_vals)} unique values")
+            
+            missing_data = df.isnull().sum()
+            if missing_data.sum() > 0:
+                missing_cols = missing_data[missing_data > 0].head(5)
+                missing_info = [f"{col}: {count} missing" for col, count in missing_cols.items()]
+                content.append(f"Missing Data: {', '.join(missing_info)}")
             
             content.append("="*50)
     
