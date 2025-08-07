@@ -115,7 +115,7 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 
 ### 2.1 System impacts – Primary and cross functional
 
-Extract system impact information from ANY relevant sheet (particularly Ops Risk Assessment if available):
+Extract system impact information:
 - What systems will be affected by the change?
 - What are the primary impacts on existing functionality?
 - What cross-functional impacts exist across departments/teams?
@@ -126,7 +126,6 @@ Extract system impact information from ANY relevant sheet (particularly Ops Risk
 
 List ONLY the products/services explicitly mentioned across ALL processed sheets which are impacted:
 - Extract from any column/row mentioning affected products
-- Look for "Functionality in which the change has to be done"
 - Check all sheets for product names, service names, or system names
 
 ### 2.3 List of APIs required
