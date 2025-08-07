@@ -324,6 +324,8 @@ Extract from ALL processed sheets:
 
 Search across ALL sheets for system names, database references, integration points, and data flow information.
 
+## 6.0 Communication Requirement
+
 **EMAIL CONTENT EXTRACTION:**
 - Look for email communication patterns in the source requirements including:
   - Email addresses (containing @ symbol)
