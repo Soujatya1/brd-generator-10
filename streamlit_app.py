@@ -631,7 +631,6 @@ def generate_brd_sequentially(chains, requirements):
     
     combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
     
-    # Print the combined requirements being sent to the first chain
     st.write("="*80)
     st.write("COMBINED REQUIREMENTS SENT TO LLM:")
     st.write("="*80)
@@ -879,7 +878,7 @@ def create_table_in_doc(doc, table_data):
     for row_idx, row_data in enumerate(table_data[1:], 1):
         for col_idx, cell_text in enumerate(row_data):
             if row_idx < len(table.rows) and col_idx < len(table.rows[row_idx].cells):
-                cleaned_text = clean_table_cell_value(cell_text)  # Apply cleaning
+                cleaned_text = clean_table_cell_value(cell_text)
                 table.rows[row_idx].cells[col_idx].text = cleaned_text
     
     return table
@@ -995,7 +994,6 @@ def extract_content_from_pdf(pdf_file):
 
 def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=True):
     def clean_cell_value(cell_text):
-        """Clean table cell values by replacing nan and Unnamed columns"""
         if cell_text is None:
             return "-"
         
@@ -1043,7 +1041,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             content.append(f"=== EXCEL SHEET: {sheet_name} ===")
             content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
             
-            # Clean column names before displaying
             cleaned_columns = [clean_cell_value(col) for col in df.columns.tolist()]
             content.append(f"Columns ({len(df.columns)}): {', '.join(cleaned_columns)}")
             
@@ -1080,7 +1077,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                 for _, row in display_df.iterrows():
                     row_data = []
                     for val in row:
-                        cleaned_val = clean_cell_value(val)  # Clean each cell value
+                        cleaned_val = clean_cell_value(val)
                         if len(cleaned_val) > 50:
                             cleaned_val = cleaned_val[:47] + "..."
                         row_data.append(cleaned_val)
