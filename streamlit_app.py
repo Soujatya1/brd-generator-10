@@ -1196,7 +1196,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                     for pattern in part_b_patterns:
                         if pattern.lower() in cell_str.lower():
                             part_b_found = True
-                            part_b_content.append(f"🎯 PART B SECTION FOUND in {sheet_name} - {col} (Row {idx + 2}):")
+                            part_b_content.append(f"PART B SECTION FOUND in {sheet_name} - {col} (Row {idx + 2}):")
                             part_b_content.append(f"PART B HEADER: {cell_str}")
                             
                             for next_row in range(idx + 1, min(idx + 10, len(df))):
