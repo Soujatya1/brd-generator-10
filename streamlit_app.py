@@ -668,16 +668,13 @@ def generate_brd_sequentially(chains, requirements):
     
     combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
     
-    # ENHANCED: Display more comprehensive content information
     st.write("="*120)
     st.write("📋 COMBINED REQUIREMENTS SENT TO LLM:")
     st.write("="*120)
     
-    # Show full content in expandable sections
     with st.expander("📄 View Complete Requirements Content", expanded=False):
         st.text_area("Full Content", combined_requirements, height=400)
     
-    # Show content statistics
     st.write(f"📊 **Content Statistics:**")
     st.write(f"- Total characters: {len(combined_requirements):,}")
     lines_count = len(combined_requirements.split('\n'))
@@ -686,15 +683,13 @@ def generate_brd_sequentially(chains, requirements):
     st.write(f"- Total words (approx): {words_count:,}")
     st.write(f"- Number of chunks: {len(req_chunks)}")
     
-    # Show content preview with more lines
     st.write(f"📖 **Content Preview (First 2000 characters):**")
     st.code(combined_requirements[:2000] + "..." if len(combined_requirements) > 2000 else combined_requirements)
     
-    # Show document structure
     sections = [line for line in combined_requirements.split('\n') if line.strip().startswith('===')]
     if sections:
         st.write(f"**Document Structure:**")
-        for section in sections[:10]:  # Show first 10 sections
+        for section in sections[:10]:
             st.write(f"- {section.strip()}")
         if len(sections) > 10:
             st.write(f"- ... and {len(sections) - 10} more sections")
@@ -706,11 +701,9 @@ def generate_brd_sequentially(chains, requirements):
     
     for i, chain in enumerate(chains):
         try:
-            # ENHANCED: Display detailed chain information
             st.write(f"\\n🔗 **PROCESSING CHAIN {i+1}/4**")
             st.write(f"{'='*60}")
             
-            # Create expandable section for each chain's input/output
             with st.expander(f"🔍 Chain {i+1} Details - Click to expand", expanded=False):
                 
                 if i == 0:
@@ -719,7 +712,6 @@ def generate_brd_sequentially(chains, requirements):
                     st.write("**Requirements Preview:**")
                     st.code(combined_requirements[:1000] + "..." if len(combined_requirements) > 1000 else combined_requirements)
                     
-                    # Show the actual template being used
                     st.write("**Template Used:**")
                     st.code(SECTION_TEMPLATES["intro_impact"][:500] + "...")
                     
@@ -736,14 +728,12 @@ def generate_brd_sequentially(chains, requirements):
                     st.write("**Requirements Preview:**")
                     st.code(combined_requirements[:800] + "..." if len(combined_requirements) > 800 else combined_requirements)
                     
-                    # Show the template being used
                     template_keys = ["", "process_requirements", "data_communication", "testing_final"]
                     st.write(f"**Template Used ({template_keys[i]}):**")
                     st.code(SECTION_TEMPLATES[template_keys[i]][:500] + "...")
                     
                     result = chain.run(previous_content=previous_content, requirements=combined_requirements)
                 
-                # ENHANCED: Show more detailed output information
                 st.write(f"**Chain {i+1} Output:**")
                 st.write(f"- Response length: {len(result):,} characters")
                 result_lines = len(result.split('\n'))
@@ -751,7 +741,6 @@ def generate_brd_sequentially(chains, requirements):
                 st.write(f"- Response lines: {result_lines:,}")
                 st.write(f"- Response words (approx): {result_words:,}")
                 
-                # Show sections generated
                 output_sections = [line for line in result.split('\n') if line.strip().startswith('##')]
                 if output_sections:
                     st.write("**Sections Generated:**")
@@ -761,7 +750,6 @@ def generate_brd_sequentially(chains, requirements):
                 st.write("**Response Preview:**")
                 st.code(result[:1000] + "..." if len(result) > 1000 else result)
             
-            # Console logging (keeping existing)
             print(f"\n{'='*60}")
             print(f"CHAIN {i+1} INPUT:")
             print(f"{'='*60}")
@@ -790,7 +778,6 @@ def generate_brd_sequentially(chains, requirements):
             final_sections.append(result)
             previous_content += "\\n\\n" + result
             
-            # ENHANCED: Show cumulative progress
             st.write(f"✅ **Completed section group {i+1}/4**")
             st.write(f"📈 **Cumulative content length: {len(previous_content):,} characters**")
             
@@ -801,7 +788,6 @@ def generate_brd_sequentially(chains, requirements):
     
     final_brd = "\\n\\n".join(final_sections)
     
-    # ENHANCED: Show final result statistics
     st.write("\\n" + "="*80)
     st.write("📋 **FINAL BRD GENERATION COMPLETE**")
     st.write("="*80)
@@ -824,7 +810,6 @@ def generate_brd_sequentially(chains, requirements):
         st.write("**Final BRD Preview (first 2000 characters):**")
         st.code(final_brd[:2000] + "..." if len(final_brd) > 2000 else final_brd)
     
-    # Console logging (keeping existing)
     print("\n" + "="*80)
     print("FINAL BRD CONTENT:")
     print("="*80)
@@ -1171,7 +1156,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         else:
             excel_data = pd.read_excel(excel_file, sheet_name=None)
         
-        # First pass: Look for PART B content specifically
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
