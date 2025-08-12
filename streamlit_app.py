@@ -653,7 +653,7 @@ def generate_brd_sequentially(chains, requirements):
                 print("Input to Chain 1 (intro_impact):")
                 print(f"Requirements length: {len(combined_requirements)} characters")
                 print("First 500 characters of requirements:")
-                print(combined_requirements[:2000] + "..." if len(combined_requirements) > 500 else combined_requirements)
+                print(combined_requirements[:2000] + "..." if len(combined_requirements) > 2000 else combined_requirements)
                 
                 result = chain.run(requirements=combined_requirements)
             else:
