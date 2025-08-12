@@ -95,7 +95,6 @@ Create ONLY the following sections with detailed content in markdown:
 **SEARCH STRATEGY FOR PURPOSE:**
 1. **FIRST PRIORITY**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section
 2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet
-3. **THIRD PRIORITY**: Search "Ops Risk Assessment" and other sheets
 
 Extract the EXACT business purpose, focusing on:
 - Capture from "PART B : (Mandatory) Detailed Requirement" if available
@@ -1157,6 +1156,31 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             wb = load_workbook(excel_file)
             visible_sheets = []
             
+            for sheet_name indef extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=True):
+    def clean_cell_value(cell_text):
+        if cell_text is None:
+            return "-"
+        
+        str_val = str(cell_text).strip()
+        
+        # Replace nan values with dash
+        if str_val.lower() == 'nan':
+            return "-"
+        
+        # Replace Unnamed columns
+        if str_val.startswith("Unnamed"):
+            return "Insert Column Name"
+        
+        return str_val
+    
+    content = []
+    part_b_content = []  # Store PART B content separately
+    
+    try:
+        if visible_only:
+            wb = load_workbook(excel_file)
+            visible_sheets = []
+            
             for sheet_name in wb.sheetnames:
                 sheet = wb[sheet_name]
                 if sheet.sheet_state == 'visible':
@@ -1172,6 +1196,70 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         else:
             excel_data = pd.read_excel(excel_file, sheet_name=None)
         
+        # First pass: Look for PART B content specifically
+        for sheet_name, df in excel_data.items():
+            if df.empty:
+                continue
+                
+            # Search for PART B in all cells
+            part_b_found = False
+            for col in df.columns:
+                for idx, cell_value in enumerate(df[col]):
+                    cell_str = str(cell_value).strip()
+                    # Look for various PART B patterns
+                    part_b_patterns = [
+                        "PART B : (Mandatory) Detailed Requirement",
+                        "PART B (Mandatory) Detailed Requirement", 
+                        "PART B : Mandatory Detailed Requirement",
+                        "PART B Mandatory Detailed Requirement",
+                        "PART B : Detailed Requirement",
+                        "PART B Detailed Requirement",
+                        "PART B:",
+                        "Part B :",
+                        "Part B:",
+                        "PART B"
+                    ]
+                    
+                    for pattern in part_b_patterns:
+                        if pattern.lower() in cell_str.lower():
+                            part_b_found = True
+                            part_b_content.append(f"🎯 PART B SECTION FOUND in {sheet_name} - {col} (Row {idx + 2}):")
+                            part_b_content.append(f"PART B HEADER: {cell_str}")
+                            
+                            # Extract content from the next few rows/cells after PART B
+                            for next_row in range(idx + 1, min(idx + 10, len(df))):
+                                if next_row < len(df):
+                                    next_cell = df.iloc[next_row][col]
+                                    if pd.notna(next_cell) and str(next_cell).strip():
+                                        part_b_content.append(f"PART B CONTENT: {str(next_cell).strip()}")
+                            
+                            # Also check adjacent columns for PART B content
+                            col_index = df.columns.get_loc(col)
+                            for adj_col_offset in [-1, 1]:
+                                adj_col_index = col_index + adj_col_offset
+                                if 0 <= adj_col_index < len(df.columns):
+                                    adj_col = df.columns[adj_col_index]
+                                    for adj_row in range(max(0, idx-2), min(idx + 8, len(df))):
+                                        adj_cell = df.iloc[adj_row][adj_col]
+                                        if pd.notna(adj_cell) and str(adj_cell).strip():
+                                            part_b_content.append(f"PART B ADJACENT CONTENT: {str(adj_cell).strip()}")
+                            
+                            part_b_content.append("="*50)
+                            break
+                    
+                    if part_b_found:
+                        break
+                if part_b_found:
+                    break
+        
+        # If PART B content found, add it prominently at the beginning
+        if part_b_content:
+            content.append("🎯🎯🎯 PRIORITY: PART B (MANDATORY) DETAILED REQUIREMENT CONTENT FOUND 🎯🎯🎯")
+            content.extend(part_b_content)
+            content.append("🎯🎯🎯 END OF PART B PRIORITY CONTENT 🎯🎯🎯")
+            content.append("="*80)
+        
+        # Second pass: Regular processing of all sheets
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
@@ -1227,6 +1315,24 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                 
                 if len(df) > sample_size:
                     content.append(f"... and {len(df) - sample_size} more rows")
+            
+            # Enhanced search for detailed requirements in current sheet
+            detailed_req_content = []
+            for col in df.columns:
+                col_str = str(col).lower()
+                if any(keyword in col_str for keyword in ['requirement', 'detailed', 'description', 'specification']):
+                    detailed_req_content.append(f"DETAILED REQUIREMENT COLUMN FOUND: {col}")
+                    for idx, cell_value in enumerate(df[col]):
+                        if pd.notna(cell_value) and str(cell_value).strip():
+                            cell_text = str(cell_value).strip()
+                            if len(cell_text) > 10:  # Only include substantial content
+                                detailed_req_content.append(f"Row {idx+2}: {cell_text}")
+            
+            if detailed_req_content:
+                content.append(f"\n📋 DETAILED REQUIREMENTS FOUND IN {sheet_name}:")
+                content.extend(detailed_req_content[:20])  # Limit to first 20 entries
+                if len(detailed_req_content) > 20:
+                    content.append(f"... and {len(detailed_req_content) - 20} more requirement entries")
             
             content.append(f"\nData Summary:")
             
