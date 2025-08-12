@@ -642,11 +642,11 @@ def generate_brd_sequentially(chains, requirements):
         st.text_area("Full Content", combined_requirements, height=400)
     
     # Show content statistics
-    st.write(f"📊 **Content Statistics:**")
-    st.write(f"- Total characters: {len(combined_requirements):,}")
-    st.write(f"- Total lines: {len(combined_requirements.split('\\n')):,}")
-    st.write(f"- Total words (approx): {len(combined_requirements.split()):,}")
-    st.write(f"- Number of chunks: {len(req_chunks)}")
+    #st.write(f"📊 **Content Statistics:**")
+    #st.write(f"- Total characters: {len(combined_requirements):,}")
+    #st.write(f"- Total lines: {len(combined_requirements.split('\\n')):,}")
+    #st.write(f"- Total words (approx): {len(combined_requirements.split()):,}")
+    #st.write(f"- Number of chunks: {len(req_chunks)}")
     
     # Show content preview with more lines
     st.write(f"📖 **Content Preview (First 2000 characters):**")
