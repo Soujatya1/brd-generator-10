@@ -58,14 +58,28 @@ EXCEL FILE PROCESSING INSTRUCTIONS:
 
 **FOR EXCEL FILES (.xlsx/.xls):**
 - Process ALL sheets EXCEPT "Test Scenarios" sheet
+- **PRIORITY FOCUS**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section in any sheet
 - Include data from sheets: "Requirement", "Ops Risk Assessment", and any other available sheets
 - Extract content from ALL relevant columns and rows in each sheet
 - Look for business requirements, processes, impacts, and technical specifications across all sheets
 - If sheet names are different from expected, process all sheets except those explicitly containing test scenarios
 
+**SPECIAL INSTRUCTION FOR PURPOSE AND TO-BE PROCESS:**
+For sections 1.1 Purpose and 1.3 To be process / High level solution:
+- **PRIMARY PRIORITY**: Search for and extract information from "PART B : (Mandatory) Detailed Requirement" section
+- Look for this exact text or similar variations like:
+  - "PART B"
+  - "Mandatory Detailed Requirement" 
+  - "Detailed Requirement"
+  - "Part B - Detailed Requirement"
+  - "PART B : Detailed Requirement"
+- If found, prioritize this section's content for Purpose and To-be process extraction
+- If not found, then search across ALL other processed sheets for relevant content
+
 CRITICAL INSTRUCTIONS:
 
 - Extract information from ALL available sheets (except Test Scenarios sheet)
+- **For Purpose and To-be process: PRIORITIZE "PART B : (Mandatory) Detailed Requirement" content**
 - Identify the ACTUAL business problem being solved from any relevant sheet
 - Focus on what is explicitly mentioned across all processed sheets
 - Do NOT create, assume, or fabricate any content not present in the source
@@ -78,8 +92,14 @@ Create ONLY the following sections with detailed content in markdown:
 
 ### 1.1 Purpose
 
-Extract the EXACT business purpose from ANY relevant sheet (Requirement, Ops Risk Assessment, etc.), focusing on:
-- Capture from "Detailed Requirement"
+**SEARCH STRATEGY FOR PURPOSE:**
+1. **FIRST PRIORITY**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section
+2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet
+3. **THIRD PRIORITY**: Search "Ops Risk Assessment" and other sheets
+
+Extract the EXACT business purpose, focusing on:
+- Capture from "PART B : (Mandatory) Detailed Requirement" if available
+- If PART B not found, capture from "Detailed Requirement" sections in any sheet
 - What is the main business objective or problem being addressed?
 - What specific functionality or capability is being implemented?
 - What restrictions, validations, or controls are being introduced?
@@ -87,6 +107,11 @@ Extract the EXACT business purpose from ANY relevant sheet (Requirement, Ops Ris
 - What compliance, security, or operational requirements are being met?
 
 Search across ALL processed sheets for key phrases: "purpose", "objective", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
+
+**EXTRACTION PRIORITY ORDER:**
+1. Content from "PART B : (Mandatory) Detailed Requirement" 
+2. Content from other "Detailed Requirement" sections
+3. Content from other relevant sections across all sheets
 
 ### 1.2 As-is process
 
@@ -102,7 +127,13 @@ Look for indicators across ALL sheets: "currently", "as-is", "existing", "presen
 
 ### 1.3 To be process / High level solution
 
-Extract the PROPOSED solution from ANY relevant sheet:
+**SEARCH STRATEGY FOR TO-BE PROCESS:**
+1. **FIRST PRIORITY**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section
+2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet  
+3. **THIRD PRIORITY**: Search "Ops Risk Assessment" and other sheets
+
+Extract the PROPOSED solution, prioritizing "PART B : (Mandatory) Detailed Requirement" content:
+- Content from "PART B : (Mandatory) Detailed Requirement" if available
 - What is the new process or system behavior?
 - What workflow steps or validation logic will be implemented?
 - How will the new solution address current problems?
@@ -111,6 +142,11 @@ Extract the PROPOSED solution from ANY relevant sheet:
 - Any conditional logic, decision trees, or multi-step processes
 
 Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
+
+**EXTRACTION PRIORITY ORDER:**
+1. Content from "PART B : (Mandatory) Detailed Requirement"
+2. Content from other "Detailed Requirement" sections  
+3. Content from other relevant sections across all sheets
 
 ## 2.0 Impact Analysis
 
@@ -145,13 +181,14 @@ IMPORTANT:
 
 - Use markdown headings (##, ###)
 - Preserve any tables in markdown format from ANY processed sheet
+- **For Purpose and To-be process: PRIORITIZE "PART B : (Mandatory) Detailed Requirement" content**
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
 - If no content found for a subsection after checking ALL sheets, leave it blank
 
 VALIDATION CHECK:
 
-Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). Remove any content that cannot be directly attributed to the source documents.
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). For Purpose and To-be process sections, ensure you've prioritized "PART B : (Mandatory) Detailed Requirement" content when available.
 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 1.0 Introduction, ### 1.1 Purpose, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
