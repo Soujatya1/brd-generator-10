@@ -642,18 +642,20 @@ def generate_brd_sequentially(chains, requirements):
         st.text_area("Full Content", combined_requirements, height=400)
     
     # Show content statistics
-    #st.write(f"📊 **Content Statistics:**")
-    #st.write(f"- Total characters: {len(combined_requirements):,}")
-    #st.write(f"- Total lines: {len(combined_requirements.split('\\n')):,}")
-    #st.write(f"- Total words (approx): {len(combined_requirements.split()):,}")
-    #st.write(f"- Number of chunks: {len(req_chunks)}")
+    st.write(f"📊 **Content Statistics:**")
+    st.write(f"- Total characters: {len(combined_requirements):,}")
+    lines_count = len(combined_requirements.split('\n'))
+    words_count = len(combined_requirements.split())
+    st.write(f"- Total lines: {lines_count:,}")
+    st.write(f"- Total words (approx): {words_count:,}")
+    st.write(f"- Number of chunks: {len(req_chunks)}")
     
     # Show content preview with more lines
     st.write(f"📖 **Content Preview (First 2000 characters):**")
     st.code(combined_requirements[:2000] + "..." if len(combined_requirements) > 2000 else combined_requirements)
     
     # Show document structure
-    sections = [line for line in combined_requirements.split('\\n') if line.strip().startswith('===')]
+    sections = [line for line in combined_requirements.split('\n') if line.strip().startswith('===')]
     if sections:
         st.write(f"📁 **Document Structure:**")
         for section in sections[:10]:  # Show first 10 sections
@@ -708,11 +710,13 @@ def generate_brd_sequentially(chains, requirements):
                 # ENHANCED: Show more detailed output information
                 st.write(f"**Chain {i+1} Output:**")
                 st.write(f"- Response length: {len(result):,} characters")
-                st.write(f"- Response lines: {len(result.split('\\n')):,}")
-                st.write(f"- Response words (approx): {len(result.split()):,}")
+                result_lines = len(result.split('\n'))
+                result_words = len(result.split())
+                st.write(f"- Response lines: {result_lines:,}")
+                st.write(f"- Response words (approx): {result_words:,}")
                 
                 # Show sections generated
-                output_sections = [line for line in result.split('\\n') if line.strip().startswith('##')]
+                output_sections = [line for line in result.split('\n') if line.strip().startswith('##')]
                 if output_sections:
                     st.write("**Sections Generated:**")
                     for section in output_sections:
@@ -722,7 +726,7 @@ def generate_brd_sequentially(chains, requirements):
                 st.code(result[:1000] + "..." if len(result) > 1000 else result)
             
             # Console logging (keeping existing)
-            print(f"\\n{'='*60}")
+            print(f"\n{'='*60}")
             print(f"CHAIN {i+1} INPUT:")
             print(f"{'='*60}")
             
@@ -738,10 +742,10 @@ def generate_brd_sequentially(chains, requirements):
                 print(f"Requirements length: {len(combined_requirements)} characters")
                 print("Previous content (first 500 chars):")
                 print(previous_content[:500] + "..." if len(previous_content) > 500 else previous_content)
-                print("\\nRequirements (first 500 chars):")
+                print("\nRequirements (first 500 chars):")
                 print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
             
-            print(f"\\nCHAIN {i+1} OUTPUT:")
+            print(f"\nCHAIN {i+1} OUTPUT:")
             print(f"Response length: {len(result)} characters")
             print("First 1000 characters of response:")
             print(result[:1000] + "..." if len(result) > 1000 else result)
@@ -769,11 +773,13 @@ def generate_brd_sequentially(chains, requirements):
     with st.expander("📊 Final BRD Statistics & Preview", expanded=True):
         st.write(f"**Final Statistics:**")
         st.write(f"- Total final BRD length: {len(final_brd):,} characters")
-        st.write(f"- Total lines: {len(final_brd.split('\\n')):,}")
-        st.write(f"- Total words (approx): {len(final_brd.split()):,}")
+        final_lines = len(final_brd.split('\n'))
+        final_words = len(final_brd.split())
+        st.write(f"- Total lines: {final_lines:,}")
+        st.write(f"- Total words (approx): {final_words:,}")
         
         # Show final sections
-        final_sections_headers = [line for line in final_brd.split('\\n') if line.strip().startswith('##')]
+        final_sections_headers = [line for line in final_brd.split('\n') if line.strip().startswith('##')]
         if final_sections_headers:
             st.write(f"**Generated Sections ({len(final_sections_headers)}):**")
             for section in final_sections_headers:
@@ -783,7 +789,7 @@ def generate_brd_sequentially(chains, requirements):
         st.code(final_brd[:2000] + "..." if len(final_brd) > 2000 else final_brd)
     
     # Console logging (keeping existing)
-    print("\\n" + "="*80)
+    print("\n" + "="*80)
     print("FINAL BRD CONTENT:")
     print("="*80)
     print(f"Total final BRD length: {len(final_brd)} characters")
