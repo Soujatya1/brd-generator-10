@@ -79,7 +79,7 @@ Create ONLY the following sections with detailed content in markdown:
 ### 1.1 Purpose
 
 Extract the EXACT business purpose from ANY relevant sheet (Requirement, Ops Risk Assessment, etc.), focusing on:
-- CAPTURE SPECIFIC DETAILS
+- Capture from "Detailed Requirement"
 - What is the main business objective or problem being addressed?
 - What specific functionality or capability is being implemented?
 - What restrictions, validations, or controls are being introduced?
