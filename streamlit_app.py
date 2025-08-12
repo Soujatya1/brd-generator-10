@@ -1224,9 +1224,9 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                     break
         
         if part_b_content:
-            content.append("🎯🎯🎯 PRIORITY: PART B (MANDATORY) DETAILED REQUIREMENT CONTENT FOUND 🎯🎯🎯")
+            content.append("PRIORITY: PART B (MANDATORY) DETAILED REQUIREMENT CONTENT FOUND")
             content.extend(part_b_content)
-            content.append("🎯🎯🎯 END OF PART B PRIORITY CONTENT 🎯🎯🎯")
+            content.append("END OF PART B PRIORITY CONTENT")
             content.append("="*80)
         
         for sheet_name, df in excel_data.items():
