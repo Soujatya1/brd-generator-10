@@ -632,13 +632,13 @@ def generate_brd_sequentially(chains, requirements):
     
     combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
     
-    st.write("="*80)
+    st.write("="*120)
     st.write("COMBINED REQUIREMENTS SENT TO LLM:")
-    st.write("="*80)
+    st.write("="*120)
     st.write(combined_requirements)
-    st.write("="*80)
+    st.write("="*120)
     st.write(f"Total characters: {len(combined_requirements)}")
-    st.write("="*80)
+    st.write("="*120)
     
     previous_content = ""
     final_sections = []
