@@ -632,12 +632,35 @@ def generate_brd_sequentially(chains, requirements):
     
     combined_requirements = "\n\n=== DOCUMENT BREAK ===\n\n".join(req_chunks)
     
+    # ENHANCED: Display more comprehensive content information
     st.write("="*120)
-    st.write("COMBINED REQUIREMENTS SENT TO LLM:")
+    st.write("📋 COMBINED REQUIREMENTS SENT TO LLM:")
     st.write("="*120)
-    st.write(combined_requirements)
-    st.write("="*120)
-    st.write(f"Total characters: {len(combined_requirements)}")
+    
+    # Show full content in expandable sections
+    with st.expander("📄 View Complete Requirements Content", expanded=False):
+        st.text_area("Full Content", combined_requirements, height=400)
+    
+    # Show content statistics
+    st.write(f"📊 **Content Statistics:**")
+    st.write(f"- Total characters: {len(combined_requirements):,}")
+    st.write(f"- Total lines: {len(combined_requirements.split('\\n')):,}")
+    st.write(f"- Total words (approx): {len(combined_requirements.split()):,}")
+    st.write(f"- Number of chunks: {len(req_chunks)}")
+    
+    # Show content preview with more lines
+    st.write(f"📖 **Content Preview (First 2000 characters):**")
+    st.code(combined_requirements[:2000] + "..." if len(combined_requirements) > 2000 else combined_requirements)
+    
+    # Show document structure
+    sections = [line for line in combined_requirements.split('\\n') if line.strip().startswith('===')]
+    if sections:
+        st.write(f"📁 **Document Structure:**")
+        for section in sections[:10]:  # Show first 10 sections
+            st.write(f"- {section.strip()}")
+        if len(sections) > 10:
+            st.write(f"- ... and {len(sections) - 10} more sections")
+    
     st.write("="*120)
     
     previous_content = ""
@@ -645,52 +668,127 @@ def generate_brd_sequentially(chains, requirements):
     
     for i, chain in enumerate(chains):
         try:
-            print(f"\n{'='*60}")
+            # ENHANCED: Display detailed chain information
+            st.write(f"\\n🔗 **PROCESSING CHAIN {i+1}/4**")
+            st.write(f"{'='*60}")
+            
+            # Create expandable section for each chain's input/output
+            with st.expander(f"🔍 Chain {i+1} Details - Click to expand", expanded=False):
+                
+                if i == 0:
+                    st.write("**Input to Chain 1 (Introduction & Impact Analysis):**")
+                    st.write(f"- Requirements length: {len(combined_requirements):,} characters")
+                    st.write("**Requirements Preview:**")
+                    st.code(combined_requirements[:1000] + "..." if len(combined_requirements) > 1000 else combined_requirements)
+                    
+                    # Show the actual template being used
+                    st.write("**Template Used:**")
+                    st.code(SECTION_TEMPLATES["intro_impact"][:500] + "...")
+                    
+                    result = chain.run(requirements=combined_requirements)
+                else:
+                    chain_names = ["", "Process & Requirements", "Data & Communication", "Testing & Final"]
+                    st.write(f"**Input to Chain {i+1} ({chain_names[i]}):**")
+                    st.write(f"- Previous content length: {len(previous_content):,} characters")
+                    st.write(f"- Requirements length: {len(combined_requirements):,} characters")
+                    
+                    st.write("**Previous Content Preview:**")
+                    st.code(previous_content[:800] + "..." if len(previous_content) > 800 else previous_content)
+                    
+                    st.write("**Requirements Preview:**")
+                    st.code(combined_requirements[:800] + "..." if len(combined_requirements) > 800 else combined_requirements)
+                    
+                    # Show the template being used
+                    template_keys = ["", "process_requirements", "data_communication", "testing_final"]
+                    st.write(f"**Template Used ({template_keys[i]}):**")
+                    st.code(SECTION_TEMPLATES[template_keys[i]][:500] + "...")
+                    
+                    result = chain.run(previous_content=previous_content, requirements=combined_requirements)
+                
+                # ENHANCED: Show more detailed output information
+                st.write(f"**Chain {i+1} Output:**")
+                st.write(f"- Response length: {len(result):,} characters")
+                st.write(f"- Response lines: {len(result.split('\\n')):,}")
+                st.write(f"- Response words (approx): {len(result.split()):,}")
+                
+                # Show sections generated
+                output_sections = [line for line in result.split('\\n') if line.strip().startswith('##')]
+                if output_sections:
+                    st.write("**Sections Generated:**")
+                    for section in output_sections:
+                        st.write(f"- {section.strip()}")
+                
+                st.write("**Response Preview:**")
+                st.code(result[:1000] + "..." if len(result) > 1000 else result)
+            
+            # Console logging (keeping existing)
+            print(f"\\n{'='*60}")
             print(f"CHAIN {i+1} INPUT:")
             print(f"{'='*60}")
             
             if i == 0:
                 print("Input to Chain 1 (intro_impact):")
                 print(f"Requirements length: {len(combined_requirements)} characters")
-                print("First 500 characters of requirements:")
-                print(combined_requirements[:2000] + "..." if len(combined_requirements) > 2000 else combined_requirements)
+                print("First 1000 characters of requirements:")
+                print(combined_requirements[:1000] + "..." if len(combined_requirements) > 1000 else combined_requirements)
                 
-                result = chain.run(requirements=combined_requirements)
             else:
                 print(f"Input to Chain {i+1}:")
                 print(f"Previous content length: {len(previous_content)} characters")
                 print(f"Requirements length: {len(combined_requirements)} characters")
-                print("Previous content (first 300 chars):")
-                print(previous_content[:300] + "..." if len(previous_content) > 300 else previous_content)
-                print("\nRequirements (first 300 chars):")
-                print(combined_requirements[:300] + "..." if len(combined_requirements) > 300 else combined_requirements)
-                
-                result = chain.run(previous_content=previous_content, requirements=combined_requirements)
+                print("Previous content (first 500 chars):")
+                print(previous_content[:500] + "..." if len(previous_content) > 500 else previous_content)
+                print("\\nRequirements (first 500 chars):")
+                print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
             
-            print(f"\nCHAIN {i+1} OUTPUT:")
+            print(f"\\nCHAIN {i+1} OUTPUT:")
             print(f"Response length: {len(result)} characters")
-            print("First 500 characters of response:")
-            print(result[:500] + "..." if len(result) > 500 else result)
+            print("First 1000 characters of response:")
+            print(result[:1000] + "..." if len(result) > 1000 else result)
             print(f"{'='*60}")
             
             final_sections.append(result)
-            previous_content += "\n\n" + result
+            previous_content += "\\n\\n" + result
             
-            st.write(f"✓ Completed section group {i+1}/4")
+            # ENHANCED: Show cumulative progress
+            st.write(f"✅ **Completed section group {i+1}/4**")
+            st.write(f"📈 **Cumulative content length: {len(previous_content):,} characters**")
             
         except Exception as e:
             print(f"ERROR in chain {i+1}: {str(e)}")
-            st.error(f"Error in chain {i+1}: {str(e)}")
-            final_sections.append(f"## Error in section group {i+1}\nError processing this section: {str(e)}")
+            st.error(f"❌ Error in chain {i+1}: {str(e)}")
+            final_sections.append(f"## Error in section group {i+1}\\nError processing this section: {str(e)}")
     
-    final_brd = "\n\n".join(final_sections)
+    final_brd = "\\n\\n".join(final_sections)
     
-    print("\n" + "="*80)
+    # ENHANCED: Show final result statistics
+    st.write("\\n" + "="*80)
+    st.write("📋 **FINAL BRD GENERATION COMPLETE**")
+    st.write("="*80)
+    
+    with st.expander("📊 Final BRD Statistics & Preview", expanded=True):
+        st.write(f"**Final Statistics:**")
+        st.write(f"- Total final BRD length: {len(final_brd):,} characters")
+        st.write(f"- Total lines: {len(final_brd.split('\\n')):,}")
+        st.write(f"- Total words (approx): {len(final_brd.split()):,}")
+        
+        # Show final sections
+        final_sections_headers = [line for line in final_brd.split('\\n') if line.strip().startswith('##')]
+        if final_sections_headers:
+            st.write(f"**Generated Sections ({len(final_sections_headers)}):**")
+            for section in final_sections_headers:
+                st.write(f"- {section.strip()}")
+        
+        st.write("**Final BRD Preview (first 2000 characters):**")
+        st.code(final_brd[:2000] + "..." if len(final_brd) > 2000 else final_brd)
+    
+    # Console logging (keeping existing)
+    print("\\n" + "="*80)
     print("FINAL BRD CONTENT:")
     print("="*80)
     print(f"Total final BRD length: {len(final_brd)} characters")
-    print("Final BRD (first 1000 characters):")
-    print(final_brd[:1000] + "..." if len(final_brd) > 1000 else final_brd)
+    print("Final BRD (first 2000 characters):")
+    print(final_brd[:2000] + "..." if len(final_brd) > 2000 else final_brd)
     print("="*80)
     
     return final_brd
