@@ -1151,29 +1151,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         return str_val
     
     content = []
-    try:
-        if visible_only:
-            wb = load_workbook(excel_file)
-            visible_sheets = []
-            
-            for sheet_name indef extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_rows=10, visible_only=True):
-    def clean_cell_value(cell_text):
-        if cell_text is None:
-            return "-"
-        
-        str_val = str(cell_text).strip()
-        
-        # Replace nan values with dash
-        if str_val.lower() == 'nan':
-            return "-"
-        
-        # Replace Unnamed columns
-        if str_val.startswith("Unnamed"):
-            return "Insert Column Name"
-        
-        return str_val
-    
-    content = []
     part_b_content = []  # Store PART B content separately
     
     try:
