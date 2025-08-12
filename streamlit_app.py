@@ -693,7 +693,7 @@ def generate_brd_sequentially(chains, requirements):
     # Show document structure
     sections = [line for line in combined_requirements.split('\n') if line.strip().startswith('===')]
     if sections:
-        st.write(f"📁 **Document Structure:**")
+        st.write(f"**Document Structure:**")
         for section in sections[:10]:  # Show first 10 sections
             st.write(f"- {section.strip()}")
         if len(sections) > 10:
