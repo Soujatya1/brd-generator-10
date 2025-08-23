@@ -1138,6 +1138,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
     
     content = []
     part_b_content = []
+    part_c_content = []  # NEW: Added Part C content list
     
     try:
         if visible_only:
@@ -1159,6 +1160,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         else:
             excel_data = pd.read_excel(excel_file, sheet_name=None)
         
+        # Extract Part B content (existing code)
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
@@ -1210,12 +1212,75 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                 if part_b_found:
                     break
         
+        # NEW: Extract Part C content (similar to Part B)
+        for sheet_name, df in excel_data.items():
+            if df.empty:
+                continue
+                
+            part_c_found = False
+            for col in df.columns:
+                for idx, cell_value in enumerate(df[col]):
+                    cell_str = str(cell_value).strip()
+                    part_c_patterns = [
+                        "PART C : (Mandatory) Detailed Requirement",
+                        "PART C (Mandatory) Detailed Requirement", 
+                        "PART C : Mandatory Detailed Requirement",
+                        "PART C Mandatory Detailed Requirement",
+                        "PART C : Detailed Requirement",
+                        "PART C Detailed Requirement",
+                        "PART C:",
+                        "Part C :",
+                        "Part C:",
+                        "PART C"
+                    ]
+                    
+                    for pattern in part_c_patterns:
+                        if pattern.lower() in cell_str.lower():
+                            part_c_found = True
+                            part_c_content.append(f"PART C SECTION FOUND in {sheet_name} - {col} (Row {idx + 2}):")
+                            part_c_content.append(f"PART C HEADER: {cell_str}")
+                            
+                            # Extract next 10 rows of content
+                            for next_row in range(idx + 1, min(idx + 10, len(df))):
+                                if next_row < len(df):
+                                    next_cell = df.iloc[next_row][col]
+                                    if pd.notna(next_cell) and str(next_cell).strip():
+                                        part_c_content.append(f"PART C CONTENT: {str(next_cell).strip()}")
+                            
+                            # Extract adjacent column content
+                            col_index = df.columns.get_loc(col)
+                            for adj_col_offset in [-1, 1]:
+                                adj_col_index = col_index + adj_col_offset
+                                if 0 <= adj_col_index < len(df.columns):
+                                    adj_col = df.columns[adj_col_index]
+                                    for adj_row in range(max(0, idx-2), min(idx + 8, len(df))):
+                                        adj_cell = df.iloc[adj_row][adj_col]
+                                        if pd.notna(adj_cell) and str(adj_cell).strip():
+                                            part_c_content.append(f"PART C ADJACENT CONTENT: {str(adj_cell).strip()}")
+                            
+                            part_c_content.append("="*50)
+                            break
+                    
+                    if part_c_found:
+                        break
+                if part_c_found:
+                    break
+        
+        # Add priority content to the beginning (Part B first, then Part C)
         if part_b_content:
             content.append("PRIORITY: PART B (MANDATORY) DETAILED REQUIREMENT CONTENT FOUND")
             content.extend(part_b_content)
             content.append("END OF PART B PRIORITY CONTENT")
             content.append("="*80)
         
+        # NEW: Add Part C content after Part B
+        if part_c_content:
+            content.append("PRIORITY: PART C (MANDATORY) DETAILED REQUIREMENT CONTENT FOUND")
+            content.extend(part_c_content)
+            content.append("END OF PART C PRIORITY CONTENT")
+            content.append("="*80)
+        
+        # Rest of the existing code remains the same...
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
