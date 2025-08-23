@@ -27,8 +27,8 @@ BRD_FORMAT = """
     ## 1.2 As-is process
     ## 1.3 To be process / High level solution
 ## 2.0 Impact Analysis
-    ## 2.1 System impacts – Primary and cross functional
-    ## 2.2 Impacted Products
+    ## 2.1 Impacted Products
+    ## 2.2 Applications Impacted
     ## 2.3 List of APIs required
 ## 3.0 Process / Data Flow diagram / Figma
 ## 4.0 Business / System Requirement
@@ -160,7 +160,7 @@ List ONLY the products/platforms explicitly mentioned across ALL processed sheet
 
 EXPLICITLY LOOK FOR WORDS LIKE "Products", "Product"
 
-### 2.2 Applications Products
+### 2.2 Applications Impacted
 
 List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted:
 - Extract from any column/row mentioning affected applications
@@ -856,8 +856,8 @@ def create_clickable_toc(doc):
         ("    1.2 As-is process", "process_solution"),
         ("    1.3 To be process / High level solution", "process_solution"),
         ("2.0 Impact Analysis", "impact_analysis"),
-        ("    2.1 System impacts – Primary and cross functional", "system_impacts"),
-        ("    2.2 Impacted Products", "impacted_products"), 
+        ("    2.1 Impacted Products", "impacted_products"),
+        ("    2.2 Applications Impacted", "applications_impacted"), 
         ("    2.3 List of APIs required", "apis_required"),
         ("3.0 Process / Data Flow diagram / Figma", "process_flow"),
         ("4.0 Business / System Requirement", "business_requirements"),
