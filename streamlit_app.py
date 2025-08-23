@@ -152,22 +152,21 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 
 ## 2.0 Impact Analysis
 
-### 2.1 System impacts – Primary and cross functional
+### 2.1 Impacted Products
 
-Extract system impact information:
-- What systems will be affected by the change?
-- What are the primary impacts on existing functionality?
-- What cross-functional impacts exist across departments/teams?
-- What integration points will be affected?
-- Any operational or infrastructure impacts mentioned
+List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted:
+- Extract from any column/row mentioning affected products/platforms
+- Check all sheets for product names, service names, or system names, platform names
 
-### 2.2 Impacted Products
+EXPLICITLY LOOK FOR WORDS LIKE "Products", "Product"
 
-List ONLY the products/platforms/applications explicitly mentioned across ALL processed sheets which are impacted:
-- Extract from any column/row mentioning affected products/platforms/applications
-- Check all sheets for product names, service names, or system names, platform names, application names
+### 2.2 Applications Products
 
-CRUCIAL: DO NOT PICK THIS INFORMATION FROM THE "Test Scenarios" sheet of the excel source document
+List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted:
+- Extract from any column/row mentioning affected applications
+- Check all sheets for applications names
+
+EXPLICITLY LOOK FOR WORDS LIKE "Applications", "Application"
 
 ### 2.3 List of APIs required
 
@@ -252,7 +251,15 @@ Look for process indicators across ALL sheets: "workflow", "process", "steps", "
 
 ## 4.0 Business / System Requirement
 
-### 4.1 Application / Module Name: [Extract exact application/module name from ANY processed sheet]
+### 4.1 System Requirements
+
+Extract BUSINESS functional requirements from ALL processed sheets:
+- Look for detailed requirement sections in the "Requirement" sheet primarily
+- Also check other sheets for additional functional requirements
+- Extract information from any columns containing requirement descriptions
+- Include business rules, validation requirements, and functional specifications
+
+### 4.2 Application / Module Name: [Extract exact application/module name from ANY processed sheet]
 
 Create detailed requirement table based on content from ALL processed sheets:
 
@@ -266,14 +273,6 @@ Focus on extracting from ALL processed sheets:
 - User access controls, permissions, or restrictions
 - Data validation, processing, or transformation rules
 - Integration requirements and system interactions
-
-### 4.2 Functional Requirements
-
-Extract BUSINESS functional requirements from ALL processed sheets:
-- Look for detailed requirement sections in the "Requirement" sheet primarily
-- Also check other sheets for additional functional requirements
-- Extract information from any columns containing requirement descriptions
-- Include business rules, validation requirements, and functional specifications
 
 **SPECIFIC FOR EXCEL:** 
 - If there's a "Requirement" sheet, prioritize extracting from detailed requirement sections
@@ -349,6 +348,7 @@ Extract any mentioned across ALL processed sheets:
 - What frequency or scheduling of reports is needed?
 - What user roles or audiences need access to reports?
 - Any real-time monitoring or alerting requirements
+- Which plots/charts are applicable to be built?
 
 Check all processed sheets for reporting requirements, analytics needs, or dashboard specifications.
 
@@ -453,9 +453,9 @@ FIRST, thoroughly scan ALL source requirements documents for existing test conte
 - Maintain original test structure, format, and content
 - Convert to standardized markdown table format:
 
-| **Test ID** | **Test Scenario Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
-|-------------|---------------|---------------|----------------|---------------------|---------------|----------|
-| [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Data] | [Extract Type] |
+| **Test ID** | **Test Scenario Name** | **Objective** | **Test Steps** | **Expected Results** | **Type** |
+|-------------|---------------|---------------|----------------|---------------------|----------|
+| [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Type] |
 
 **STOP HERE - Do not proceed to Secondary Approach if existing tests are found**
 
@@ -466,8 +466,8 @@ FIRST, thoroughly scan ALL source requirements documents for existing test conte
 
 IF NO existing test scenarios are found in ANY source documents, THEN generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements:
 
-| **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Test Data** | **Type** |
-|-------------|---------------|---------------|----------------|---------------------|---------------|----------|
+| **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Type** |
+|-------------|---------------|---------------|----------------|---------------------|----------|
 
 Create exactly 5 test scenarios covering:
 - Primary functional requirements mentioned in source
@@ -1471,8 +1471,8 @@ elif api_provider == "AzureOpenAI":
     azure_deployment = st.text_input("Enter your Azure Deployment Name:", 
                                      placeholder="gpt-35-turbo")
     api_version = st.text_input("Enter API Version (optional):", 
-                                value="2024-02-15-preview",
-                                placeholder="2024-02-15-preview")
+                                value="2025-01-01-preview",
+                                placeholder="2025-01-01-preview")
 else:
     api_key = st.text_input("Enter your Groq API Key:", type="password")
 
