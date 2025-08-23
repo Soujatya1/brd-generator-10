@@ -112,6 +112,9 @@ Search across ALL processed sheets for key phrases: "purpose", "objective", "req
 2. Content from other "Detailed Requirement" sections
 3. Content from other relevant sections across all sheets
 
+OUTPUT FORMAT:
+1. In form of bullet pointers
+
 ### 1.2 As-is process
 
 Extract the CURRENT state/process from ANY relevant sheet:
