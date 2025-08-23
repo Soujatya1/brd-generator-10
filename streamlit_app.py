@@ -154,6 +154,10 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 
 ### 2.1 Impacted Products
 
+SEARCH STRATEGY:
+1. **FIRST PRIORITY**: Look specifically for "PART C : " section
+2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet
+
 List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted:
 - Extract from any column/row mentioning affected products/platforms
 - Check all sheets for product names, service names, or system names, platform names
@@ -161,6 +165,10 @@ List ONLY the products/platforms explicitly mentioned across ALL processed sheet
 EXPLICITLY LOOK FOR WORDS LIKE "Products", "Product"
 
 ### 2.2 Applications Impacted
+
+SEARCH STRATEGY:
+1. **FIRST PRIORITY**: Look specifically for "PART C : " section
+2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet
 
 List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted:
 - Extract from any column/row mentioning affected applications
