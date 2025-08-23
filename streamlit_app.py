@@ -152,29 +152,185 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 
 ## 2.0 Impact Analysis
 
+SECTION_TEMPLATES = {
+
+    "intro_impact": """
+
+You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD).
+
+IMPORTANT: Do not output any ``` code fences or Mermaid syntax.
+All text should be plain markdown (headings, lists, tables) only - no code blocks or fenced content.
+
+SOURCE REQUIREMENTS:
+
+{requirements}
+
+EXCEL FILE PROCESSING INSTRUCTIONS:
+
+**FOR EXCEL FILES (.xlsx/.xls):**
+- Process ALL sheets EXCEPT "Test Scenarios" sheet
+- **PRIORITY FOCUS**: Look specifically for "PART B : (Mandatory) Detailed Requirement", "PART C : (Mandatory) Detailed Requirement" sections, and impact tables
+- Include data from sheets: "Requirement", "Ops Risk Assessment", and any other available sheets
+- Extract content from ALL relevant columns and rows in each sheet
+- Look for business requirements, processes, impacts, and technical specifications across all sheets
+- **SPECIAL FOCUS**: Look for "Products Impacted" and "Applications Impacted" tables/sections
+- If sheet names are different from expected, process all sheets except those explicitly containing test scenarios
+
+**SPECIAL INSTRUCTION FOR PURPOSE AND TO-BE PROCESS:**
+For sections 1.1 Purpose and 1.3 To be process / High level solution:
+- **HIGHEST PRIORITY**: Search for and extract information from "PART B : (Mandatory) Detailed Requirement" section
+- **SECOND PRIORITY**: Search for and extract information from "PART C : (Mandatory) Detailed Requirement" section
+- Look for these exact text patterns or similar variations like:
+  - "PART B" / "PART C"
+  - "Mandatory Detailed Requirement" 
+  - "Detailed Requirement"
+  - "Part B - Detailed Requirement" / "Part C - Detailed Requirement"
+  - "PART B : Detailed Requirement" / "PART C : Detailed Requirement"
+- If found, prioritize these sections' content for Purpose and To-be process extraction
+- If neither Part B nor Part C found, then search across ALL other processed sheets for relevant content
+
+**SPECIAL INSTRUCTION FOR IMPACT ANALYSIS:**
+For sections 2.1 Impacted Products and 2.2 Applications Impacted:
+- **PRIORITY SEARCH**: Look for tables or sections with headers like:
+  - "Products Impacted" / "Product Impacted" / "Type of Product"
+  - "Applications Impacted" / "Application Impacted" / "Application Name"
+- **PATTERN RECOGNITION**: Look for tables with product types like: ULIP, Term, Endowment, Annuity, Health, Group
+- **PATTERN RECOGNITION**: Look for tables with application names like: OPUS, INSTAB, NGIN, PMAC, CRM, Cashier
+- **VALUE EXTRACTION**: Extract specific "Yes/No" or similar values indicating impact
+- **TABLE FORMAT**: Preserve the original table structure when found
+
+CRITICAL INSTRUCTIONS:
+
+- Extract information from ALL available sheets (except Test Scenarios sheet)
+- **For Purpose and To-be process: PRIORITIZE "PART B" and "PART C (Mandatory) Detailed Requirement" content**
+- **For Impact Analysis: PRIORITIZE structured tables showing Products/Applications impact**
+- Identify the ACTUAL business problem being solved from any relevant sheet
+- Focus on what is explicitly mentioned across all processed sheets
+- Do NOT create, assume, or fabricate any content not present in the source
+- If a section has no relevant information across ALL processed sheets, leave it BLANK
+- Adapt to any domain (training, payments, integration, access control, etc.)
+
+Create ONLY the following sections with detailed content in markdown:
+
+## 1.0 Introduction
+
+### 1.1 Purpose
+
+**SEARCH STRATEGY FOR PURPOSE:**
+1. **FIRST PRIORITY**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section
+2. **SECOND PRIORITY**: Look specifically for "PART C : (Mandatory) Detailed Requirement" section
+3. **THIRD PRIORITY**: Search other sections in "Requirement" sheet
+
+Extract the EXACT business purpose, focusing on:
+- Capture from "PART B : (Mandatory) Detailed Requirement" if available
+- Capture from "PART C : (Mandatory) Detailed Requirement" if available
+- If neither Part B nor Part C found, capture from "Detailed Requirement" sections in any sheet
+- What is the main business objective or problem being addressed?
+- What specific functionality or capability is being implemented?
+- What restrictions, validations, or controls are being introduced?
+- What business processes are being improved or changed?
+- What compliance, security, or operational requirements are being met?
+
+Search across ALL processed sheets for key phrases: "purpose", "objective", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
+
+**EXTRACTION PRIORITY ORDER:**
+1. Content from "PART B : (Mandatory) Detailed Requirement" 
+2. Content from "PART C : (Mandatory) Detailed Requirement"
+3. Content from other "Detailed Requirement" sections
+4. Content from other relevant sections across all sheets
+
+OUTPUT FORMAT:
+1. In form of bullet pointers
+
+### 1.2 As-is process
+
+Extract the CURRENT state/process from ANY relevant sheet:
+- How does the current system/process work?
+- What are the existing workflows or user journeys?
+- What problems or limitations exist in the current approach?
+- What manual processes or workarounds are currently used?
+- What system behaviors need to be changed?
+- Any screenshots, process flows, or current state descriptions
+
+Look for indicators across ALL sheets: "currently", "as-is", "existing", "present", "manual", "workaround", "problem with current", "limitations"
+
+### 1.3 To be process / High level solution
+
+**SEARCH STRATEGY FOR TO-BE PROCESS:**
+1. **FIRST PRIORITY**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section
+2. **SECOND PRIORITY**: Look specifically for "PART C : (Mandatory) Detailed Requirement" section
+3. **THIRD PRIORITY**: Search other sections in "Requirement" sheet  
+4. **FOURTH PRIORITY**: Search "Ops Risk Assessment" and other sheets
+
+Extract the PROPOSED solution, prioritizing "PART B" and "PART C (Mandatory) Detailed Requirement" content:
+- Content from "PART B : (Mandatory) Detailed Requirement" if available
+- Content from "PART C : (Mandatory) Detailed Requirement" if available
+- What is the new process or system behavior?
+- What workflow steps or validation logic will be implemented?
+- How will the new solution address current problems?
+- What automated processes will replace manual ones?
+- What new capabilities or features will be added?
+- Any conditional logic, decision trees, or multi-step processes
+
+Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
+
+**EXTRACTION PRIORITY ORDER:**
+1. Content from "PART B : (Mandatory) Detailed Requirement"
+2. Content from "PART C : (Mandatory) Detailed Requirement"
+3. Content from other "Detailed Requirement" sections  
+4. Content from other relevant sections across all sheets
+
+## 2.0 Impact Analysis
+
 ### 2.1 Impacted Products
 
-SEARCH STRATEGY:
-1. **FIRST PRIORITY**: Look specifically for "PART C : " section
-2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet
+**PRIORITY SEARCH STRATEGY:**
+1. **FIRST PRIORITY**: Look for tables/sections with headers like "Products Impacted", "Product Impacted", "Type of Product"
+2. **SECOND PRIORITY**: Look for tables containing product names: ULIP, Term, Endowment, Annuity, Health, Group
+3. **THIRD PRIORITY**: Search for any mention of products across all sheets
 
-List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted:
+**EXTRACTION INSTRUCTIONS:**
+- If a structured table is found (like the example with ULIP, Term, Endowment, etc.), extract it in the following format:
+  - Create a markdown table preserving the original structure
+  - Show product types and their impact status (Yes/No/etc.)
+  - Include any additional columns or classifications found
+  
+**TABLE FORMAT EXAMPLE (if structured table found):**
+| Product Type | Impact Status | Additional Notes |
+|--------------|---------------|------------------|
+| [Extract from source] | [Extract Yes/No/etc.] | [Any other info] |
+
+**IF NO STRUCTURED TABLE FOUND:**
+- List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
 - Extract from any column/row mentioning affected products/platforms
 - Check all sheets for product names, service names, or system names, platform names
 
-EXPLICITLY LOOK FOR WORDS LIKE "Products", "Product"
+**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table. Do NOT create a generic list.
 
 ### 2.2 Applications Impacted
 
-SEARCH STRATEGY:
-1. **FIRST PRIORITY**: Look specifically for "PART C : " section
-2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet
+**PRIORITY SEARCH STRATEGY:**
+1. **FIRST PRIORITY**: Look for tables/sections with headers like "Applications Impacted", "Application Impacted", "Application Name"
+2. **SECOND PRIORITY**: Look for tables containing application names: OPUS, INSTAB, NGIN, PMAC, CRM, Cashier
+3. **THIRD PRIORITY**: Search for any mention of applications across all sheets
 
-List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted:
+**EXTRACTION INSTRUCTIONS:**
+- If a structured table is found (like the example with OPUS, INSTAB, NGIN, etc.), extract it in the following format:
+  - Create a markdown table preserving the original structure
+  - Show application names and their impact status (Yes/No/etc.)
+  - Include any additional columns or classifications found
+  
+**TABLE FORMAT EXAMPLE (if structured table found):**
+| Application Name | Impact Status | Additional Notes |
+|------------------|---------------|------------------|
+| [Extract from source] | [Extract Yes/No/etc.] | [Any other info] |
+
+**IF NO STRUCTURED TABLE FOUND:**
+- List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted
 - Extract from any column/row mentioning affected applications
-- Check all sheets for applications names
+- Check all sheets for application names
 
-EXPLICITLY LOOK FOR WORDS LIKE "Applications", "Application"
+**CRITICAL**: If an "Applications Impacted" table exists in the source, reproduce it exactly as a markdown table. Do NOT create a generic list.
 
 ### 2.3 List of APIs required
 
@@ -189,8 +345,8 @@ Extract SPECIFIC technical requirements from ALL processed sheets:
 IMPORTANT:
 
 - Use markdown headings (##, ###)
-- Preserve any tables in markdown format from ANY processed sheet
-- **For Purpose and To-be process: PRIORITIZE "PART B : (Mandatory) Detailed Requirement" content**
+- **CRITICAL**: For sections 2.1 and 2.2, if structured tables exist in source, reproduce them as markdown tables
+- **For Purpose and To-be process: PRIORITIZE "PART B" and "PART C (Mandatory) Detailed Requirement" content**
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
 - If no content found for a subsection after checking ALL sheets, leave it blank
