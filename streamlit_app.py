@@ -501,37 +501,10 @@ Search across ALL sheets for system names, database references, integration poin
 
 ## 6.0 Communication Requirement
 
-**EMAIL CONTENT EXTRACTION:**
-- Look for email communication patterns in the source requirements including:
-  - Email addresses (containing @ symbol)
-  - Email headers like "From:", "To:", "Subject:", "Date:"
-  - Email greetings like "Hi [Name]", "Hello [Name]", "Dear [Name]"
-  - Email signatures with names, titles, phone numbers
-  - Reply chains and conversation threads
-  - Email closings like "Regards", "Thanks", "Best Regards"
-  - Corporate email signatures with company names
+Extraction Strategy:
+1. First look for "Changes in Communication" or similar keywords in the excel uploaded "Requirement" sheet
 
-**SEARCH FOR EMAIL PATTERNS:**
-- @ symbols indicating email addresses
-- Phone numbers in signatures
-- Corporate titles and designations
-- Email thread conversations
-- Any communication that looks like email correspondence
-
-**IF email-like content IS FOUND:**
-- Extract and include all email communications found in the source
-- Preserve the conversation flow and chronological order
-- Include email addresses, names, and contact information
-- Maintain the original format and structure
-- Format as:
-
-### Email Communication Thread
-
-[Extract and preserve the complete email conversation as it appears in the source, maintaining the original format, names, email addresses, signatures, and conversation flow]
-
-**IF NO email-like content is found:**
-- State: "No communication requirement content found in source documents"
-- Do NOT generate, create, or simulate any email content
+Pick the whole information in form of table from there as-is
 
 **CRITICAL:** Only extract actual email-like content that exists in the source requirements. Never generate, create, assume, or fabricate any email content.
 
