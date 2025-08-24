@@ -165,6 +165,100 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
   - Create a markdown table preserving the original structure
   - Show product types and their impact status (Yes/No/etc.)
   - Include any additional columns or classifications found
+
+Now, as per the Products which have a status "Yes", you need to map the same and align as per the below list:
+
+Term:
+
+Bajaj Allianz Life iSecure II
+Bajaj Allianz Life eTouch II
+Bajaj Allianz Life Saral Jeevan Bima
+Bajaj Allianz Life Diabetic Term Plan II Sub 8 HbA1c
+Bajaj Allianz Life Smart Protection Goal
+
+
+Endowment:
+
+Bajaj Allianz Life Assured Wealth Goal Platinum
+Bajaj Allianz Life ACE
+Bajaj Allianz Life Goal Suraksha
+
+
+Annuity:
+
+Bajaj Allianz Life Guaranteed Pension Goal II
+Bajaj Allianz Life Saral Pension
+
+
+Combi:
+
+Bajaj Allianz Life Capital Goal Suraksha
+
+
+Group:
+
+Bajaj Allianz Life Group Term Life
+Bajaj Allianz Life Group Credit Protection Plus
+Bajaj Allianz Life Group Sampoorna Jeevan Suraksha
+Bajaj Allianz Life Group Employee Benefit
+Bajaj Allianz Life Group Superannuation Secure Plus
+Bajaj Allianz Life Group Superannuation Secure
+Bajaj Allianz Life Group Employee Care
+Bajaj Allianz Life Group Secure Return
+Bajaj Allianz Life Group Sampoorna Suraksha Kavach
+Bajaj Allianz Life Pradhan Mantri Jeevan Jyoti Bima Yojana
+Bajaj Allianz Life Group Secure Shield
+Bajaj Allianz Life Group Investment Plan
+
+
+Non Par:
+
+Bajaj Allianz Life Goal Suraksha
+Bajaj Allianz Life Assured Wealth Goal Platinum
+Bajaj Allianz Life Guaranteed Wealth Goal
+Bajaj Allianz Life Guaranteed Saving Goal
+Bajaj Allianz Life Assured Wealth Goal
+
+
+Par:
+
+Bajaj Allianz Life ACE
+Bajaj Allianz Life ACE Advantage
+
+
+Rider:
+
+Bajaj Allianz Accidental Death Benefit Rider
+Bajaj Allianz Accidental Permanent Total/Partial Disability Benefit Rider
+Bajaj Allianz Life Linked Accident Protection Rider II
+Bajaj Allianz Life Family Protect Rider
+Bajaj Allianz Life Group New Terminal Illness Rider
+Bajaj Allianz Life Group Accelerated Critical Illness Rider
+Bajaj Allianz Life Group Accidental Permanent Total/Partial Disability Benefit Rider
+Bajaj Allianz Life Group Critical Illness Rider
+Bajaj Allianz Life Group Accidental Death Benefit
+Bajaj Allianz Life New Critical Illness Benefit Rider
+Bajaj Allianz Life Care Plus Rider
+Bajaj Allianz Life Linked Critical Illness Benefit Rider
+
+
+ULIP:
+
+Bajaj Allianz Life Goal Assure IV
+Bajaj Allianz Life Magnum Fortune Plus III
+Bajaj Allianz Life Invest Protect Goal III
+Bajaj Allianz Life Fortune Gain II
+Bajaj Allianz Life Future Wealth Gain IV
+Bajaj Allianz Life LongLife Goal III
+Bajaj Allianz Life Smart Wealth Goal V
+Bajaj Allianz Life Goal Based Saving III
+Bajaj Allianz Life Elite Assure
+
+
+ULIP Pension:
+
+Bajaj Allianz Life Smart Pension
+
   
 **TABLE FORMAT EXAMPLE (if structured table found):**
 | Product Type | |--------------| | [Extract from source]
