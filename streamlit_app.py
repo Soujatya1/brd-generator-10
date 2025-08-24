@@ -167,9 +167,8 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
   - Include any additional columns or classifications found
   
 **TABLE FORMAT EXAMPLE (if structured table found):**
-| Product Type | Impact Status | Additional Notes |
-|--------------|---------------|------------------|
-| [Extract from source] | [Extract Yes/No/etc.] | [Any other info] |
+| Product Type | |--------------| | [Extract from source]
+|Impact Status|---------------| [Extract Yes/No/etc.] |
 
 **IF NO STRUCTURED TABLE FOUND:**
 - List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
