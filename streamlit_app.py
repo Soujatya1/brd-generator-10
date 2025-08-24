@@ -156,7 +156,7 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 ### 2.1 Impacted Products
 
 **PRIORITY SEARCH STRATEGY:**
-1. **FIRST PRIORITY**: Look for tables/sections with headers like "Products Impacted", "Product Impacted", "Type of Product" from "Part C"
+1. **FIRST PRIORITY**: Look for tables/sections with headers ONLY like "Products Impacted", "Product Impacted", "Type of Product" from "Part C"
 2. **SECOND PRIORITY**: Look for tables containing product names: ULIP, Term, Endowment, Annuity, Health, Group
 3. **THIRD PRIORITY**: Search for any mention of products across all sheets
 
@@ -181,7 +181,7 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 ### 2.2 Applications Impacted
 
 **PRIORITY SEARCH STRATEGY:**
-1. **FIRST PRIORITY**: Look for tables/sections with headers like "Applications Impacted", "Application Impacted", "Application Name" from "Part C"
+1. **FIRST PRIORITY**: Look for tables/sections with headers ONLY like "Applications Impacted", "Application Impacted", "Application Name" from "Part C"
 2. **SECOND PRIORITY**: Look for tables containing application names: OPUS, INSTAB, NGIN, PMAC, CRM, Cashier
 3. **THIRD PRIORITY**: Search for any mention of applications across all sheets
 
