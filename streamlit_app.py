@@ -166,113 +166,116 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
   - Show product types and their impact status (Yes/No/etc.)
   - Include any additional columns or classifications found
 
-Now, as per the Product Type which have a status "Yes", you need to map the same and align as per the below list:
+**CRITICAL PRODUCT MAPPING LOGIC:**
 
-Product Alignment:
+STEP 1: Extract the original table from source exactly as it appears:
 
-Term:
+| Product Type | Impact Status | Additional Columns |
+|--------------|---------------|-------------------|
+| [Extract exact content from source] | [Extract Yes/No/etc.] | [Extract any other data] |
 
-Bajaj Allianz Life iSecure II
-Bajaj Allianz Life eTouch II
-Bajaj Allianz Life Saral Jeevan Bima
-Bajaj Allianz Life Diabetic Term Plan II Sub 8 HbA1c
-Bajaj Allianz Life Smart Protection Goal
+STEP 2: Apply product mapping ONLY for product types with status "Yes":
 
+**Product Type to Specific Product Mapping:**
 
-Endowment:
+If **Term** = "Yes", then include:
+- Bajaj Allianz Life iSecure II
+- Bajaj Allianz Life eTouch II
+- Bajaj Allianz Life Saral Jeevan Bima
+- Bajaj Allianz Life Diabetic Term Plan II Sub 8 HbA1c
+- Bajaj Allianz Life Smart Protection Goal
 
-Bajaj Allianz Life Assured Wealth Goal Platinum
-Bajaj Allianz Life ACE
-Bajaj Allianz Life Goal Suraksha
+If **Endowment** = "Yes", then include:
+- Bajaj Allianz Life Assured Wealth Goal Platinum
+- Bajaj Allianz Life ACE
+- Bajaj Allianz Life Goal Suraksha
 
+If **Annuity** = "Yes", then include:
+- Bajaj Allianz Life Guaranteed Pension Goal II
+- Bajaj Allianz Life Saral Pension
 
-Annuity:
+If **Combi** = "Yes", then include:
+- Bajaj Allianz Life Capital Goal Suraksha
 
-Bajaj Allianz Life Guaranteed Pension Goal II
-Bajaj Allianz Life Saral Pension
+If **Group** = "Yes", then include:
+- Bajaj Allianz Life Group Term Life
+- Bajaj Allianz Life Group Credit Protection Plus
+- Bajaj Allianz Life Group Sampoorna Jeevan Suraksha
+- Bajaj Allianz Life Group Employee Benefit
+- Bajaj Allianz Life Group Superannuation Secure Plus
+- Bajaj Allianz Life Group Superannuation Secure
+- Bajaj Allianz Life Group Employee Care
+- Bajaj Allianz Life Group Secure Return
+- Bajaj Allianz Life Group Sampoorna Suraksha Kavach
+- Bajaj Allianz Life Pradhan Mantri Jeevan Jyoti Bima Yojana
+- Bajaj Allianz Life Group Secure Shield
+- Bajaj Allianz Life Group Investment Plan
 
+If **Non Par** = "Yes", then include:
+- Bajaj Allianz Life Goal Suraksha
+- Bajaj Allianz Life Assured Wealth Goal Platinum
+- Bajaj Allianz Life Guaranteed Wealth Goal
+- Bajaj Allianz Life Guaranteed Saving Goal
+- Bajaj Allianz Life Assured Wealth Goal
 
-Combi:
+If **Par** = "Yes", then include:
+- Bajaj Allianz Life ACE
+- Bajaj Allianz Life ACE Advantage
 
-Bajaj Allianz Life Capital Goal Suraksha
+If **Rider** = "Yes", then include:
+- Bajaj Allianz Accidental Death Benefit Rider
+- Bajaj Allianz Accidental Permanent Total/Partial Disability Benefit Rider
+- Bajaj Allianz Life Linked Accident Protection Rider II
+- Bajaj Allianz Life Family Protect Rider
+- Bajaj Allianz Life Group New Terminal Illness Rider
+- Bajaj Allianz Life Group Accelerated Critical Illness Rider
+- Bajaj Allianz Life Group Accidental Permanent Total/Partial Disability Benefit Rider
+- Bajaj Allianz Life Group Critical Illness Rider
+- Bajaj Allianz Life Group Accidental Death Benefit
+- Bajaj Allianz Life New Critical Illness Benefit Rider
+- Bajaj Allianz Life Care Plus Rider
+- Bajaj Allianz Life Linked Critical Illness Benefit Rider
 
+If **ULIP** = "Yes", then include:
+- Bajaj Allianz Life Goal Assure IV
+- Bajaj Allianz Life Magnum Fortune Plus III
+- Bajaj Allianz Life Invest Protect Goal III
+- Bajaj Allianz Life Fortune Gain II
+- Bajaj Allianz Life Future Wealth Gain IV
+- Bajaj Allianz Life LongLife Goal III
+- Bajaj Allianz Life Smart Wealth Goal V
+- Bajaj Allianz Life Goal Based Saving III
+- Bajaj Allianz Life Elite Assure
 
-Group:
+If **ULIP Pension** = "Yes", then include:
+- Bajaj Allianz Life Smart Pension
 
-Bajaj Allianz Life Group Term Life
-Bajaj Allianz Life Group Credit Protection Plus
-Bajaj Allianz Life Group Sampoorna Jeevan Suraksha
-Bajaj Allianz Life Group Employee Benefit
-Bajaj Allianz Life Group Superannuation Secure Plus
-Bajaj Allianz Life Group Superannuation Secure
-Bajaj Allianz Life Group Employee Care
-Bajaj Allianz Life Group Secure Return
-Bajaj Allianz Life Group Sampoorna Suraksha Kavach
-Bajaj Allianz Life Pradhan Mantri Jeevan Jyoti Bima Yojana
-Bajaj Allianz Life Group Secure Shield
-Bajaj Allianz Life Group Investment Plan
+If **All** = "Yes", then include ALL products from ALL categories listed above.
 
+**FINAL OUTPUT FORMAT:**
 
-Non Par:
+First show the original table:
+### Original Products Impact Table
+[Original table from source]
 
-Bajaj Allianz Life Goal Suraksha
-Bajaj Allianz Life Assured Wealth Goal Platinum
-Bajaj Allianz Life Guaranteed Wealth Goal
-Bajaj Allianz Life Guaranteed Saving Goal
-Bajaj Allianz Life Assured Wealth Goal
+Then show the mapped products:
+### Specific Products Impacted
+Based on the product types marked as "Yes" in the above table:
 
+**[Product Category Name] Products:**
+- [List specific products for this category]
 
-Par:
+**[Next Product Category Name] Products:**
+- [List specific products for this category]
 
-Bajaj Allianz Life ACE
-Bajaj Allianz Life ACE Advantage
-
-
-Rider:
-
-Bajaj Allianz Accidental Death Benefit Rider
-Bajaj Allianz Accidental Permanent Total/Partial Disability Benefit Rider
-Bajaj Allianz Life Linked Accident Protection Rider II
-Bajaj Allianz Life Family Protect Rider
-Bajaj Allianz Life Group New Terminal Illness Rider
-Bajaj Allianz Life Group Accelerated Critical Illness Rider
-Bajaj Allianz Life Group Accidental Permanent Total/Partial Disability Benefit Rider
-Bajaj Allianz Life Group Critical Illness Rider
-Bajaj Allianz Life Group Accidental Death Benefit
-Bajaj Allianz Life New Critical Illness Benefit Rider
-Bajaj Allianz Life Care Plus Rider
-Bajaj Allianz Life Linked Critical Illness Benefit Rider
-
-
-ULIP:
-
-Bajaj Allianz Life Goal Assure IV
-Bajaj Allianz Life Magnum Fortune Plus III
-Bajaj Allianz Life Invest Protect Goal III
-Bajaj Allianz Life Fortune Gain II
-Bajaj Allianz Life Future Wealth Gain IV
-Bajaj Allianz Life LongLife Goal III
-Bajaj Allianz Life Smart Wealth Goal V
-Bajaj Allianz Life Goal Based Saving III
-Bajaj Allianz Life Elite Assure
-
-
-ULIP Pension:
-
-Bajaj Allianz Life Smart Pension
-
-  
-**TABLE FORMAT EXAMPLE (if structured table found):**
-| Product Type | |--------------| | [Extract from source]
-| Products | |------------| [Extracted from above Product Alignment]
-|Impact Status|---------------| [Extract Yes/No/etc.] |
+[Continue for all categories with "Yes" status]
 
 **IF NO STRUCTURED TABLE FOUND:**
 - List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
 - Extract from any column/row mentioning affected products/platforms
 - Check all sheets for product names, service names, or system names, platform names
 
-**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table. Do NOT create a generic list.
+**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table AND then apply the product mapping logic above. Do NOT create a generic list.
 
 ### 2.2 Applications Impacted
 
@@ -314,13 +317,14 @@ IMPORTANT:
 - Use markdown headings (##, ###)
 - **CRITICAL**: For sections 2.1 and 2.2, if structured tables exist in source, reproduce them as markdown tables
 - **For Purpose and To-be process: PRIORITIZE "PART B" and "PART C (Mandatory) Detailed Requirement" content**
+- **For Products Impacted: Apply the product mapping logic based on "Yes" status**
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
 - If no content found for a subsection after checking ALL sheets, leave it blank
 
 VALIDATION CHECK:
 
-Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). For Purpose and To-be process sections, ensure you've prioritized "PART B : (Mandatory) Detailed Requirement" content when available.
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). For Purpose and To-be process sections, ensure you've prioritized "PART B : (Mandatory) Detailed Requirement" content when available. For Products Impacted, ensure you've applied the correct product mapping logic.
 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 1.0 Introduction, ### 1.1 Purpose, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
@@ -479,7 +483,7 @@ Extract any mentioned across ALL processed sheets:
 - What frequency or scheduling of reports is needed?
 - What user roles or audiences need access to reports?
 - Any real-time monitoring or alerting requirements
-- Which plots/charts are applicable to be built?
+- Which plots/charts are applicable to be built for what reason and purpose?
 
 Check all processed sheets for reporting requirements, analytics needs, or dashboard specifications.
 
