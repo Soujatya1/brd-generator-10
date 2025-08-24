@@ -204,13 +204,705 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 
 ### 2.3 List of APIs required
 
-Extract SPECIFIC technical requirements from ALL processed sheets:
-- New APIs or services that need to be created
-- Existing APIs that need modification
-- Third-party integrations or external system connections
-- Database access or query requirements
-- Authentication, authorization, or security services
-- Any technical specifications or interface requirements
+Understand the what the input requirement states and as per that from the below list select the show the API required:
+
+Policy
+API related to details about premium payment,account statments , profile detail, fund details , statement, products etc.
+
+POST
+​/GetDetailsService​/getDetails
+This service is used to get the details of customer based on policy no and request type.
+
+POST
+​/GetUnclaimedAmountService​/getUnclaimedAmount
+This API is used to get Unclaimed Amount
+
+POST
+​/MyProfileService​/getMyProfile
+The Api provides the profile details of a user based on the customer_id passed
+
+POST
+​/GetDashboardDetailsService​/getDashboardDetail
+This Service is used to fetch dashboard details
+
+POST
+​/RenewalDueListService​/getRenewalDueList
+get Renewal Due List , providers are Opus and Ngin
+
+POST
+​/FetchCategoryDetailService​/fetchCategoryDetail
+fetch details for given category , provider is NGIN
+
+POST
+​/GetChargeDetailsService​/getChargeDetails
+calculate charges , provider is NGIN
+
+POST
+​/InterestWaiverDetailService​/getInterestWaiverDetails
+get InterestWaiver Details , provide is CRM
+
+POST
+​/LoyaltyDetailService​/getLoyaltyDetailsByPolicy
+get Loyalty Details , provider in CRM Legacy and Ngin
+
+POST
+​/SumAssuredCalculationService​/calculateSumAssured
+calculates sum assured on basis of premium amount, providers are Opus and Ngin
+
+POST
+​/getPremiumReceiptService​/getPremiumReceipt
+get Premium Receipt Details , provider is Opus/ICSM
+
+POST
+​/NameSearchService​/searchName
+Retrieves registered PH,Policy number against agent code , providers are Opus and Ngin
+
+POST
+​/CRMAppSrchMsupDtls​/CRMAppSrchMsupDtlsProxy​/getDetails
+Mashup Service to retrieve policydetails , providers are CRM and NGIN
+
+POST
+​/SMSDetailsByPolicyService​/getSMSDetailsByPolicy
+get SMS Details By Policy , provider is CRM
+
+POST
+​/RenewalMailerDetailService​/getRenewalMailerDetails
+Retrieves mail details sent for renewal tracking , providers are CRM and Ngin
+
+POST
+​/FatcaNRIService​/getFatcaNRI
+FATCA NRI details of the customer for the given policy number , providers are CRM and Ngin (to-be)
+
+POST
+​/AutoCallingDetailsServices​/getAutoCallingDetails
+generates calling details for given number of policy no
+
+POST
+​/PasLoginService​/pasLogin
+returns url for each sr category post processing , provider is Ngin
+
+POST
+​/UpdateFundAlertSMSService​/AlertSMS
+updates frequncy of sms alert notification opted , providers are Ngin and CRM
+
+POST
+​/FundDetailsService​/getFundDetails
+Retrieves Policy Fund & Nav (Net Asset Value) details , providers are Opus , CRM and Ngin
+
+POST
+​/GetFundsService​/getFunds
+This API is used to get the Funds Bencmarking Details. provider is GBO (Goal Based Orientation)
+
+POST
+​/PolicyDetailsService​/getPolicyDetails
+Retrives Policy Details (Inception Date,Frequency,etc) , providers are Ngin and Opus
+
+POST
+​/GetPayeeDetailsService​/getPayeeDetails
+Get Payee Details
+
+POST
+​/GenerateNGINTokenService​/generateNGINToken
+generate NGIN Token
+
+
+Policy Servicing
+Customer service requests related to exisitng policy , like address change , PAN/Aadhar Update, name and dob corrections are part of Policy Servicing.
+
+
+
+POST
+​/UpdateFTReceiptStatusService​/updateFTReceiptStatus
+This API is used to update FT Receipt status
+
+POST
+​/ValidatePartialWithdrawalAmountService​/validatePartialWithdrawalAmount
+This API is used to validate Partial Withdrawal Amount
+
+POST
+​/SaveAnswerService​/saveAnswer
+The Api saves the question list and gives a status which indicates its success
+
+POST
+​/SubmitRevivalDGHResponseService​/submitRevivalDGHResponse
+The Api is used to submit the revival DGH request for the policy no
+
+POST
+​/SubmitPartialWithdrawalRequestService​/updatePartialWithdrawal
+This API is used to submit the partial withdrawal request and generate a service request number for same.
+
+POST
+​/GPARequestDetailsService​/saveGPARequestDetails
+
+POST
+​/AutopayDetailsService​/saveAutopayDetails
+Save Autopayment Details
+
+POST
+​/CalculateFeesGSTandTDSService​/calculateFeesGSTandTDS
+calculate taxes applicable on transactions , provider is PAS .
+
+POST
+​/FTRequestDetailsService​/saveFTRequestDetails
+save fund transfer Request , update happens in CRM or Ngin system
+
+POST
+​/RetrieveModalPremiumForSelectedFrequency​/getRetrieveModalPremium
+get ModalPremium For given policy and payment frequency, providers are NGIN and Opus
+
+POST
+​/NAVHistoryService​/getNAVHistory
+get NAV(Net Asset value) History , providers are Ngin and Opus
+
+POST
+​/PayoutDetailsService​/getPayoutDetails
+get Payout Details, providers are Ngin and CRM
+
+POST
+​/PremiumRedirectionService​/savePremiumRedirection
+save Premium Redirection Details , update happens in Ngin or Customer Portal
+
+
+POST
+​/UWCommentsService​/getUWComments
+get underwriter Comments for Policy , providers are NGIN or CMR and iONE
+
+POST
+​/RenewalIntimationCoverDetailsService​/getcoverdetails
+returns coverage details of a policy
+
+POST
+​/GenerateSMSService​/generateSMS
+generate SMS , provider is CRM
+
+POST
+​/validateCOEService​/validateCOE
+validate Certificate of Existence , provider is Opus
+
+POST
+​/LoanDetailService​/getLoanDetails
+get Loan Details , provider is CRM
+
+POST
+​/BonusDetailService​/getBonusDetails
+get Bonus Details , provider is CRM
+
+POST
+​/NomineeDetailsService​/NomineeDetailsService_PS​/getNomineeDetails
+get policy holder's Nominee Detail , providers are Ngin, Opus and CRM
+
+POST
+​/ValidateSettlementService​/validateSettlement
+Validate settlement for the given policy number , providers are CRM and Ngin
+
+POST
+​/UpdatePremiumFrequencyService​/updatePremiumFrequency
+Update Premium frequency for the given policy detail , details update in Ngin and CRM system based on Policy Number
+
+POST
+​/ClickToCallService​/getCall
+Customer details & mobile number are saved to opt for clicktocall , providers are Ngin and Opus
+
+POST
+​/ViewRequestHistoryService​/viewRequestHistory
+checks serice request history against each policy , providers are Ngin and Opus
+
+POST
+​/MRNachStatusService​/updateNachStatus
+Updates Nach(Bank,transaction , etc) details for policyNo , update in Ngin(CRT) and Opus
+
+POST
+​/SaveFundSwitchService​/saveFund
+Save fund switch details based on the policy number , providers are Opus and Ngin
+
+POST
+​/SaveFundSwitchSTPService​/saveFundSwitchSTP
+Save fund switch systematic transfer plan details based on the policy number , data updates in Ngin or Opus System based on Policy
+
+POST
+​/ProductDetailsService​/ProductDetailsService_PS​/getProductList
+List of products , provider is CRM
+
+POST
+​/FundValueService​/fetchPolicyData
+Fund Value details based on the policy no, application no, insurance type and manufacturer name , providers are Ngin and Opus
+
+POST
+​/GetCashReceiptValService​/getCashReceiptValService
+Cash Receipt details based on the policy no, application no , provider is Ngin(Cashiering and DC Activation) .
+
+POST
+​/SaveTopupPaymentService​/saveTopupPayment
+save topup details against Policy , provider is Opus and Ngin
+
+POST
+​/SimultaneousCaseDetailsService​/getSimultaneousCaseDetails
+retrieves simultaneous case details against application no,policy details
+
+POST
+​/OTPVerificationService​/fetchAgentData
+retrieves agent profile details. Provider is Opus
+
+POST
+​/PremiumRedirectionService​/getPremiumRedirection
+retrieves fund aportionment of policies , providers are Ngin and Opus
+
+POST
+​/MandateTransDetailService​/getMandateTransDetails
+Used to get the mandate Transaction details , providers are CRM and Ngin
+
+POST
+​/PolicyListService​/getPolicyList
+Retrieves payment url for policies eligible for renewal against user id . Providers are CRM and Ngin
+
+POST
+​/PreviousRequestSTPService​/getPreviousRequestSTP
+This service is used to display the details of fund transfer for a given policy. The details of funds from which the transfer occurs is displayed in the transfer_from list, and the funds to which the transfer is made is displayed in the transfer_to_list.
+
+POST
+​/validateBalicPolicy​/rest​/ValidatePolicyNo​/
+Used to validate the policy, providers are Opus and Ngin
+
+POST
+​/ReverseUpdateStatusLeadsService​/reverseUpdateStatusLeads
+Used to get the item key , provider is CRM
+
+POST
+​/UWCOPUSService​/getUWCDetails
+used for underwriting computation , provider is Ngin
+
+POST
+​/SaveNomineeDetailsService​/saveNomineeDetails
+saves the details of nominee for a given policy number , provider is CRM
+
+POST
+​/ValidateAadhaarService​/validateAadhaar
+validate details for a given aadhaar number , provider is Opus
+
+POST
+​/UpdateAadharService​/UpdateAadhar
+updates Aadhar details for given number of policy , detail updates in Ngin and Opus based on given Policy
+
+POST
+​/KYCDetailsService​/getKYCDetails
+generates KYC details for given number of policy , providers are Ngin and Opus
+
+POST
+​/SavePayoutDetailsService​/savePayoutDetails
+saves payout details for given number of policy , providers are Ngin and CRM
+
+POST
+​/ReverseUpdateStatusService​/getReverseStatus
+provides reverse SR status , provider is CRM
+
+POST
+​/SRStatusService​/getSRStatus
+This API gives the current status of SR , provider is CRM
+
+POST
+​/ExtendRevivalService​/getExtendRevival
+generates message for extending revival period for given policy , provider is CRM and Ngin
+
+POST
+​/getInstallmentAmount​/InstallmentAmount
+Get Installment amount , provider is Opus
+
+POST
+​/getTotalNetAmount​/TotNetAmount
+Get total net amount , provider is Opus
+
+POST
+​/DocumentEligilbleService​/getDocumentEligible
+Get Document Eligible , provider is GBO (Goal Based Orientation) platform
+
+POST
+​/CurrentPayableByAgentCodeService​/getCurrentPayableByAgentCode
+get the amount payable by the respective agent code , providers are ICSM portal and Ngin
+
+POST
+​/updateApprovalStatus​/updateApproval
+Updates application Approval Status for PLVC, detail updates in Ngin and Opus
+
+POST
+​/SearchFundRequestService​/getSearchFundRequest
+To get service request details of funds , provider is ICSM
+
+POST
+​/PreLoginContactUpdateService​/PreLoginContactUpdate
+To get the Contact Updated in Ngin and Opus sysems for given application number
+
+POST
+​/AllocationDetailsService​/getAllocationDetails
+To retrieve policy fund allocation details, providers are Ngin and Opus
+
+POST
+​/ActivityLogService​/getActivityLog
+.Get Activity Details against policy(address change, contact update etc) , providers are Ngin and CRM
+
+POST
+​/UploadCOEService​/uploadCOE
+This API is used to upload Certificate of Existence , updates in CRM
+
+POST
+​/CancelSTPRequestService​/cancelSTPRequest
+Customer portals use this API to discontinue STP fund tranfer for given policy number , updates in Ngin and CRM system
+
+POST
+​/FamilyDetailsService​/getFamilyDetailsByPolicy
+In this service we will get Details of Family members , providers are Ngin and CRM
+
+POST
+​/PartnerDetailService​/getPartnerDetails
+In this service we will get Details of Partner , providers are Ngin and Opus
+
+POST
+​/PolicyEligibilityDetailsService​/getPolicyEligibilityDetails
+Retrieves details of surrender value, partial withdrwal etc , providers are Ngin and CRM
+
+POST
+​/FTAppDetailService​/getFTApplnRequestDetails
+Mashup details for Fund transfer application details , providers are Ngin and Opus
+
+POST
+​/PremiumDetailsService​/getPremiumDetails
+API provides premium payment detals based on Policy , providers are Ngin and Opus
+
+POST
+​/STPDetailsService​/saveSTPDetails
+Saves information for SRs like portfolio switch, fund switch name change for given policy , detail updates in Ngin or Opus
+
+POST
+​/ProfileInfoService​/getProfileInfo
+fetches profile details on the basis of either profile number or mobile number from PMAC
+
+POST
+​/CustomerRetentionFutureFundDetailsService​/customerRetentionFutureFundDetails
+This API is used to fetch the customer retention future fund details.
+
+POST
+​/CPIDMergeService​/cpidMerge
+This service is used to merge/change the cp_id of policy
+
+POST
+​/SubmitMedicalClaimService​/submitmedicaldetails
+This API is used to submit medical claim details.
+
+POST
+​/CPMergingStatusService​/getCPMergingStatus
+getCPMergingStatus , provider is OPUS
+
+POST
+​/GetMedicalClaimdetailsService​/GetMedicalClaimdetails
+GetMedicalClaimdetails , provider is OPUS
+
+New Business
+New Business takes care of onboarding new Customer policy applications creation,kyc validation , product selection , proposal creation using insTAB ,which is part of digital journey that provides business functionalites for Partner and Balic sales team ,Similarity STP web portal is partner specific(institutional Business).
+
+
+CRT
+API which are part of Customer Retention Team module
+
+
+
+POST
+​/RenewalIntimationDetailsService​/getRenewalIntimationDetails
+get RenwalInitmation Details , provider is CRM
+
+POST
+​/AutoMandateRegService​/getAutoMandateReg
+details about auto mandate registration for given policy , providers are CRM and Ngin
+
+POST
+​/RegisterMandateWithGroupIDService​/registerMandateWithGroupIDService
+mandate registration with group ID , providers are Ngin(CRT) and Opus
+
+POST
+​/MandateRegDetailsService​/MandateRegDetailsService_PS​/regDtls
+Mandate Reg details based on the policy number , providers are Ngin Opus and CRM
+
+POST
+​/RenewalDetailsService​/getRenewalDetails
+Renewal info details based on the policy number , providers are CRM and Ngin
+
+POST
+​/RevivalDetailsService​/getRevivalDetails
+Used to get the revival details , providers are Ngin and CRM
+
+POST
+​/GroupIDForMultiplePolicyMandateRegistrationService​/getGroupIDfromMultiplePolicy
+generates group id of multiple polices for Mandate Registration , providers are Ngin (CRT) and Opus
+
+POST
+​/GroupIdDetailsForMRService​/getGroupIdDetails
+To get the policy details against particular group id from Opu and Ngin systems.
+Performance Portal
+API which are part of performace portal and integrates with Ismart , imanage and Sales portal to provide Agent related information, and their performance metrics.
+
+
+
+POST
+​/CustomerPortfolioSearchByName​/SearchCustomerPortfolio
+searches customer portfolio on basis customer name for an agent , providers and Opus and Ngin
+
+POST
+​/SearchCustomerService​/searchCustomer
+retrieves customer details on basis of mobile/dob/name , provider is Opus
+
+POST
+​/CustomerPortfolioWithChartService​/getSelectedCustomerPortfolioWithChart
+provide customer portfolio list for the selected customer for a given policy number , providers are Ngin and Opus (ICSM)
+
+POST
+​/PolicySnapshotWithChartService​/getPolicySnapshotWithChart
+To get Customer Fund Value Details , provider is Opus(ICSM)
+
+POST
+​/CustomerPortfolioSearchByDateService​/customerPortfolioSearch
+searches customer portfolio on basis customer date for an agent , provider is ICSM
+Cashiering and Receipting
+APIs realted to receipt details.
+
+
+claims
+API for claims processings and retrieving
+
+
+
+POST
+​/ClaimsPartnerService​/getPartnerDetails
+Claims Partner Details, provider is NGIN and Opus
+
+POST
+​/ClaimPayoutDetailsService​/getClaimPayoutDetails
+get Claim Payout Details , providers are NGIN and CRM legacy system
+
+POST
+​/ClaimRepudiationDetailsService​/getClaimRepudiationDetails
+generates claim repudiation details for given number of policy , providers are Ngin (clamis) and CRM
+
+POST
+​/ClaimPolicyListService​/getClaimPolicyList
+Get claim policy list , provider is Opus
+
+POST
+​/ClaimNotificationService​/getClaimNotification
+get Claim Notification
+Common
+API which serves functionality used by multiple features
+
+
+
+POST
+​/LOVDetailService​/getLOV
+get LOV Details , provider is Common Master
+
+
+POST
+​/RoutingInfoService​/{RoutingOperation}
+getRoutingInfo - target System
+
+POST
+​/CPIDFromUserId​/getCPIDFromUserId
+CPID based on the user ID
+
+POST
+​/GenerateAadharOTPService​/generateOTP
+Sends OTP on the registered mobile linked with aadhar Number. Provider is aadhar Voult/Opus
+
+POST
+​/ValidateAadhaarOTPService​/ValidateAadhaarOTP
+Validates Aadhar with OTP generated from AadharOTP API and provides Reference Number for aadhar. Additional features of name match with PAS system is added . Providers are aadhar Voult , Opus and Ngin
+Sentimeter
+Sentimeter COV details & sentimeter influencer details
+
+
+
+POST
+​/SentimeterCOVDetailsService​/getCOVDetails
+This Service is used to get the sentimeter COV details
+
+POST
+​/SentimeterInfluencerDetailsService​/getInfluencerDetails
+This Service is used to get the sentimeter influencer details
+Websales
+
+
+POST
+​/GetAccountStatementService​/GetAccountStatement_PS​/getAccountStatement
+This API is used to generate the account statement .
+
+POST
+​/BalicWSRest​/BalicWSRest
+saves application details in NB Journey for partner services, updates the data in Opus
+SFDC
+
+
+POST
+​/MasterPolicyInsuranceService​/getInsuranceDetails
+This service is used to save the master policy insurance data
+
+POST
+​/ReceiptCreationService​/generateReceipt
+generate receipt number , provider is OPUS.
+
+POST
+​/CCMPushDataService​/saveCCMData
+save CCM Data in DWH , provider is OPUS.
+
+POST
+​/PartnerIdCreationService​/getPartnerIdCreation
+This service is used to create the partner id for the customer based on the details provided.
+
+POST
+​/QuotationIdCreationService​/getQuotationIdCreation
+This service is used to create the quotation id for the customer based on the details provided.
+external_api
+
+
+POST
+​/GetApplicationTrackerDetailsService​/getApplicationTrackerDetails
+This API is used to track APplication details for a given Application/Policy Number
+
+POST
+​/GetUserIdFlagService​/getUserIdFlag
+This API is used to get user_flag for a given login Id.Login Id can be a mobile number / email, user Id.
+
+POST
+​/TrackerDocumentService​/getDocument
+This API is used to send list of documents to user via mail or SMS, Providers are OPUS, NGIN & CCM
+
+POST
+​/PinCodeDetailService​/getPincodeDetails
+Get Pincode Details, provider is CRM,CP,GBO.
+
+POST
+​/CreateMerchantAndSendNotificationService​/createMerchantAndSendNotification
+Create Merchant for PIVC journey. Provider is Signzy
+
+POST
+​/ProfileDetailsService​/getProfileDetails
+Get Profile Details , providers are OPUS and NGIN
+
+POST
+​/PolicyDetailsDashboardService​/getPolicyDetailsDashboard
+Get Policy Details of a given User Id , providers are OPUS and NGIN
+
+POST
+​/getMicrDetails​/MicrDetails
+Get MICR Details , Provider is Opus
+
+POST
+​/GetDocumentService​/getDocument
+API provides enrycpted pdf statements , providers are PAS systems and CCM
+
+POST
+​/DownloadLatestReceiptDetailsService​/downloadReceipt
+provides Receipting statement in pdf , provides are Opus , cashiering and CCM
+
+
+POST
+​/getReceiptDetails​/getReceiptDetails
+get Receipt Details , providers are Opus and Ngin
+
+POST
+​/CustomerDetailsService​/fetchCustomerDetails
+retrieves customer details from Opus system for given Policy and Search Criteria
+
+POST
+​/WhatsappPolicyChartService​/getWhatsappPolicyChart
+get Whatsapp Policy Chart Details , provider is PAS system
+
+POST
+​/GenerateReceiptService​/generateReceiptNumber
+generates receipt on basis of payment transaction details for given application or policy number , provider is Opus
+
+POST
+​/RenewalPolicyDetailService​/getRenewalPolicyDetailService
+Used to retrieve policy renewal premium details , providers are cashiering and Opus
+
+POST
+​/GetRenewalDetailsService​/getRenewalDetails
+retrieves policy renewal details against agent , provider is Opus
+
+POST
+​/UpdatePANService​/UpdatePAN
+Used to update the PAN details , systems involved are Opus , Ngin and CRM
+
+POST
+​/PANValidationService​/ValidatePAN
+Used to validate the PAN details , provider is Opus
+
+POST
+​/ApplicationSearchService​/searchApplication
+Used to get the application details , providers are Ngin and Opus
+
+POST
+​/CustPaymentLinkService​/getCustPaymentLink
+get CustPaymentLink for a given policy number , providers are Opus , Ngin and CRM
+
+POST
+​/UpdateContactDetailsService​/UpdateContact
+updates contact details for given policy , updates in Ngin or Opus
+
+POST
+​/BankDetailsService​/getIFSCDetails
+Get Bank Details , providers are Opus Ngin and CRM
+
+POST
+​/PremiumCollectionDetailsService​/getPremiumCollectionDetails
+retrieves premium collection details for renewal, providers are OPUS and NGIN(Cashiering n billing)
+
+POST
+​/PIVCApplication​/SubmitProductQestionnaire
+API accepts the Questionare inforamtion submitted by Merchant in Digital PIVC journey, data updates in PAS system based on application Number
+Mandate Registration
+
+
+POST
+​/AutomandateLinkService​/sendAutomandateLink
+This API is used to sendAutomandateLink
+
+POST
+​/GroupIdDetailsForUniversalMandate​/getGroupId
+This API is used to get Group Id
+
+POST
+​/RegisterAutoMandateService​/registerAutoMandate
+This API is used to register Automandate
+
+POST
+​/MandateRegistrationService​/getMandateRegister
+get Mandate Register
+
+POST
+​/GenerateAutoModeReceiptService​/generateAutoModeReceipt
+generate AutoModeReceipt , provider is cashiering and Opus
+
+
+
+
+Finance
+
+
+POST
+​/StopPaymentReissueService​/saveStopPaymentReissue
+stop Payment Reissue , data saves in SPRP system
+
+POST
+​/PaymentAvenuesService​/getPaymentAvenues
+Provides branchname based on pincode, city , provider is CRM
+
+POST
+​/PaymentReceiptService​/getPaymentReceipt
+generates payment receipt for given policy , providers are Opus and Ngin (cashiering)
+
+POST
+​/getTransactionDetail​/getTransaction
+Get Transaction Details
+
+POST
+​/PaymentReissueDetailsService​/getPaymentReissueDetails
+Mashup API , API provides to get cheque details from payout module based on policy number. Providers are Ngin , CRM and SPRP
 
 IMPORTANT:
 
