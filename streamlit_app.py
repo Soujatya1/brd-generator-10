@@ -501,10 +501,13 @@ Search across ALL sheets for system names, database references, integration poin
 
 ## 6.0 Communication Requirement
 
-Extraction Strategy:
-1. First look for "Changes in Communication" or similar keywords in the excel uploaded "Requirement" sheet
+**CRITICAL EXTRACTION RULE:** 
+Extract the EXACT table content from the source documents. Do NOT modify, interpret, or reformat the content.
 
-Pick the whole information in form of table from there as-is
+**SEARCH FOR RISK CONTENT:**
+- Look for any sheet named "Requirement", or similar
+- Look for any table or structured data containing communication related information
+- Search for keywords: "Changes in Communication", "Communication
 
 **CRITICAL:** Only extract actual email-like content that exists in the source requirements. Never generate, create, assume, or fabricate any email content.
 
