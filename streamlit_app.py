@@ -1170,9 +1170,28 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         return str_val
     
-    content = []
-    part_b_content = []
-    part_c_content = []  # NEW: Added Part C content list
+    # Initialize JSON structure
+    result = {
+        "metadata": {
+            "total_sheets": 0,
+            "processing_status": "success",
+            "visible_only": visible_only,
+            "max_rows_per_sheet": max_rows_per_sheet,
+            "max_sample_rows": max_sample_rows
+        },
+        "priority_content": {
+            "part_b": [],
+            "part_c": []
+        },
+        "sheets": [],
+        "summary": {
+            "part_b_found": False,
+            "part_c_found": False,
+            "total_rows_processed": 0,
+            "total_columns_processed": 0,
+            "detailed_requirements_found": False
+        }
+    }
     
     try:
         if visible_only:
@@ -1187,19 +1206,22 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             if visible_sheets:
                 excel_data = pd.read_excel(excel_file, sheet_name=visible_sheets)
             else:
-                return "No visible sheets found in the Excel file"
+                result["metadata"]["processing_status"] = "error"
+                result["metadata"]["error"] = "No visible sheets found in the Excel file"
+                return json.dumps(result, indent=2)
             
             if not isinstance(excel_data, dict):
                 excel_data = {visible_sheets[0]: excel_data}
         else:
             excel_data = pd.read_excel(excel_file, sheet_name=None)
         
-        # Extract Part B content (existing code)
+        result["metadata"]["total_sheets"] = len(excel_data)
+        
+        # Extract Part B content
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
                 
-            part_b_found = False
             for col in df.columns:
                 for idx, cell_value in enumerate(df[col]):
                     cell_str = str(cell_value).strip()
@@ -1218,16 +1240,26 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                     
                     for pattern in part_b_patterns:
                         if pattern.lower() in cell_str.lower():
-                            part_b_found = True
-                            part_b_content.append(f"PART B SECTION FOUND in {sheet_name} - {col} (Row {idx + 2}):")
-                            part_b_content.append(f"PART B HEADER: {cell_str}")
+                            part_b_entry = {
+                                "sheet_name": sheet_name,
+                                "column": col,
+                                "row": idx + 2,
+                                "header": cell_str,
+                                "content": [],
+                                "adjacent_content": []
+                            }
                             
+                            # Extract next rows content
                             for next_row in range(idx + 1, min(idx + 10, len(df))):
                                 if next_row < len(df):
                                     next_cell = df.iloc[next_row][col]
                                     if pd.notna(next_cell) and str(next_cell).strip():
-                                        part_b_content.append(f"PART B CONTENT: {str(next_cell).strip()}")
+                                        part_b_entry["content"].append({
+                                            "row": next_row + 2,
+                                            "text": str(next_cell).strip()
+                                        })
                             
+                            # Extract adjacent column content
                             col_index = df.columns.get_loc(col)
                             for adj_col_offset in [-1, 1]:
                                 adj_col_index = col_index + adj_col_offset
@@ -1236,22 +1268,21 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                     for adj_row in range(max(0, idx-2), min(idx + 8, len(df))):
                                         adj_cell = df.iloc[adj_row][adj_col]
                                         if pd.notna(adj_cell) and str(adj_cell).strip():
-                                            part_b_content.append(f"PART B ADJACENT CONTENT: {str(adj_cell).strip()}")
+                                            part_b_entry["adjacent_content"].append({
+                                                "column": adj_col,
+                                                "row": adj_row + 2,
+                                                "text": str(adj_cell).strip()
+                                            })
                             
-                            part_b_content.append("="*50)
+                            result["priority_content"]["part_b"].append(part_b_entry)
+                            result["summary"]["part_b_found"] = True
                             break
-                    
-                    if part_b_found:
-                        break
-                if part_b_found:
-                    break
         
-        # NEW: Extract Part C content (similar to Part B)
+        # Extract Part C content
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
                 
-            part_c_found = False
             for col in df.columns:
                 for idx, cell_value in enumerate(df[col]):
                     cell_str = str(cell_value).strip()
@@ -1270,16 +1301,24 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                     
                     for pattern in part_c_patterns:
                         if pattern.lower() in cell_str.lower():
-                            part_c_found = True
-                            part_c_content.append(f"PART C SECTION FOUND in {sheet_name} - {col} (Row {idx + 2}):")
-                            part_c_content.append(f"PART C HEADER: {cell_str}")
+                            part_c_entry = {
+                                "sheet_name": sheet_name,
+                                "column": col,
+                                "row": idx + 2,
+                                "header": cell_str,
+                                "content": [],
+                                "adjacent_content": []
+                            }
                             
-                            # Extract next 10 rows of content
+                            # Extract next rows content
                             for next_row in range(idx + 1, min(idx + 10, len(df))):
                                 if next_row < len(df):
                                     next_cell = df.iloc[next_row][col]
                                     if pd.notna(next_cell) and str(next_cell).strip():
-                                        part_c_content.append(f"PART C CONTENT: {str(next_cell).strip()}")
+                                        part_c_entry["content"].append({
+                                            "row": next_row + 2,
+                                            "text": str(next_cell).strip()
+                                        })
                             
                             # Extract adjacent column content
                             col_index = df.columns.get_loc(col)
@@ -1290,139 +1329,114 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                     for adj_row in range(max(0, idx-2), min(idx + 8, len(df))):
                                         adj_cell = df.iloc[adj_row][adj_col]
                                         if pd.notna(adj_cell) and str(adj_cell).strip():
-                                            part_c_content.append(f"PART C ADJACENT CONTENT: {str(adj_cell).strip()}")
+                                            part_c_entry["adjacent_content"].append({
+                                                "column": adj_col,
+                                                "row": adj_row + 2,
+                                                "text": str(adj_cell).strip()
+                                            })
                             
-                            part_c_content.append("="*50)
+                            result["priority_content"]["part_c"].append(part_c_entry)
+                            result["summary"]["part_c_found"] = True
                             break
-                    
-                    if part_c_found:
-                        break
-                if part_c_found:
-                    break
         
-        # Add priority content to the beginning (Part B first, then Part C)
-        if part_b_content:
-            content.append("PRIORITY: PART B (MANDATORY) DETAILED REQUIREMENT CONTENT FOUND")
-            content.extend(part_b_content)
-            content.append("END OF PART B PRIORITY CONTENT")
-            content.append("="*80)
-        
-        # NEW: Add Part C content after Part B
-        if part_c_content:
-            content.append("PRIORITY: PART C (MANDATORY) DETAILED REQUIREMENT CONTENT FOUND")
-            content.extend(part_c_content)
-            content.append("END OF PART C PRIORITY CONTENT")
-            content.append("="*80)
-        
-        # Rest of the existing code remains the same...
+        # Process all sheets
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
             
+            # Limit rows if specified
+            original_row_count = len(df)
             if max_rows_per_sheet and len(df) > max_rows_per_sheet:
                 df = df.head(max_rows_per_sheet)
-                content.append(f"Note: Processing first {max_rows_per_sheet} rows only")
-                
-            content.append(f"=== EXCEL SHEET: {sheet_name} ===")
-            content.append(f"Total Dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
             
-            cleaned_columns = [clean_cell_value(col) for col in df.columns.tolist()]
-            content.append(f"Columns ({len(df.columns)}): {', '.join(cleaned_columns)}")
+            sheet_data = {
+                "sheet_name": sheet_name,
+                "dimensions": {
+                    "rows": original_row_count,
+                    "columns": len(df.columns),
+                    "processed_rows": len(df)
+                },
+                "columns": {
+                    "names": [clean_cell_value(col) for col in df.columns.tolist()],
+                    "data_types": {clean_cell_value(col): str(dtype) for col, dtype in df.dtypes.to_dict().items()},
+                    "numeric_columns": [clean_cell_value(col) for col in df.select_dtypes(include=['number']).columns.tolist()],
+                    "key_columns": []
+                },
+                "sample_data": [],
+                "detailed_requirements": [],
+                "data_summary": {
+                    "missing_data": {},
+                    "unique_value_counts": {}
+                }
+            }
             
-            data_types = df.dtypes.to_dict()
-            type_summary = []
-            for col, dtype in data_types.items():
-                cleaned_col = clean_cell_value(col)
-                type_summary.append(f"{cleaned_col}: {str(dtype)}")
-            content.append(f"Data Types: {', '.join(type_summary[:10])}...")
+            # Identify key columns
+            for col in df.columns:
+                col_lower = str(col).lower()
+                if any(keyword in col_lower for keyword in ['id', 'name', 'title', 'status', 'type', 'category', 'priority', 'requirement']):
+                    sheet_data["columns"]["key_columns"].append(clean_cell_value(col))
             
-            numeric_cols = df.select_dtypes(include=['number']).columns
-            if len(numeric_cols) > 0:
-                cleaned_numeric_cols = [clean_cell_value(col) for col in numeric_cols.tolist()]
-                content.append(f"Numeric Columns: {', '.join(cleaned_numeric_cols[:5])}...")
-            
+            # Sample data
             sample_size = min(max_sample_rows, len(df))
             if sample_size > 0:
-                content.append(f"\nSample Data (first {sample_size} rows):")
-                content.append("TABLE:")
-                
                 display_df = df.head(sample_size)
                 
-                if len(df.columns) > 10:
-                    cleaned_display_cols = [clean_cell_value(col) for col in df.columns[:8].tolist()]
-                    display_cols = cleaned_display_cols + [f"... +{len(df.columns)-8} more columns"]
-                    display_df = df[df.columns[:8]].head(sample_size)
-                    header_row = " | ".join(display_cols)
-                    content.append(header_row)
-                else:
-                    cleaned_header_cols = [clean_cell_value(col) for col in df.columns.tolist()]
-                    header_row = " | ".join(cleaned_header_cols)
-                    content.append(header_row)
-                
+                # Convert to records (list of dictionaries)
                 for _, row in display_df.iterrows():
-                    row_data = []
-                    for val in row:
+                    row_data = {}
+                    for col, val in row.items():
                         cleaned_val = clean_cell_value(val)
                         if len(cleaned_val) > 50:
                             cleaned_val = cleaned_val[:47] + "..."
-                        row_data.append(cleaned_val)
-                    content.append(" | ".join(row_data))
-                
-                if len(df) > sample_size:
-                    content.append(f"... and {len(df) - sample_size} more rows")
+                        row_data[clean_cell_value(col)] = cleaned_val
+                    sheet_data["sample_data"].append(row_data)
             
-            detailed_req_content = []
+            # Extract detailed requirements
             for col in df.columns:
                 col_str = str(col).lower()
                 if any(keyword in col_str for keyword in ['requirement', 'detailed', 'description', 'specification']):
-                    detailed_req_content.append(f"DETAILED REQUIREMENT COLUMN FOUND: {col}")
+                    req_column = {
+                        "column_name": clean_cell_value(col),
+                        "requirements": []
+                    }
+                    
                     for idx, cell_value in enumerate(df[col]):
                         if pd.notna(cell_value) and str(cell_value).strip():
                             cell_text = str(cell_value).strip()
                             if len(cell_text) > 10:
-                                detailed_req_content.append(f"Row {idx+2}: {cell_text}")
+                                req_column["requirements"].append({
+                                    "row": idx + 2,
+                                    "text": cell_text
+                                })
+                    
+                    if req_column["requirements"]:
+                        sheet_data["detailed_requirements"].append(req_column)
+                        result["summary"]["detailed_requirements_found"] = True
             
-            if detailed_req_content:
-                content.append(f"\n📋 DETAILED REQUIREMENTS FOUND IN {sheet_name}:")
-                content.extend(detailed_req_content[:20])
-                if len(detailed_req_content) > 20:
-                    content.append(f"... and {len(detailed_req_content) - 20} more requirement entries")
+            # Data summary - unique values for key columns
+            for col in sheet_data["columns"]["key_columns"][:3]:
+                if col in df.columns and df[col].dtype == 'object':
+                    unique_vals = df[col].dropna().unique()
+                    if len(unique_vals) <= 20:
+                        sheet_data["data_summary"]["unique_value_counts"][col] = [clean_cell_value(val) for val in unique_vals[:10]]
+                    else:
+                        sheet_data["data_summary"]["unique_value_counts"][col] = f"{len(unique_vals)} unique values"
             
-            content.append(f"\nData Summary:")
-            
-            key_columns = []
-            for col in df.columns:
-                col_lower = str(col).lower()
-                if any(keyword in col_lower for keyword in ['id', 'name', 'title', 'status', 'type', 'category', 'priority', 'requirement']):
-                    key_columns.append(col)
-            
-            if key_columns:
-                cleaned_key_cols = [clean_cell_value(col) for col in key_columns[:5]]
-                content.append(f"Key Columns Identified: {', '.join(cleaned_key_cols)}")
-                
-                for col in key_columns[:3]:
-                    if df[col].dtype == 'object':
-                        unique_vals = df[col].dropna().unique()
-                        if len(unique_vals) <= 20:
-                            cleaned_unique_vals = [clean_cell_value(val) for val in unique_vals[:10]]
-                            cleaned_col_name = clean_cell_value(col)
-                            content.append(f"{cleaned_col_name} Values: {', '.join(map(str, cleaned_unique_vals))}")
-                        else:
-                            cleaned_col_name = clean_cell_value(col)
-                            content.append(f"{cleaned_col_name}: {len(unique_vals)} unique values")
-            
+            # Missing data summary
             missing_data = df.isnull().sum()
             if missing_data.sum() > 0:
                 missing_cols = missing_data[missing_data > 0].head(5)
-                missing_info = [f"{clean_cell_value(col)}: {count} missing" for col, count in missing_cols.items()]
-                content.append(f"Missing Data: {', '.join(missing_info)}")
+                sheet_data["data_summary"]["missing_data"] = {clean_cell_value(col): int(count) for col, count in missing_cols.items()}
             
-            content.append("="*50)
+            result["sheets"].append(sheet_data)
+            result["summary"]["total_rows_processed"] += len(df)
+            result["summary"]["total_columns_processed"] += len(df.columns)
     
     except Exception as e:
-        content.append(f"Error processing Excel file: {str(e)}")
+        result["metadata"]["processing_status"] = "error"
+        result["metadata"]["error"] = str(e)
     
-    return "\n".join(content)
+    return json.dumps(result, indent=2, ensure_ascii=False)
 
 def extract_content_from_msg(msg_file):
     try:
