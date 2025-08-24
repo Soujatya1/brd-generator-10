@@ -165,117 +165,17 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
   - Create a markdown table preserving the original structure
   - Show product types and their impact status (Yes/No/etc.)
   - Include any additional columns or classifications found
-
-**CRITICAL PRODUCT MAPPING LOGIC:**
-
-STEP 1: Extract the original table from source exactly as it appears:
-
-| Product Type | Impact Status | Additional Columns |
-|--------------|---------------|-------------------|
-| [Extract exact content from source] | [Extract Yes/No/etc.] | [Extract any other data] |
-
-STEP 2: Apply product mapping ONLY for product types with status "Yes":
-
-**Product Type to Specific Product Mapping:**
-
-If **Term** = "Yes", then include:
-- Bajaj Allianz Life iSecure II
-- Bajaj Allianz Life eTouch II
-- Bajaj Allianz Life Saral Jeevan Bima
-- Bajaj Allianz Life Diabetic Term Plan II Sub 8 HbA1c
-- Bajaj Allianz Life Smart Protection Goal
-
-If **Endowment** = "Yes", then include:
-- Bajaj Allianz Life Assured Wealth Goal Platinum
-- Bajaj Allianz Life ACE
-- Bajaj Allianz Life Goal Suraksha
-
-If **Annuity** = "Yes", then include:
-- Bajaj Allianz Life Guaranteed Pension Goal II
-- Bajaj Allianz Life Saral Pension
-
-If **Combi** = "Yes", then include:
-- Bajaj Allianz Life Capital Goal Suraksha
-
-If **Group** = "Yes", then include:
-- Bajaj Allianz Life Group Term Life
-- Bajaj Allianz Life Group Credit Protection Plus
-- Bajaj Allianz Life Group Sampoorna Jeevan Suraksha
-- Bajaj Allianz Life Group Employee Benefit
-- Bajaj Allianz Life Group Superannuation Secure Plus
-- Bajaj Allianz Life Group Superannuation Secure
-- Bajaj Allianz Life Group Employee Care
-- Bajaj Allianz Life Group Secure Return
-- Bajaj Allianz Life Group Sampoorna Suraksha Kavach
-- Bajaj Allianz Life Pradhan Mantri Jeevan Jyoti Bima Yojana
-- Bajaj Allianz Life Group Secure Shield
-- Bajaj Allianz Life Group Investment Plan
-
-If **Non Par** = "Yes", then include:
-- Bajaj Allianz Life Goal Suraksha
-- Bajaj Allianz Life Assured Wealth Goal Platinum
-- Bajaj Allianz Life Guaranteed Wealth Goal
-- Bajaj Allianz Life Guaranteed Saving Goal
-- Bajaj Allianz Life Assured Wealth Goal
-
-If **Par** = "Yes", then include:
-- Bajaj Allianz Life ACE
-- Bajaj Allianz Life ACE Advantage
-
-If **Rider** = "Yes", then include:
-- Bajaj Allianz Accidental Death Benefit Rider
-- Bajaj Allianz Accidental Permanent Total/Partial Disability Benefit Rider
-- Bajaj Allianz Life Linked Accident Protection Rider II
-- Bajaj Allianz Life Family Protect Rider
-- Bajaj Allianz Life Group New Terminal Illness Rider
-- Bajaj Allianz Life Group Accelerated Critical Illness Rider
-- Bajaj Allianz Life Group Accidental Permanent Total/Partial Disability Benefit Rider
-- Bajaj Allianz Life Group Critical Illness Rider
-- Bajaj Allianz Life Group Accidental Death Benefit
-- Bajaj Allianz Life New Critical Illness Benefit Rider
-- Bajaj Allianz Life Care Plus Rider
-- Bajaj Allianz Life Linked Critical Illness Benefit Rider
-
-If **ULIP** = "Yes", then include:
-- Bajaj Allianz Life Goal Assure IV
-- Bajaj Allianz Life Magnum Fortune Plus III
-- Bajaj Allianz Life Invest Protect Goal III
-- Bajaj Allianz Life Fortune Gain II
-- Bajaj Allianz Life Future Wealth Gain IV
-- Bajaj Allianz Life LongLife Goal III
-- Bajaj Allianz Life Smart Wealth Goal V
-- Bajaj Allianz Life Goal Based Saving III
-- Bajaj Allianz Life Elite Assure
-
-If **ULIP Pension** = "Yes", then include:
-- Bajaj Allianz Life Smart Pension
-
-If **All** = "Yes", then include ALL products from ALL categories listed above.
-
-**FINAL OUTPUT FORMAT:**
-
-First show the original table:
-### Original Products Impact Table
-[Original table from source]
-
-Then show the mapped products:
-### Specific Products Impacted
-Based on the product types marked as "Yes" in the above table:
-
-**[Product Category Name] Products:**
-- [List specific products for this category]
-
-**[Next Product Category Name] Products:**
-- [List specific products for this category]
-
-[Continue for all categories with "Yes" status]
+  
+**TABLE FORMAT EXAMPLE (if structured table found):**
+| Product Type | |--------------| | [Extract from source]
+|Impact Status|---------------| [Extract Yes/No/etc.] |
 
 **IF NO STRUCTURED TABLE FOUND:**
 - List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
 - Extract from any column/row mentioning affected products/platforms
 - Check all sheets for product names, service names, or system names, platform names
 
-**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table AND then apply the product mapping logic above. Do NOT create a generic list.
+**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table. Do NOT create a generic list.
 
 ### 2.2 Applications Impacted
 
@@ -317,14 +217,13 @@ IMPORTANT:
 - Use markdown headings (##, ###)
 - **CRITICAL**: For sections 2.1 and 2.2, if structured tables exist in source, reproduce them as markdown tables
 - **For Purpose and To-be process: PRIORITIZE "PART B" and "PART C (Mandatory) Detailed Requirement" content**
-- **For Products Impacted: Apply the product mapping logic based on "Yes" status**
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
 - If no content found for a subsection after checking ALL sheets, leave it blank
 
 VALIDATION CHECK:
 
-Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). For Purpose and To-be process sections, ensure you've prioritized "PART B : (Mandatory) Detailed Requirement" content when available. For Products Impacted, ensure you've applied the correct product mapping logic.
+Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). For Purpose and To-be process sections, ensure you've prioritized "PART B : (Mandatory) Detailed Requirement" content when available.
 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 1.0 Introduction, ### 1.1 Purpose, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
@@ -483,7 +382,7 @@ Extract any mentioned across ALL processed sheets:
 - What frequency or scheduling of reports is needed?
 - What user roles or audiences need access to reports?
 - Any real-time monitoring or alerting requirements
-- Which plots/charts are applicable to be built for what reason and purpose?
+- Which plots/charts are applicable to be built?
 
 Check all processed sheets for reporting requirements, analytics needs, or dashboard specifications.
 
@@ -501,13 +400,37 @@ Search across ALL sheets for system names, database references, integration poin
 
 ## 6.0 Communication Requirement
 
-**CRITICAL EXTRACTION RULE:** 
-Extract the EXACT table content from the source documents. Do NOT modify, interpret, or reformat the content.
+**EMAIL CONTENT EXTRACTION:**
+- Look for email communication patterns in the source requirements including:
+  - Email addresses (containing @ symbol)
+  - Email headers like "From:", "To:", "Subject:", "Date:"
+  - Email greetings like "Hi [Name]", "Hello [Name]", "Dear [Name]"
+  - Email signatures with names, titles, phone numbers
+  - Reply chains and conversation threads
+  - Email closings like "Regards", "Thanks", "Best Regards"
+  - Corporate email signatures with company names
 
-**SEARCH FOR RISK CONTENT:**
-- Look for any sheet named "Requirement", or similar
-- Look for any table or structured data containing communication related information
-- Search for keywords: "Changes in Communication", "Communication
+**SEARCH FOR EMAIL PATTERNS:**
+- @ symbols indicating email addresses
+- Phone numbers in signatures
+- Corporate titles and designations
+- Email thread conversations
+- Any communication that looks like email correspondence
+
+**IF email-like content IS FOUND:**
+- Extract and include all email communications found in the source
+- Preserve the conversation flow and chronological order
+- Include email addresses, names, and contact information
+- Maintain the original format and structure
+- Format as:
+
+### Email Communication Thread
+
+[Extract and preserve the complete email conversation as it appears in the source, maintaining the original format, names, email addresses, signatures, and conversation flow]
+
+**IF NO email-like content is found:**
+- State: "No communication requirement content found in source documents"
+- Do NOT generate, create, or simulate any email content
 
 **CRITICAL:** Only extract actual email-like content that exists in the source requirements. Never generate, create, assume, or fabricate any email content.
 
