@@ -166,7 +166,9 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
   - Show product types and their impact status (Yes/No/etc.)
   - Include any additional columns or classifications found
 
-Now, as per the Products which have a status "Yes", you need to map the same and align as per the below list:
+Now, as per the Product Type which have a status "Yes", you need to map the same and align as per the below list:
+
+Product Alignment:
 
 Term:
 
@@ -262,6 +264,7 @@ Bajaj Allianz Life Smart Pension
   
 **TABLE FORMAT EXAMPLE (if structured table found):**
 | Product Type | |--------------| | [Extract from source]
+| Products | |------------| [Extracted from above Product Alignment]
 |Impact Status|---------------| [Extract Yes/No/etc.] |
 
 **IF NO STRUCTURED TABLE FOUND:**
