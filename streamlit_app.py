@@ -20,6 +20,7 @@ from docx.enum.text import WD_BREAK
 from docx.enum.style import WD_STYLE_TYPE
 from langchain_openai import AzureChatOpenAI
 from openpyxl import load_workbook
+import json
 
 BRD_FORMAT = """
 ## 1.0 Introduction
