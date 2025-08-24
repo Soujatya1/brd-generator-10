@@ -486,12 +486,13 @@ FIRST, thoroughly scan ALL source requirements documents for existing test conte
 **IF existing test scenarios/cases ARE FOUND in source documents:**
 - Extract and preserve ALL the EXACT test scenarios from the source (require all the test scenarios from the source)
 - Maintain original test structure, format, and content
-- Also, adding on to this, generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements
 - Convert to standardized markdown table format:
 
 | **Test ID** | **Test Scenario Name** | **Objective** | **Test Steps** | **Expected Results** | **Type** |
 |-------------|---------------|---------------|----------------|---------------------|----------|
 | [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Type] |
+
+Also, ADDING on to this, generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements
 
 **STOP HERE - Do not proceed to Secondary Approach if existing tests are found**
 
