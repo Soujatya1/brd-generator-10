@@ -1171,7 +1171,123 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         return str_val
     
-    # Initialize JSON structure
+    def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
+        """Extract horizontal table structure starting from a given position"""
+        table_data = {
+            "table_type": table_identifier,
+            "headers": [],
+            "data_rows": [],
+            "raw_structure": []
+        }
+        
+        try:
+            # Look for table headers in the row containing the identifier
+            # and subsequent rows
+            current_row = start_row_idx
+            max_search_rows = min(start_row_idx + 10, len(df))
+            
+            found_headers = False
+            header_row_idx = None
+            
+            # Search for header row (look for product names or application names)
+            for search_row in range(current_row, max_search_rows):
+                if search_row >= len(df):
+                    break
+                    
+                row_data = df.iloc[search_row].values
+                
+                # Check if this row contains table headers
+                non_empty_cells = [str(cell).strip() for cell in row_data if pd.notna(cell) and str(cell).strip()]
+                
+                # Look for product-related headers
+                product_indicators = ['ULIP', 'Term', 'Endowment', 'Annuity', 'Health', 'Group', 'All']
+                app_indicators = ['OPUS', 'INSTAB', 'NGIN', 'PMAC', 'CRM', 'Cashier', 'Other']
+                
+                if any(indicator in ' '.join(non_empty_cells).upper() for indicator in product_indicators + app_indicators):
+                    header_row_idx = search_row
+                    found_headers = True
+                    break
+            
+            if found_headers and header_row_idx is not None:
+                # Extract headers
+                header_row = df.iloc[header_row_idx]
+                headers = []
+                header_positions = []
+                
+                for col_idx, cell_value in enumerate(header_row):
+                    if pd.notna(cell_value) and str(cell_value).strip():
+                        clean_header = clean_cell_value(cell_value)
+                        if clean_header != "-" and not clean_header.startswith("Insert"):
+                            headers.append(clean_header)
+                            header_positions.append(col_idx)
+                
+                table_data["headers"] = headers
+                
+                # Extract data rows (look in next few rows after headers)
+                data_start_row = header_row_idx + 1
+                max_data_rows = min(data_start_row + 5, len(df))
+                
+                for data_row_idx in range(data_start_row, max_data_rows):
+                    if data_row_idx >= len(df):
+                        break
+                        
+                    data_row = df.iloc[data_row_idx]
+                    
+                    # Check if row has meaningful data
+                    row_values = []
+                    has_data = False
+                    
+                    # Extract values corresponding to header positions
+                    for pos in header_positions:
+                        if pos < len(data_row):
+                            cell_val = clean_cell_value(data_row.iloc[pos])
+                            row_values.append(cell_val)
+                            if cell_val not in ["-", ""]:
+                                has_data = True
+                        else:
+                            row_values.append("-")
+                    
+                    if has_data:
+                        # Create row description
+                        row_description = data_row.iloc[0] if pd.notna(data_row.iloc[0]) else f"Row {data_row_idx + 1}"
+                        
+                        row_data = {
+                            "row_description": clean_cell_value(row_description),
+                            "values": dict(zip(headers, row_values))
+                        }
+                        table_data["data_rows"].append(row_data)
+                
+                # Create raw structure representation
+                if headers and table_data["data_rows"]:
+                    table_data["raw_structure"] = {
+                        "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
+                        "structured_data": table_data["data_rows"]
+                    }
+            
+        except Exception as e:
+            table_data["error"] = str(e)
+        
+        return table_data
+    
+    def create_markdown_table(headers, data_rows):
+        """Create a markdown table representation"""
+        if not headers or not data_rows:
+            return ""
+        
+        # Create header row
+        header_line = "| " + " | ".join(headers) + " |"
+        separator_line = "|" + "|".join([" --- " for _ in headers]) + "|"
+        
+        # Create data rows
+        data_lines = []
+        for row in data_rows:
+            values = [row["values"].get(header, "-") for header in headers]
+            data_line = "| " + " | ".join(values) + " |"
+            data_lines.append(data_line)
+        
+        return "\n".join([header_line, separator_line] + data_lines)
+    
+    # Initialize JSON structure (same as before)
     result = {
         "metadata": {
             "total_sheets": 0,
@@ -1218,74 +1334,13 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         result["metadata"]["total_sheets"] = len(excel_data)
         
-        # Extract Part B content
+        # MODIFIED PART C EXTRACTION - Now supports horizontal tables
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
                 
-            for col in df.columns:
-                for idx, cell_value in enumerate(df[col]):
-                    cell_str = str(cell_value).strip()
-                    part_b_patterns = [
-                        "PART B : (Mandatory) Detailed Requirement",
-                        "PART B (Mandatory) Detailed Requirement", 
-                        "PART B : Mandatory Detailed Requirement",
-                        "PART B Mandatory Detailed Requirement",
-                        "PART B : Detailed Requirement",
-                        "PART B Detailed Requirement",
-                        "PART B:",
-                        "Part B :",
-                        "Part B:",
-                        "PART B"
-                    ]
-                    
-                    for pattern in part_b_patterns:
-                        if pattern.lower() in cell_str.lower():
-                            part_b_entry = {
-                                "sheet_name": sheet_name,
-                                "column": col,
-                                "row": idx + 2,
-                                "header": cell_str,
-                                "content": [],
-                                "adjacent_content": []
-                            }
-                            
-                            # Extract next rows content
-                            for next_row in range(idx + 1, min(idx + 10, len(df))):
-                                if next_row < len(df):
-                                    next_cell = df.iloc[next_row][col]
-                                    if pd.notna(next_cell) and str(next_cell).strip():
-                                        part_b_entry["content"].append({
-                                            "row": next_row + 2,
-                                            "text": str(next_cell).strip()
-                                        })
-                            
-                            # Extract adjacent column content
-                            col_index = df.columns.get_loc(col)
-                            for adj_col_offset in [-1, 1]:
-                                adj_col_index = col_index + adj_col_offset
-                                if 0 <= adj_col_index < len(df.columns):
-                                    adj_col = df.columns[adj_col_index]
-                                    for adj_row in range(max(0, idx-2), min(idx + 8, len(df))):
-                                        adj_cell = df.iloc[adj_row][adj_col]
-                                        if pd.notna(adj_cell) and str(adj_cell).strip():
-                                            part_b_entry["adjacent_content"].append({
-                                                "column": adj_col,
-                                                "row": adj_row + 2,
-                                                "text": str(adj_cell).strip()
-                                            })
-                            
-                            result["priority_content"]["part_b"].append(part_b_entry)
-                            result["summary"]["part_b_found"] = True
-                            break
-        
-        # Extract Part C content
-        for sheet_name, df in excel_data.items():
-            if df.empty:
-                continue
-                
-            for col in df.columns:
-                for idx, cell_value in enumerate(df[col]):
+            for col_idx, col in enumerate(df.columns):
+                for row_idx, cell_value in enumerate(df[col]):
                     cell_str = str(cell_value).strip()
                     part_c_patterns = [
                         "PART C : (Mandatory) Detailed Requirement",
@@ -1305,14 +1360,15 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                             part_c_entry = {
                                 "sheet_name": sheet_name,
                                 "column": col,
-                                "row": idx + 2,
+                                "row": row_idx + 2,
                                 "header": cell_str,
                                 "content": [],
-                                "adjacent_content": []
+                                "adjacent_content": [],
+                                "horizontal_tables": []  # NEW: Store horizontal tables
                             }
                             
-                            # Extract next rows content
-                            for next_row in range(idx + 1, min(idx + 10, len(df))):
+                            # Original vertical extraction (keep for compatibility)
+                            for next_row in range(row_idx + 1, min(row_idx + 10, len(df))):
                                 if next_row < len(df):
                                     next_cell = df.iloc[next_row][col]
                                     if pd.notna(next_cell) and str(next_cell).strip():
@@ -1321,13 +1377,12 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                             "text": str(next_cell).strip()
                                         })
                             
-                            # Extract adjacent column content
-                            col_index = df.columns.get_loc(col)
+                            # Original adjacent content extraction (keep for compatibility)
                             for adj_col_offset in [-1, 1]:
-                                adj_col_index = col_index + adj_col_offset
+                                adj_col_index = col_idx + adj_col_offset
                                 if 0 <= adj_col_index < len(df.columns):
                                     adj_col = df.columns[adj_col_index]
-                                    for adj_row in range(max(0, idx-2), min(idx + 8, len(df))):
+                                    for adj_row in range(max(0, row_idx-2), min(row_idx + 8, len(df))):
                                         adj_cell = df.iloc[adj_row][adj_col]
                                         if pd.notna(adj_cell) and str(adj_cell).strip():
                                             part_c_entry["adjacent_content"].append({
@@ -1336,11 +1391,92 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                                 "text": str(adj_cell).strip()
                                             })
                             
+                            # NEW: Extract horizontal tables
+                            # Look for "Products Impacted" table
+                            for search_row in range(row_idx + 1, min(row_idx + 15, len(df))):
+                                if search_row < len(df):
+                                    search_cell = df.iloc[search_row][col]
+                                    if pd.notna(search_cell) and "Products Impacted" in str(search_cell):
+                                        products_table = extract_horizontal_table(df, search_row, col_idx, "Products Impacted")
+                                        if products_table["headers"]:
+                                            part_c_entry["horizontal_tables"].append(products_table)
+                                        break
+                            
+                            # Look for "Applications Impacted" table
+                            for search_row in range(row_idx + 1, min(row_idx + 20, len(df))):
+                                if search_row < len(df):
+                                    search_cell = df.iloc[search_row][col]
+                                    if pd.notna(search_cell) and "Applications Impacted" in str(search_cell):
+                                        apps_table = extract_horizontal_table(df, search_row, col_idx, "Applications Impacted")
+                                        if apps_table["headers"]:
+                                            part_c_entry["horizontal_tables"].append(apps_table)
+                                        break
+                            
                             result["priority_content"]["part_c"].append(part_c_entry)
                             result["summary"]["part_c_found"] = True
                             break
         
-        # Process all sheets
+        # Extract Part B content (same logic, can be enhanced similarly)
+        for sheet_name, df in excel_data.items():
+            if df.empty:
+                continue
+                
+            for col_idx, col in enumerate(df.columns):
+                for row_idx, cell_value in enumerate(df[col]):
+                    cell_str = str(cell_value).strip()
+                    part_b_patterns = [
+                        "PART B : (Mandatory) Detailed Requirement",
+                        "PART B (Mandatory) Detailed Requirement", 
+                        "PART B : Mandatory Detailed Requirement",
+                        "PART B Mandatory Detailed Requirement",
+                        "PART B : Detailed Requirement",
+                        "PART B Detailed Requirement",
+                        "PART B:",
+                        "Part B :",
+                        "Part B:",
+                        "PART B"
+                    ]
+                    
+                    for pattern in part_b_patterns:
+                        if pattern.lower() in cell_str.lower():
+                            part_b_entry = {
+                                "sheet_name": sheet_name,
+                                "column": col,
+                                "row": row_idx + 2,
+                                "header": cell_str,
+                                "content": [],
+                                "adjacent_content": []
+                            }
+                            
+                            # Extract next rows content
+                            for next_row in range(row_idx + 1, min(row_idx + 10, len(df))):
+                                if next_row < len(df):
+                                    next_cell = df.iloc[next_row][col]
+                                    if pd.notna(next_cell) and str(next_cell).strip():
+                                        part_b_entry["content"].append({
+                                            "row": next_row + 2,
+                                            "text": str(next_cell).strip()
+                                        })
+                            
+                            # Extract adjacent column content
+                            for adj_col_offset in [-1, 1]:
+                                adj_col_index = col_idx + adj_col_offset
+                                if 0 <= adj_col_index < len(df.columns):
+                                    adj_col = df.columns[adj_col_index]
+                                    for adj_row in range(max(0, row_idx-2), min(row_idx + 8, len(df))):
+                                        adj_cell = df.iloc[adj_row][adj_col]
+                                        if pd.notna(adj_cell) and str(adj_cell).strip():
+                                            part_b_entry["adjacent_content"].append({
+                                                "column": adj_col,
+                                                "row": adj_row + 2,
+                                                "text": str(adj_cell).strip()
+                                            })
+                            
+                            result["priority_content"]["part_b"].append(part_b_entry)
+                            result["summary"]["part_b_found"] = True
+                            break
+        
+        # Rest of the processing (sheets processing) remains the same...
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
