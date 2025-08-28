@@ -23,10 +23,7 @@ from openpyxl import load_workbook
 import json
 
 def load_product_alignment():
-    """Load product alignment data from the uploaded JSON"""
     try:
-        # This should be the path to your Product Alignment JSON file
-        # You'll need to modify this to load from your specific location
         product_alignment = {
             "annuity": [
                 "Bajaj Allianz Life Guaranteed Pension Goal II",
@@ -107,13 +104,11 @@ def load_product_alignment():
         return {}
 
 def expand_product_categories(impacted_products_text, product_alignment):
-    """Expand product categories to include specific product names"""
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
     
     expanded_text = impacted_products_text
     
-    # Create mapping of category keywords to product lists
     category_mappings = {
         'ulip': product_alignment.get('ulip', []),
         'term': product_alignment.get('term', []),
@@ -127,10 +122,8 @@ def expand_product_categories(impacted_products_text, product_alignment):
         'ulip_pension': product_alignment.get('ulip_pension', [])
     }
     
-    # Look for category mentions and expand them
     for category, products in category_mappings.items():
         if products and category.lower() in impacted_products_text.lower():
-            # Add specific products under the category
             product_list = '\n'.join([f"  - {product}" for product in products])
             expanded_text += f"\n\n**{category.upper()} Products:**\n{product_list}"
     
@@ -837,7 +830,6 @@ def generate_brd_sequentially(chains, requirements):
 
     product_alignment = load_product_alignment()
 
-    # Add product alignment data to requirements for AI processing
     if product_alignment:
         product_alignment_text = "\n\n=== PRODUCT ALIGNMENT DATA ===\n"
         product_alignment_text += json.dumps(product_alignment, indent=2)
@@ -1318,25 +1310,20 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         }
         
         try:
-            # Look for table headers in the row containing the identifier
-            # and subsequent rows
             current_row = start_row_idx
             max_search_rows = min(start_row_idx + 10, len(df))
             
             found_headers = False
             header_row_idx = None
             
-            # Search for header row (look for product names or application names)
             for search_row in range(current_row, max_search_rows):
                 if search_row >= len(df):
                     break
                     
                 row_data = df.iloc[search_row].values
                 
-                # Check if this row contains table headers
                 non_empty_cells = [str(cell).strip() for cell in row_data if pd.notna(cell) and str(cell).strip()]
                 
-                # Look for product-related headers
                 product_indicators = ['ULIP', 'Term', 'Endowment', 'Annuity', 'Health', 'Group', 'All']
                 app_indicators = ['OPUS', 'INSTAB', 'NGIN', 'PMAC', 'CRM', 'Cashier', 'Other']
                 
@@ -1346,7 +1333,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                     break
             
             if found_headers and header_row_idx is not None:
-                # Extract headers
                 header_row = df.iloc[header_row_idx]
                 headers = []
                 header_positions = []
@@ -1360,7 +1346,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                 
                 table_data["headers"] = headers
                 
-                # Extract data rows (look in next few rows after headers)
                 data_start_row = header_row_idx + 1
                 max_data_rows = min(data_start_row + 5, len(df))
                 
@@ -1370,11 +1355,9 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                         
                     data_row = df.iloc[data_row_idx]
                     
-                    # Check if row has meaningful data
                     row_values = []
                     has_data = False
                     
-                    # Extract values corresponding to header positions
                     for pos in header_positions:
                         if pos < len(data_row):
                             cell_val = clean_cell_value(data_row.iloc[pos])
@@ -1385,7 +1368,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                             row_values.append("-")
                     
                     if has_data:
-                        # Create row description
                         row_description = data_row.iloc[0] if pd.notna(data_row.iloc[0]) else f"Row {data_row_idx + 1}"
                         
                         row_data = {
@@ -1394,7 +1376,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                         }
                         table_data["data_rows"].append(row_data)
                 
-                # Create raw structure representation
                 if headers and table_data["data_rows"]:
                     table_data["raw_structure"] = {
                         "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
@@ -1407,15 +1388,12 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         return table_data
     
     def create_markdown_table(headers, data_rows):
-        """Create a markdown table representation"""
         if not headers or not data_rows:
             return ""
         
-        # Create header row
         header_line = "| " + " | ".join(headers) + " |"
         separator_line = "|" + "|".join([" --- " for _ in headers]) + "|"
         
-        # Create data rows
         data_lines = []
         for row in data_rows:
             values = [row["values"].get(header, "-") for header in headers]
@@ -1424,7 +1402,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         return "\n".join([header_line, separator_line] + data_lines)
     
-    # Initialize JSON structure (same as before)
     result = {
         "metadata": {
             "total_sheets": 0,
@@ -1471,7 +1448,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         result["metadata"]["total_sheets"] = len(excel_data)
         
-        # MODIFIED PART C EXTRACTION - Now supports horizontal tables
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
@@ -1501,10 +1477,9 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                 "header": cell_str,
                                 "content": [],
                                 "adjacent_content": [],
-                                "horizontal_tables": []  # NEW: Store horizontal tables
+                                "horizontal_tables": []
                             }
                             
-                            # Original vertical extraction (keep for compatibility)
                             for next_row in range(row_idx + 1, min(row_idx + 10, len(df))):
                                 if next_row < len(df):
                                     next_cell = df.iloc[next_row][col]
@@ -1514,7 +1489,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                             "text": str(next_cell).strip()
                                         })
                             
-                            # Original adjacent content extraction (keep for compatibility)
                             for adj_col_offset in [-1, 1]:
                                 adj_col_index = col_idx + adj_col_offset
                                 if 0 <= adj_col_index < len(df.columns):
@@ -1528,8 +1502,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                                 "text": str(adj_cell).strip()
                                             })
                             
-                            # NEW: Extract horizontal tables
-                            # Look for "Products Impacted" table
+
                             for search_row in range(row_idx + 1, min(row_idx + 15, len(df))):
                                 if search_row < len(df):
                                     search_cell = df.iloc[search_row][col]
@@ -1539,7 +1512,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                             part_c_entry["horizontal_tables"].append(products_table)
                                         break
                             
-                            # Look for "Applications Impacted" table
                             for search_row in range(row_idx + 1, min(row_idx + 20, len(df))):
                                 if search_row < len(df):
                                     search_cell = df.iloc[search_row][col]
@@ -1553,7 +1525,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                             result["summary"]["part_c_found"] = True
                             break
         
-        # Extract Part B content (same logic, can be enhanced similarly)
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
@@ -1585,7 +1556,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                 "adjacent_content": []
                             }
                             
-                            # Extract next rows content
                             for next_row in range(row_idx + 1, min(row_idx + 10, len(df))):
                                 if next_row < len(df):
                                     next_cell = df.iloc[next_row][col]
@@ -1595,7 +1565,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                             "text": str(next_cell).strip()
                                         })
                             
-                            # Extract adjacent column content
                             for adj_col_offset in [-1, 1]:
                                 adj_col_index = col_idx + adj_col_offset
                                 if 0 <= adj_col_index < len(df.columns):
@@ -1613,12 +1582,10 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                             result["summary"]["part_b_found"] = True
                             break
         
-        # Rest of the processing (sheets processing) remains the same...
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
             
-            # Limit rows if specified
             original_row_count = len(df)
             if max_rows_per_sheet and len(df) > max_rows_per_sheet:
                 df = df.head(max_rows_per_sheet)
@@ -1644,18 +1611,15 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                 }
             }
             
-            # Identify key columns
             for col in df.columns:
                 col_lower = str(col).lower()
                 if any(keyword in col_lower for keyword in ['id', 'name', 'title', 'status', 'type', 'category', 'priority', 'requirement']):
                     sheet_data["columns"]["key_columns"].append(clean_cell_value(col))
             
-            # Sample data
             sample_size = min(max_sample_rows, len(df))
             if sample_size > 0:
                 display_df = df.head(sample_size)
                 
-                # Convert to records (list of dictionaries)
                 for _, row in display_df.iterrows():
                     row_data = {}
                     for col, val in row.items():
@@ -1665,7 +1629,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                         row_data[clean_cell_value(col)] = cleaned_val
                     sheet_data["sample_data"].append(row_data)
             
-            # Extract detailed requirements
             for col in df.columns:
                 col_str = str(col).lower()
                 if any(keyword in col_str for keyword in ['requirement', 'detailed', 'description', 'specification']):
@@ -1687,7 +1650,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                         sheet_data["detailed_requirements"].append(req_column)
                         result["summary"]["detailed_requirements_found"] = True
             
-            # Data summary - unique values for key columns
             for col in sheet_data["columns"]["key_columns"][:3]:
                 if col in df.columns and df[col].dtype == 'object':
                     unique_vals = df[col].dropna().unique()
@@ -1696,7 +1658,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                     else:
                         sheet_data["data_summary"]["unique_value_counts"][col] = f"{len(unique_vals)} unique values"
             
-            # Missing data summary
             missing_data = df.isnull().sum()
             if missing_data.sum() > 0:
                 missing_cols = missing_data[missing_data > 0].head(5)
