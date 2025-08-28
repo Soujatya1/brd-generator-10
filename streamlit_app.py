@@ -22,6 +22,120 @@ from langchain_openai import AzureChatOpenAI
 from openpyxl import load_workbook
 import json
 
+def load_product_alignment():
+    """Load product alignment data from the uploaded JSON"""
+    try:
+        # This should be the path to your Product Alignment JSON file
+        # You'll need to modify this to load from your specific location
+        product_alignment = {
+            "annuity": [
+                "Bajaj Allianz Life Guaranteed Pension Goal II",
+                "Bajaj Allianz Life Saral Pension"
+            ],
+            "combi": [
+                "Bajaj Allianz Life Capital Goal Suraksha"
+            ],
+            "group": [
+                "Bajaj Allianz Life Group Term Life",
+                "Bajaj Allianz Life Group Credit Protection Plus",
+                "Bajaj Allianz Life Group Sampoorna Jeevan Suraksha",
+                "Bajaj Allianz Life Group Employee Benefit",
+                "Bajaj Allianz Life Group Superannuation Secure Plus",
+                "Bajaj Allianz Life Group Superannuation Secure",
+                "Bajaj Allianz Life Group Employee Care",
+                "Bajaj Allianz Life Group Secure Return",
+                "Bajaj Allianz Life Group Sampoorna Suraksha Kavach",
+                "Bajaj Allianz Life Pradhan Mantri Jeevan Jyoti Bima Yojana",
+                "Bajaj Allianz Life Group Secure Shield",
+                "Bajaj Allianz Life Group Investment Plan"
+            ],
+            "non_par": [
+                "Bajaj Allianz Life Goal Suraksha",
+                "Bajaj Allianz Life Assured Wealth Goal Platinum",
+                "Bajaj Allianz Life Guaranteed Wealth Goal",
+                "Bajaj Allianz Life Guaranteed Saving Goal",
+                "Bajaj Allianz Life Assured Wealth Goal"
+            ],
+            "par": [
+                "Bajaj Allianz Life ACE",
+                "Bajaj Allianz Life ACE Advantage"
+            ],
+            "rider": [
+                "Bajaj Allianz Accidental Death Benefit Rider",
+                "Bajaj Allianz Accidental Permanent Total/Partial Disability Benefit Rider",
+                "Bajaj Allianz Life Linked Accident Protection Rider II",
+                "Bajaj Allianz Life Family Protect Rider",
+                "Bajaj Allianz Life Group New Terminal Illness Rider",
+                "Bajaj Allianz Life Group Accelerated Critical Illness Rider",
+                "Bajaj Allianz Life Group Accidental Permanent Total/Partial Disability Benefit Rider",
+                "Bajaj Allianz Life Group Critical Illness Rider",
+                "Bajaj Allianz Life Group Accidental Death Benefit",
+                "Bajaj Allianz Life New Critical Illness Benefit Rider",
+                "Bajaj Allianz Life Care Plus Rider",
+                "Bajaj Allianz Life Linked Critical Illness Benefit Rider"
+            ],
+            "term": [
+                "Bajaj Allianz Life iSecure II",
+                "Bajaj Allianz Life eTouch II",
+                "Bajaj Allianz Life Saral Jeevan Bima",
+                "Bajaj Allianz Life Diabetic Term Plan II Sub 8 HbA1c",
+                "Bajaj Allianz Life Smart Protection Goal"
+            ],
+            "ulip": [
+                "Bajaj Allianz Life Goal Assure IV",
+                "Bajaj Allianz Life Magnum Fortune Plus III",
+                "Bajaj Allianz Life Invest Protect Goal III",
+                "Bajaj Allianz Life Fortune Gain II",
+                "Bajaj Allianz Life Future Wealth Gain IV",
+                "Bajaj Allianz Life LongLife Goal III",
+                "Bajaj Allianz Life Smart Wealth Goal V",
+                "Bajaj Allianz Life Goal Based Saving III",
+                "Bajaj Allianz Life Elite Assure"
+            ],
+            "ulip_pension": [
+                "Bajaj Allianz Life Smart Pension"
+            ],
+            "endowment_plans": [
+                "Bajaj Allianz Life Assured Wealth Goal Platinum",
+                "Bajaj Allianz Life ACE",
+                "Bajaj Allianz Life Goal Suraksha"
+            ]
+        }
+        return product_alignment
+    except Exception as e:
+        st.error(f"Error loading product alignment: {str(e)}")
+        return {}
+
+def expand_product_categories(impacted_products_text, product_alignment):
+    """Expand product categories to include specific product names"""
+    if not product_alignment or not impacted_products_text:
+        return impacted_products_text
+    
+    expanded_text = impacted_products_text
+    
+    # Create mapping of category keywords to product lists
+    category_mappings = {
+        'ulip': product_alignment.get('ulip', []),
+        'term': product_alignment.get('term', []),
+        'endowment': product_alignment.get('endowment_plans', []),
+        'annuity': product_alignment.get('annuity', []),
+        'group': product_alignment.get('group', []),
+        'rider': product_alignment.get('rider', []),
+        'non_par': product_alignment.get('non_par', []),
+        'par': product_alignment.get('par', []),
+        'combi': product_alignment.get('combi', []),
+        'ulip_pension': product_alignment.get('ulip_pension', [])
+    }
+    
+    # Look for category mentions and expand them
+    for category, products in category_mappings.items():
+        if products and category.lower() in impacted_products_text.lower():
+            # Add specific products under the category
+            product_list = '\n'.join([f"  - {product}" for product in products])
+            expanded_text += f"\n\n**{category.upper()} Products:**\n{product_list}"
+    
+    return expanded_text
+
 BRD_FORMAT = """
 ## 1.0 Introduction
     ## 1.1 Purpose
@@ -165,17 +279,27 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
   - Create a markdown table preserving the original structure
   - Show product types and their impact status (Yes/No/etc.)
   - Include any additional columns or classifications found
+  - **EXPAND PRODUCT CATEGORIES**: When product categories like ULIP, Term, Endowment, etc. are mentioned, also list the specific product names under each category
   
 **TABLE FORMAT EXAMPLE (if structured table found):**
-| Product Type | |--------------| | [Extract from source]
-|Impact Status|---------------| [Extract Yes/No/etc.] |
+| Product Type | Impact Status |
+|--------------|---------------|
+| [Extract from source] | [Extract Yes/No/etc.] |
+
+**PRODUCT CATEGORY EXPANSION:**
+- If ULIP is impacted, list specific ULIP products
+- If Term is impacted, list specific Term products  
+- If Endowment is impacted, list specific Endowment products
+- If Group is impacted, list specific Group products
+- And so on for other categories
 
 **IF NO STRUCTURED TABLE FOUND:**
 - List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
 - Extract from any column/row mentioning affected products/platforms
 - Check all sheets for product names, service names, or system names, platform names
+- **EXPAND any product categories found to include specific product names**
 
-**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table. Do NOT create a generic list.
+**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table AND expand any product categories mentioned to show specific product names.
 
 ### 2.2 Applications Impacted
 
@@ -710,6 +834,15 @@ def generate_brd_sequentially(chains, requirements):
     st.write("="*120)
     st.write("📋 COMBINED REQUIREMENTS SENT TO LLM:")
     st.write("="*120)
+
+    product_alignment = load_product_alignment()
+
+    # Add product alignment data to requirements for AI processing
+    if product_alignment:
+        product_alignment_text = "\n\n=== PRODUCT ALIGNMENT DATA ===\n"
+        product_alignment_text += json.dumps(product_alignment, indent=2)
+        product_alignment_text += "\n" + "="*50
+        combined_requirements = combined_requirements + product_alignment_text
     
     with st.expander("📄 View Complete Requirements Content", expanded=False):
         st.text_area("Full Content", combined_requirements, height=400)
@@ -807,6 +940,9 @@ def generate_brd_sequentially(chains, requirements):
                 print(previous_content[:500] + "..." if len(previous_content) > 500 else previous_content)
                 print("\nRequirements (first 500 chars):")
                 print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
+
+            if i == 0 and product_alignment:
+                result = expand_product_categories(result, product_alignment)
             
             print(f"\nCHAIN {i+1} OUTPUT:")
             print(f"Response length: {len(result)} characters")
