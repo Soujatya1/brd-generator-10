@@ -1323,7 +1323,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         return str_val
     
         def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
-        """Extract horizontal table structure starting from a given position"""
             table_data = {
                 "table_type": table_identifier,
                 "headers": [],
