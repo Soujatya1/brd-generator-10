@@ -103,23 +103,15 @@ def load_product_alignment():
         st.error(f"Error loading product alignment: {str(e)}")
         return {}
 
-def expand_product_categories(impacted_products_text, product_alignment):
+def expand_product_categories_enhanced(impacted_products_text, product_alignment):
     """
-    Expand product categories to show specific product names only for categories marked as "Yes" in the impact table.
-    
-    Args:
-        impacted_products_text (str): The text containing product impact information
-        product_alignment (dict): Dictionary mapping product categories to specific product names
-    
-    Returns:
-        str: Expanded text with specific product names for impacted categories only
+    Enhanced version with better table parsing capabilities.
     """
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
     
     expanded_text = impacted_products_text
     
-    # Category mappings from the product alignment data
     category_mappings = {
         'ulip': product_alignment.get('ulip', []),
         'term': product_alignment.get('term', []),
@@ -133,54 +125,51 @@ def expand_product_categories(impacted_products_text, product_alignment):
         'ulip_pension': product_alignment.get('ulip_pension', [])
     }
     
-    # Function to check if a category is marked as "Yes" in the impact table
-    def is_category_impacted(category_name, text):
+    def extract_impact_status_from_table(text):
         """
-        Check if a category is marked as "Yes" in the impacted products table.
-        This function looks for table patterns and checks the status.
+        Extract impact status for each category from table format.
+        Returns dict with category names as keys and boolean impact status as values.
         """
-        text_lower = text.lower()
-        category_lower = category_name.lower()
-        
-        # Split text into lines for table parsing
+        impact_status = {}
         lines = text.split('\n')
         
-        # Look for table structures (markdown or plain text)
-        for i, line in enumerate(lines):
-            line_lower = line.lower().strip()
-            
-            # Check if this line contains the category name
-            if category_lower in line_lower:
-                # Look for "Yes" indicators in the same line or adjacent cells
-                if 'yes' in line_lower:
-                    return True
+        for line in lines:
+            # Skip separator lines in markdown tables
+            if '---' in line:
+                continue
                 
-                # Check for table format with | separators
-                if '|' in line:
-                    cells = [cell.strip() for cell in line.split('|')]
-                    for j, cell in enumerate(cells):
-                        if category_lower in cell.lower():
-                            # Check adjacent cells for "Yes"
-                            if j + 1 < len(cells) and 'yes' in cells[j + 1].lower():
-                                return True
-                            if j - 1 >= 0 and 'yes' in cells[j - 1].lower():
-                                return True
+            # Process lines that contain table separators
+            if '|' in line:
+                cells = [cell.strip() for cell in line.split('|')]
+                # Remove empty cells from start/end
+                cells = [cell for cell in cells if cell]
                 
-                # Check next few lines for "Yes" in case it's in a different row
-                for next_line_idx in range(i + 1, min(i + 3, len(lines))):
-                    if next_line_idx < len(lines):
-                        next_line = lines[next_line_idx].lower()
-                        if 'yes' in next_line and (category_lower in next_line or '|' in next_line):
-                            return True
+                if len(cells) >= 2:
+                    category_cell = cells[0].lower()
+                    
+                    # Check each category
+                    for category in category_mappings.keys():
+                        if category in category_cell:
+                            # Look for "Yes" in subsequent columns
+                            for status_cell in cells[1:]:
+                                if 'yes' in status_cell.lower():
+                                    impact_status[category] = True
+                                    break
+                            else:
+                                # If no "Yes" found, mark as not impacted
+                                if category not in impact_status:
+                                    impact_status[category] = False
         
-        return False
+        return impact_status
     
-    # Process each category and expand only if marked as "Yes"
+    # Extract impact status for all categories
+    impact_status = extract_impact_status_from_table(impacted_products_text)
+    
+    # Expand only categories marked as impacted
     categories_expanded = []
     
     for category, products in category_mappings.items():
-        if products and is_category_impacted(category, impacted_products_text):
-            # Create the product list for this category
+        if products and impact_status.get(category, False):
             product_list = '\n'.join([f"  - {product}" for product in products])
             category_section = f"\n\n**{category.upper()} Products (Impacted - Yes):**\n{product_list}"
             categories_expanded.append(category_section)
