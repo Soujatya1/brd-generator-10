@@ -104,10 +104,6 @@ def load_product_alignment():
         return {}
 
 def expand_product_categories(impacted_products_text, product_alignment):
-    """
-    Enhanced version with better table parsing capabilities.
-    Only expands categories that have "Yes" impact status.
-    """
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
     
@@ -127,59 +123,45 @@ def expand_product_categories(impacted_products_text, product_alignment):
     }
     
     def extract_impact_status_from_table(text):
-        """
-        Extract impact status for each category from table format.
-        Returns dict with category names as keys and boolean impact status as values.
-        """
+
         impact_status = {}
         lines = text.split('\n')
         
         for line in lines:
-            # Skip separator lines in markdown tables
             if '---' in line:
                 continue
                 
-            # Process lines that contain table separators
             if '|' in line:
                 cells = [cell.strip() for cell in line.split('|')]
-                # Remove empty cells from start/end
                 cells = [cell for cell in cells if cell]
                 
                 if len(cells) >= 2:
                     category_cell = cells[0].lower()
                     
-                    # Check each category with more precise matching
                     for category in category_mappings.keys():
-                        # More precise matching to avoid false positives
                         if (category.lower() in category_cell or 
                             any(category.lower() in word for word in category_cell.split())):
-                            # Look for "Yes" variations in subsequent columns
                             for status_cell in cells[1:]:
                                 status_lower = status_cell.lower().strip()
                                 if status_lower in ['yes', 'y', 'true', '1', 'impacted']:
                                     impact_status[category] = True
                                     break
                             else:
-                                # If no "Yes" found, mark as not impacted
                                 if category not in impact_status:
                                     impact_status[category] = False
         
         return impact_status
     
-    # Extract impact status for all categories
     impact_status = extract_impact_status_from_table(impacted_products_text)
     
-    # CHANGED: Only expand categories marked as impacted (True)
     categories_expanded = []
     
     for category, products in category_mappings.items():
-        # FIXED: Only add expansion if impact_status is True AND products exist
         if products and impact_status.get(category, False):
             product_list = '\n'.join([f"  - {product}" for product in products])
             category_section = f"\n\n**{category.upper()} Products (Impacted - Yes):**\n{product_list}"
             categories_expanded.append(category_section)
     
-    # Add all expanded categories to the original text
     if categories_expanded:
         expanded_text += ''.join(categories_expanded)
     
@@ -275,6 +257,7 @@ Search across ALL processed sheets for key phrases: "purpose", "objective", "req
 1. Content from "PART B : (Mandatory) Detailed Requirement" 
 2. Content from other "Detailed Requirement" sections
 3. Content from other relevant sections across all sheets
+
 ### 1.2 As-is process
 
 **FORMAT: Present content as BULLET POINTS using markdown bullet format (- or *)**
@@ -1057,7 +1040,6 @@ def generate_brd_sequentially(chains, requirements):
         st.write(f"- Total lines: {final_lines:,}")
         st.write(f"- Total words (approx): {final_words:,}")
         
-        # Show final sections
         final_sections_headers = [line for line in final_brd.split('\n') if line.strip().startswith('##')]
         if final_sections_headers:
             st.write(f"**Generated Sections ({len(final_sections_headers)}):**")
@@ -1391,7 +1373,6 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         return str_val
     
     def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
-        """Extract horizontal table structure starting from a given position"""
         table_data = {
             "table_type": table_identifier,
             "headers": [],
