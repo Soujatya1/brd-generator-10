@@ -1324,100 +1324,100 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
     
         def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
         """Extract horizontal table structure starting from a given position"""
-        table_data = {
-            "table_type": table_identifier,
-            "headers": [],
-            "data_rows": [],
-            "raw_structure": [],
-            "impacted_items": []  # NEW: Store only items with "Yes" impact
-        }
-        
-        try:
-            current_row = start_row_idx
-            max_search_rows = min(start_row_idx + 10, len(df))
+            table_data = {
+                "table_type": table_identifier,
+                "headers": [],
+                "data_rows": [],
+                "raw_structure": [],
+                "impacted_items": []  # NEW: Store only items with "Yes" impact
+            }
             
-            found_headers = False
-            header_row_idx = None
-            
-            for search_row in range(current_row, max_search_rows):
-                if search_row >= len(df):
-                    break
-                    
-                row_data = df.iloc[search_row].values
+            try:
+                current_row = start_row_idx
+                max_search_rows = min(start_row_idx + 10, len(df))
                 
-                non_empty_cells = [str(cell).strip() for cell in row_data if pd.notna(cell) and str(cell).strip()]
+                found_headers = False
+                header_row_idx = None
                 
-                product_indicators = ['ULIP', 'Term', 'Endowment', 'Annuity', 'Health', 'Group', 'All']
-                app_indicators = ['OPUS', 'INSTAB', 'NGIN', 'PMAC', 'CRM', 'Cashier', 'Other']
-                
-                if any(indicator in ' '.join(non_empty_cells).upper() for indicator in product_indicators + app_indicators):
-                    header_row_idx = search_row
-                    found_headers = True
-                    break
-            
-            if found_headers and header_row_idx is not None:
-                header_row = df.iloc[header_row_idx]
-                headers = []
-                header_positions = []
-                
-                for col_idx, cell_value in enumerate(header_row):
-                    if pd.notna(cell_value) and str(cell_value).strip():
-                        clean_header = clean_cell_value(cell_value)
-                        if clean_header != "-" and not clean_header.startswith("Insert"):
-                            headers.append(clean_header)
-                            header_positions.append(col_idx)
-                
-                table_data["headers"] = headers
-                
-                data_start_row = header_row_idx + 1
-                max_data_rows = min(data_start_row + 5, len(df))
-                
-                for data_row_idx in range(data_start_row, max_data_rows):
-                    if data_row_idx >= len(df):
+                for search_row in range(current_row, max_search_rows):
+                    if search_row >= len(df):
                         break
                         
-                    data_row = df.iloc[data_row_idx]
+                    row_data = df.iloc[search_row].values
                     
-                    row_values = []
-                    has_data = False
+                    non_empty_cells = [str(cell).strip() for cell in row_data if pd.notna(cell) and str(cell).strip()]
                     
-                    for pos in header_positions:
-                        if pos < len(data_row):
-                            cell_val = clean_cell_value(data_row.iloc[pos])
-                            row_values.append(cell_val)
-                            if cell_val not in ["-", ""]:
-                                has_data = True
-                        else:
-                            row_values.append("-")
+                    product_indicators = ['ULIP', 'Term', 'Endowment', 'Annuity', 'Health', 'Group', 'All']
+                    app_indicators = ['OPUS', 'INSTAB', 'NGIN', 'PMAC', 'CRM', 'Cashier', 'Other']
                     
-                    if has_data:
-                        row_description = data_row.iloc[0] if pd.notna(data_row.iloc[0]) else f"Row {data_row_idx + 1}"
-                        
-                        row_data = {
-                            "row_description": clean_cell_value(row_description),
-                            "values": dict(zip(headers, row_values))
-                        }
-                        table_data["data_rows"].append(row_data)
-                        
-                        # NEW: Check if any value is "Yes" and extract the impacted item
-                        for header, value in row_data["values"].items():
-                            if str(value).strip().lower() == "yes":
-                                # The first column typically contains the product/application name
-                                item_name = clean_cell_value(row_description)
-                                if item_name not in table_data["impacted_items"]:
-                                    table_data["impacted_items"].append(item_name)
+                    if any(indicator in ' '.join(non_empty_cells).upper() for indicator in product_indicators + app_indicators):
+                        header_row_idx = search_row
+                        found_headers = True
+                        break
                 
-                if headers and table_data["data_rows"]:
-                    table_data["raw_structure"] = {
-                        "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
-                        "structured_data": table_data["data_rows"],
-                        "impacted_only": table_data["impacted_items"]  # NEW: Only impacted items
-                    }
+                if found_headers and header_row_idx is not None:
+                    header_row = df.iloc[header_row_idx]
+                    headers = []
+                    header_positions = []
+                    
+                    for col_idx, cell_value in enumerate(header_row):
+                        if pd.notna(cell_value) and str(cell_value).strip():
+                            clean_header = clean_cell_value(cell_value)
+                            if clean_header != "-" and not clean_header.startswith("Insert"):
+                                headers.append(clean_header)
+                                header_positions.append(col_idx)
+                    
+                    table_data["headers"] = headers
+                    
+                    data_start_row = header_row_idx + 1
+                    max_data_rows = min(data_start_row + 5, len(df))
+                    
+                    for data_row_idx in range(data_start_row, max_data_rows):
+                        if data_row_idx >= len(df):
+                            break
+                            
+                        data_row = df.iloc[data_row_idx]
+                        
+                        row_values = []
+                        has_data = False
+                        
+                        for pos in header_positions:
+                            if pos < len(data_row):
+                                cell_val = clean_cell_value(data_row.iloc[pos])
+                                row_values.append(cell_val)
+                                if cell_val not in ["-", ""]:
+                                    has_data = True
+                            else:
+                                row_values.append("-")
+                        
+                        if has_data:
+                            row_description = data_row.iloc[0] if pd.notna(data_row.iloc[0]) else f"Row {data_row_idx + 1}"
+                            
+                            row_data = {
+                                "row_description": clean_cell_value(row_description),
+                                "values": dict(zip(headers, row_values))
+                            }
+                            table_data["data_rows"].append(row_data)
+                            
+                            # NEW: Check if any value is "Yes" and extract the impacted item
+                            for header, value in row_data["values"].items():
+                                if str(value).strip().lower() == "yes":
+                                    # The first column typically contains the product/application name
+                                    item_name = clean_cell_value(row_description)
+                                    if item_name not in table_data["impacted_items"]:
+                                        table_data["impacted_items"].append(item_name)
+                    
+                    if headers and table_data["data_rows"]:
+                        table_data["raw_structure"] = {
+                            "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
+                            "structured_data": table_data["data_rows"],
+                            "impacted_only": table_data["impacted_items"]  # NEW: Only impacted items
+                        }
+                
+            except Exception as e:
+                table_data["error"] = str(e)
             
-        except Exception as e:
-            table_data["error"] = str(e)
-        
-        return table_data
+            return table_data
     
     def create_markdown_table(headers, data_rows):
         if not headers or not data_rows:
