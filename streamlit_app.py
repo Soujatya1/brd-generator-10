@@ -529,33 +529,59 @@ Create ONLY the following section with detailed content in markdown:
 
 ### 5.1 Data Specifications
 
-Extract SPECIFIC data requirements from ALL processed sheets:
-- What data elements, fields, or attributes are needed?
-- What data sources, databases, or systems provide this data?
-- What data formats, structures, or schemas are required?
-- What data validation, quality, or integrity requirements exist?
-- What data processing, transformation, or calculation needs are mentioned?
-- Any data retention, archival, or lifecycle requirements
+**IMPORTANT: Create a markdown table for data specifications found in the source documents.**
 
-Look across ALL sheets for data-related content in any columns or sections.
+Extract SPECIFIC data requirements from ALL processed sheets and present in table format:
+
+| **Data Element** | **Data Source** | **Format/Type** | **Validation Rules** | **Purpose** |
+|------------------|-----------------|-----------------|---------------------|-------------|
+| [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
+
+**Search for:**
+- Data elements, fields, or attributes needed
+- Data sources, databases, or systems providing this data
+- Data formats, structures, or schemas required
+- Data validation, quality, or integrity requirements
+- Data processing, transformation, or calculation needs
+- Data retention, archival, or lifecycle requirements
+
+**IF NO structured data specifications found in source:**
+- Create table with message: "No specific data specifications found in source documents"
 
 ### 5.2 Reporting and Analytics Needs
 
-Extract any mentioned across ALL processed sheets:
-- What reports, dashboards, or analytics are required?
-- What metrics, KPIs, or measurements need to be tracked?
-- What data visualization or presentation requirements exist?
-- What frequency or scheduling of reports is needed?
-- What user roles or audiences need access to reports?
-- Any real-time monitoring or alerting requirements
-- Which plots/charts are applicable to be built?
-- Which tool would be the best to build these plots/charts
+**IMPORTANT: Create a markdown table for reporting requirements found in the source documents.**
 
-Check all processed sheets for reporting requirements, analytics needs, or dashboard specifications.
+Extract reporting requirements from ALL processed sheets and present in table format:
+
+| **Report/Dashboard Name** | **Metrics/KPIs** | **Data Source** | **Frequency** | **Audience** | **Tool/Platform** |
+|---------------------------|------------------|------------------|-------------|------------|-------------------|
+| [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
+
+**Search for:**
+- Reports, dashboards, or analytics required
+- Metrics, KPIs, or measurements to track
+- Data visualization or presentation requirements
+- Frequency or scheduling of reports
+- User roles or audiences needing access
+- Real-time monitoring or alerting requirements
+- Plots/charts applicable to be built
+- Best tools to build these plots/charts
+
+**IF NO reporting requirements found in source:**
+- Create table with message: "No specific reporting requirements found in source documents"
 
 ### 5.3 Data Sources and Destinations
 
-Extract from ALL processed sheets:
+**IMPORTANT: Create a markdown table for data flow information found in the source documents.**
+
+Extract data flow information from ALL processed sheets and present in table format:
+
+| **Source System** | **Destination System** | **Data Type** | **Integration Method** | **Frequency** | **Dependencies** |
+|-------------------|------------------------|---------------|----------------------|---------------|------------------|
+| [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
+
+**Search for:**
 - Source systems, databases, or applications providing data
 - Target systems, repositories, or destinations for data
 - Integration points, APIs, or data exchange mechanisms
@@ -563,7 +589,8 @@ Extract from ALL processed sheets:
 - External systems, third-party sources, or partner integrations
 - Master data management or reference data needs
 
-Search across ALL sheets for system names, database references, integration points, and data flow information.
+**IF NO data flow information found in source:**
+- Create table with message: "No specific data flow requirements found in source documents"
 
 ## 6.0 Communication Requirement
 
@@ -603,19 +630,19 @@ Search across ALL sheets for system names, database references, integration poin
 
 IMPORTANT:
 
+- **MANDATORY: Create tables for sections 5.1, 5.2 and 5.3 using the specified formats above**
 - Use markdown headings
-- Preserve any tables in markdown format from ANY processed sheet
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
-- If no content found for a subsection after checking ALL sheets, leave it blank
-- Create tables for sections 5.1, 5.2 and 5.3
+- If no content found for a subsection after checking ALL sheets, use the specified "not found" table format
+- Preserve any existing tables in markdown format from ANY processed sheet
 
 VALIDATION CHECK:
 
 Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). Remove any content that cannot be directly attributed to the source documents.
 
 OUTPUT FORMAT:
-Provide ONLY the markdown sections (## 5.0, ### 5.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
+Provide ONLY the markdown sections (## 5.0, ### 5.1, etc.) with the extracted content in TABLE FORMAT for sections 5.1, 5.2, and 5.3. Do not include any of these instructions, validation checks, or processing guidelines in your response.
 
 """,
 
