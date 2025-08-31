@@ -103,40 +103,12 @@ def load_product_alignment():
         st.error(f"Error loading product alignment: {str(e)}")
         return {}
 
-def expand_product_categories(impacted_products_text, product_alignment, original_table_data=None):
+def expand_product_categories(impacted_products_text, product_alignment):
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
     
     expanded_text = impacted_products_text
-    found_matching_products = False
     
-    # If we have original table data, try to extract "Yes" products and match them
-    if original_table_data:
-        yes_products = []
-        
-        # Parse the table to find products with "Yes" status
-        lines = original_table_data.strip().split('\n')
-        for line in lines:
-            if '|' in line and 'Yes' in line:
-                # Extract product type from the line
-                parts = [part.strip() for part in line.split('|')]
-                if len(parts) >= 2:
-                    product_type = parts[1].lower()  # Assuming product type is in second column
-                    
-                    # Check if this product type exists in our alignment
-                    for category, products in product_alignment.items():
-                        if category.lower() == product_type or product_type in category.lower():
-                            yes_products.extend(products)
-                            found_matching_products = True
-        
-        # If we found matching products, show only those
-        if found_matching_products and yes_products:
-            expanded_text += "\n\n**Specific Products Impacted (Status: Yes):**\n"
-            for product in yes_products:
-                expanded_text += f"  - {product}\n"
-            return expanded_text
-    
-    # Fallback: If no table data or no matches found, use the original logic
     category_mappings = {
         'ulip': product_alignment.get('ulip', []),
         'term': product_alignment.get('term', []),
@@ -297,30 +269,27 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
   - Create a markdown table preserving the original structure
   - Show product types and their impact status (Yes/No/etc.)
   - Include any additional columns or classifications found
-  - **FILTER FOR "YES" STATUS ONLY**: Extract ONLY products/categories that have "Yes" status
-  - **EXPAND FILTERED CATEGORIES**: For products with "Yes" status, check if they match categories in the product alignment data and expand to show specific product names
+  - **EXPAND PRODUCT CATEGORIES**: When product categories like ULIP, Term, Endowment, etc. are mentioned, also list the specific product names under each category
   
 **TABLE FORMAT EXAMPLE (if structured table found):**
 | Product Type | Impact Status |
 |--------------|---------------|
-| [Extract ONLY "Yes" status products] | Yes |
+| [Extract from source] | [Extract Yes/No/etc.] |
 
-**PRODUCT CATEGORY EXPANSION FOR "YES" STATUS PRODUCTS:**
-- If ULIP has "Yes" status, list specific ULIP products from product alignment
-- If Term has "Yes" status, list specific Term products from product alignment
-- If Endowment has "Yes" status, list specific Endowment products from product alignment
-- If Group has "Yes" status, list specific Group products from product alignment
-- And so on for other categories with "Yes" status
+**PRODUCT CATEGORY EXPANSION:**
+- If ULIP is impacted, list specific ULIP products
+- If Term is impacted, list specific Term products  
+- If Endowment is impacted, list specific Endowment products
+- If Group is impacted, list specific Group products
+- And so on for other categories
 
-**FALLBACK LOGIC:**
-- If NO products have "Yes" status but a table exists, show the original table as-is
-- If NO structured table found, list products mentioned across ALL processed sheets
-- **EXPAND any product categories found to include specific product names from alignment data**
+**IF NO STRUCTURED TABLE FOUND:**
+- List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
+- Extract from any column/row mentioning affected products/platforms
+- Check all sheets for product names, service names, or system names, platform names
+- **EXPAND any product categories found to include specific product names**
 
-**CRITICAL**: 
-1. FIRST attempt to filter for "Yes" status products and expand those categories
-2. If no "Yes" status products match the alignment data, show the original table structure
-3. If no table exists, fall back to listing mentioned products with category expansion
+**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table AND expand any product categories mentioned to show specific product names.
 
 ### 2.2 Applications Impacted
 
@@ -361,6 +330,7 @@ IMPORTANT:
 
 - Use markdown headings (##, ###)
 - **CRITICAL**: For sections 2.1 and 2.2, if structured tables exist in source, reproduce them as markdown tables
+- Sections 1.2 and 1.3 to be in form of bullet pointers
 - **For Purpose and To-be process: PRIORITIZE "PART B" and "PART C (Mandatory) Detailed Requirement" content**
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
@@ -962,27 +932,7 @@ def generate_brd_sequentially(chains, requirements):
                 print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
 
             if i == 0 and product_alignment:
-                # Extract original table data if present in the result
-                original_table_data = None
-                if "| Product Type |" in result or "| Application Name |" in result:
-                    # Extract the table portion for analysis
-                    lines = result.split('\n')
-                    table_lines = []
-                    in_table = False
-                    
-                    for line in lines:
-                        if '| Product Type |' in line or '| Application Name |' in line:
-                            in_table = True
-                            table_lines.append(line)
-                        elif in_table and '|' in line:
-                            table_lines.append(line)
-                        elif in_table and '|' not in line:
-                            break
-                    
-                    if table_lines:
-                        original_table_data = '\n'.join(table_lines)
-                
-                result = expand_product_categories(result, product_alignment, original_table_data)
+                result = expand_product_categories(result, product_alignment)
             
             print(f"\nCHAIN {i+1} OUTPUT:")
             print(f"Response length: {len(result)} characters")
@@ -1348,101 +1298,92 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         return str_val
     
-        def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
-            table_data = {
-                "table_type": table_identifier,
-                "headers": [],
-                "data_rows": [],
-                "raw_structure": [],
-                "impacted_items": []  # NEW: Store only items with "Yes" impact
-            }
+    def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
+        """Extract horizontal table structure starting from a given position"""
+        table_data = {
+            "table_type": table_identifier,
+            "headers": [],
+            "data_rows": [],
+            "raw_structure": []
+        }
+        
+        try:
+            current_row = start_row_idx
+            max_search_rows = min(start_row_idx + 10, len(df))
             
-            try:
-                current_row = start_row_idx
-                max_search_rows = min(start_row_idx + 10, len(df))
+            found_headers = False
+            header_row_idx = None
+            
+            for search_row in range(current_row, max_search_rows):
+                if search_row >= len(df):
+                    break
+                    
+                row_data = df.iloc[search_row].values
                 
-                found_headers = False
-                header_row_idx = None
+                non_empty_cells = [str(cell).strip() for cell in row_data if pd.notna(cell) and str(cell).strip()]
                 
-                for search_row in range(current_row, max_search_rows):
-                    if search_row >= len(df):
+                product_indicators = ['ULIP', 'Term', 'Endowment', 'Annuity', 'Health', 'Group', 'All']
+                app_indicators = ['OPUS', 'INSTAB', 'NGIN', 'PMAC', 'CRM', 'Cashier', 'Other']
+                
+                if any(indicator in ' '.join(non_empty_cells).upper() for indicator in product_indicators + app_indicators):
+                    header_row_idx = search_row
+                    found_headers = True
+                    break
+            
+            if found_headers and header_row_idx is not None:
+                header_row = df.iloc[header_row_idx]
+                headers = []
+                header_positions = []
+                
+                for col_idx, cell_value in enumerate(header_row):
+                    if pd.notna(cell_value) and str(cell_value).strip():
+                        clean_header = clean_cell_value(cell_value)
+                        if clean_header != "-" and not clean_header.startswith("Insert"):
+                            headers.append(clean_header)
+                            header_positions.append(col_idx)
+                
+                table_data["headers"] = headers
+                
+                data_start_row = header_row_idx + 1
+                max_data_rows = min(data_start_row + 5, len(df))
+                
+                for data_row_idx in range(data_start_row, max_data_rows):
+                    if data_row_idx >= len(df):
                         break
                         
-                    row_data = df.iloc[search_row].values
+                    data_row = df.iloc[data_row_idx]
                     
-                    non_empty_cells = [str(cell).strip() for cell in row_data if pd.notna(cell) and str(cell).strip()]
+                    row_values = []
+                    has_data = False
                     
-                    product_indicators = ['ULIP', 'Term', 'Endowment', 'Annuity', 'Health', 'Group', 'All']
-                    app_indicators = ['OPUS', 'INSTAB', 'NGIN', 'PMAC', 'CRM', 'Cashier', 'Other']
+                    for pos in header_positions:
+                        if pos < len(data_row):
+                            cell_val = clean_cell_value(data_row.iloc[pos])
+                            row_values.append(cell_val)
+                            if cell_val not in ["-", ""]:
+                                has_data = True
+                        else:
+                            row_values.append("-")
                     
-                    if any(indicator in ' '.join(non_empty_cells).upper() for indicator in product_indicators + app_indicators):
-                        header_row_idx = search_row
-                        found_headers = True
-                        break
-                
-                if found_headers and header_row_idx is not None:
-                    header_row = df.iloc[header_row_idx]
-                    headers = []
-                    header_positions = []
-                    
-                    for col_idx, cell_value in enumerate(header_row):
-                        if pd.notna(cell_value) and str(cell_value).strip():
-                            clean_header = clean_cell_value(cell_value)
-                            if clean_header != "-" and not clean_header.startswith("Insert"):
-                                headers.append(clean_header)
-                                header_positions.append(col_idx)
-                    
-                    table_data["headers"] = headers
-                    
-                    data_start_row = header_row_idx + 1
-                    max_data_rows = min(data_start_row + 5, len(df))
-                    
-                    for data_row_idx in range(data_start_row, max_data_rows):
-                        if data_row_idx >= len(df):
-                            break
-                            
-                        data_row = df.iloc[data_row_idx]
+                    if has_data:
+                        row_description = data_row.iloc[0] if pd.notna(data_row.iloc[0]) else f"Row {data_row_idx + 1}"
                         
-                        row_values = []
-                        has_data = False
-                        
-                        for pos in header_positions:
-                            if pos < len(data_row):
-                                cell_val = clean_cell_value(data_row.iloc[pos])
-                                row_values.append(cell_val)
-                                if cell_val not in ["-", ""]:
-                                    has_data = True
-                            else:
-                                row_values.append("-")
-                        
-                        if has_data:
-                            row_description = data_row.iloc[0] if pd.notna(data_row.iloc[0]) else f"Row {data_row_idx + 1}"
-                            
-                            row_data = {
-                                "row_description": clean_cell_value(row_description),
-                                "values": dict(zip(headers, row_values))
-                            }
-                            table_data["data_rows"].append(row_data)
-                            
-                            # NEW: Check if any value is "Yes" and extract the impacted item
-                            for header, value in row_data["values"].items():
-                                if str(value).strip().lower() == "yes":
-                                    # The first column typically contains the product/application name
-                                    item_name = clean_cell_value(row_description)
-                                    if item_name not in table_data["impacted_items"]:
-                                        table_data["impacted_items"].append(item_name)
-                    
-                    if headers and table_data["data_rows"]:
-                        table_data["raw_structure"] = {
-                            "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
-                            "structured_data": table_data["data_rows"],
-                            "impacted_only": table_data["impacted_items"]  # NEW: Only impacted items
+                        row_data = {
+                            "row_description": clean_cell_value(row_description),
+                            "values": dict(zip(headers, row_values))
                         }
+                        table_data["data_rows"].append(row_data)
                 
-            except Exception as e:
-                table_data["error"] = str(e)
+                if headers and table_data["data_rows"]:
+                    table_data["raw_structure"] = {
+                        "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
+                        "structured_data": table_data["data_rows"]
+                    }
             
-            return table_data
+        except Exception as e:
+            table_data["error"] = str(e)
+        
+        return table_data
     
     def create_markdown_table(headers, data_rows):
         if not headers or not data_rows:
