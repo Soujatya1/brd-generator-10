@@ -103,12 +103,40 @@ def load_product_alignment():
         st.error(f"Error loading product alignment: {str(e)}")
         return {}
 
-def expand_product_categories(impacted_products_text, product_alignment, impacted_items_list=None):
+def expand_product_categories(impacted_products_text, product_alignment, original_table_data=None):
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
     
     expanded_text = impacted_products_text
+    found_matching_products = False
     
+    # If we have original table data, try to extract "Yes" products and match them
+    if original_table_data:
+        yes_products = []
+        
+        # Parse the table to find products with "Yes" status
+        lines = original_table_data.strip().split('\n')
+        for line in lines:
+            if '|' in line and 'Yes' in line:
+                # Extract product type from the line
+                parts = [part.strip() for part in line.split('|')]
+                if len(parts) >= 2:
+                    product_type = parts[1].lower()  # Assuming product type is in second column
+                    
+                    # Check if this product type exists in our alignment
+                    for category, products in product_alignment.items():
+                        if category.lower() == product_type or product_type in category.lower():
+                            yes_products.extend(products)
+                            found_matching_products = True
+        
+        # If we found matching products, show only those
+        if found_matching_products and yes_products:
+            expanded_text += "\n\n**Specific Products Impacted (Status: Yes):**\n"
+            for product in yes_products:
+                expanded_text += f"  - {product}\n"
+            return expanded_text
+    
+    # Fallback: If no table data or no matches found, use the original logic
     category_mappings = {
         'ulip': product_alignment.get('ulip', []),
         'term': product_alignment.get('term', []),
@@ -122,23 +150,10 @@ def expand_product_categories(impacted_products_text, product_alignment, impacte
         'ulip_pension': product_alignment.get('ulip_pension', [])
     }
     
-    if impacted_items_list:
-        expanded_text += "\n\n**Detailed Product Breakdown (Impacted Only):**"
-        
-        for category, products in category_mappings.items():
-            category_impacted = any(
-                category.lower() in item.lower() or item.lower() in category.lower() 
-                for item in impacted_items_list
-            )
-            
-            if category_impacted and products:
-                product_list = '\n'.join([f"  - {product}" for product in products])
-                expanded_text += f"\n\n**{category.upper()} Products:**\n{product_list}"
-    else:
-        for category, products in category_mappings.items():
-            if products and category.lower() in impacted_products_text.lower():
-                product_list = '\n'.join([f"  - {product}" for product in products])
-                expanded_text += f"\n\n**{category.upper()} Products:**\n{product_list}"
+    for category, products in category_mappings.items():
+        if products and category.lower() in impacted_products_text.lower():
+            product_list = '\n'.join([f"  - {product}" for product in products])
+            expanded_text += f"\n\n**{category.upper()} Products:**\n{product_list}"
     
     return expanded_text
 
@@ -282,27 +297,30 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
   - Create a markdown table preserving the original structure
   - Show product types and their impact status (Yes/No/etc.)
   - Include any additional columns or classifications found
-  - **EXPAND PRODUCT CATEGORIES**: When product categories like ULIP, Term, Endowment, etc. are mentioned, also list the specific product names under each category
+  - **FILTER FOR "YES" STATUS ONLY**: Extract ONLY products/categories that have "Yes" status
+  - **EXPAND FILTERED CATEGORIES**: For products with "Yes" status, check if they match categories in the product alignment data and expand to show specific product names
   
 **TABLE FORMAT EXAMPLE (if structured table found):**
 | Product Type | Impact Status |
 |--------------|---------------|
-| [Extract from source] | [Extract Yes/No/etc.] |
+| [Extract ONLY "Yes" status products] | Yes |
 
-**PRODUCT CATEGORY EXPANSION:**
-- If ULIP is impacted, list specific ULIP products
-- If Term is impacted, list specific Term products  
-- If Endowment is impacted, list specific Endowment products
-- If Group is impacted, list specific Group products
-- And so on for other categories
+**PRODUCT CATEGORY EXPANSION FOR "YES" STATUS PRODUCTS:**
+- If ULIP has "Yes" status, list specific ULIP products from product alignment
+- If Term has "Yes" status, list specific Term products from product alignment
+- If Endowment has "Yes" status, list specific Endowment products from product alignment
+- If Group has "Yes" status, list specific Group products from product alignment
+- And so on for other categories with "Yes" status
 
-**IF NO STRUCTURED TABLE FOUND:**
-- List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
-- Extract from any column/row mentioning affected products/platforms
-- Check all sheets for product names, service names, or system names, platform names
-- **EXPAND any product categories found to include specific product names**
+**FALLBACK LOGIC:**
+- If NO products have "Yes" status but a table exists, show the original table as-is
+- If NO structured table found, list products mentioned across ALL processed sheets
+- **EXPAND any product categories found to include specific product names from alignment data**
 
-**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table AND expand any product categories mentioned to show specific product names.
+**CRITICAL**: 
+1. FIRST attempt to filter for "Yes" status products and expand those categories
+2. If no "Yes" status products match the alignment data, show the original table structure
+3. If no table exists, fall back to listing mentioned products with category expansion
 
 ### 2.2 Applications Impacted
 
@@ -944,19 +962,27 @@ def generate_brd_sequentially(chains, requirements):
                 print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
 
             if i == 0 and product_alignment:
-                impacted_products = []
-                impacted_applications = []
-    
-                # Try to find impacted items from the processing results
-                if hasattr(chains[0], '_last_table_data'):  # You might need to store this during processing
-                    for table_info in chains[0]._last_table_data:
-                        if table_info.get("table_type") == "Products Impacted":
-                            impacted_products = table_info.get("impacted_items", [])
-                        elif table_info.get("table_type") == "Applications Impacted":
-                            impacted_applications = table_info.get("impacted_items", [])
+                # Extract original table data if present in the result
+                original_table_data = None
+                if "| Product Type |" in result or "| Application Name |" in result:
+                    # Extract the table portion for analysis
+                    lines = result.split('\n')
+                    table_lines = []
+                    in_table = False
+                    
+                    for line in lines:
+                        if '| Product Type |' in line or '| Application Name |' in line:
+                            in_table = True
+                            table_lines.append(line)
+                        elif in_table and '|' in line:
+                            table_lines.append(line)
+                        elif in_table and '|' not in line:
+                            break
+                    
+                    if table_lines:
+                        original_table_data = '\n'.join(table_lines)
                 
-                # Expand only for impacted products
-                result = expand_product_categories(result, product_alignment, impacted_products)
+                result = expand_product_categories(result, product_alignment, original_table_data)
             
             print(f"\nCHAIN {i+1} OUTPUT:")
             print(f"Response length: {len(result)} characters")
