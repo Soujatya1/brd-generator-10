@@ -565,8 +565,8 @@ Extract reporting requirements from ALL processed sheets and present in table fo
 - Frequency or scheduling of reports
 - User roles or audiences needing access
 - Real-time monitoring or alerting requirements
-- Plots/charts applicable to be built
-- Best tools to build these plots/charts
+- Plots/charts applicable to be built as per the metrics
+- Best tools to build these plots/charts (specifically which BI tool)
 
 **IF NO reporting requirements found in source:**
 - Create table with message: "No specific reporting requirements found in source documents"
