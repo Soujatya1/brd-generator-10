@@ -283,6 +283,8 @@ Extract the CURRENT state/process from ANY relevant sheet:
 
 Look for indicators across ALL sheets: "currently", "as-is", "existing", "present", "manual", "workaround", "problem with current", "limitations"
 
+OUTPUT FORMAT: In form of bullet pointers
+
 ### 1.3 To be process / High level solution
 
 **SEARCH STRATEGY FOR TO-BE PROCESS:**
@@ -305,6 +307,8 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 1. Content from "PART B : (Mandatory) Detailed Requirement"
 2. Content from other "Detailed Requirement" sections  
 3. Content from other relevant sections across all sheets
+
+OUTPUT FORMAT: In form of bullet pointers
 
 ## 2.0 Impact Analysis
 
