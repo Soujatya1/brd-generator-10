@@ -549,6 +549,7 @@ Extract any mentioned across ALL processed sheets:
 - What user roles or audiences need access to reports?
 - Any real-time monitoring or alerting requirements
 - Which plots/charts are applicable to be built?
+- Which tool would be the best to build these plots/charts
 
 Check all processed sheets for reporting requirements, analytics needs, or dashboard specifications.
 
@@ -607,6 +608,7 @@ IMPORTANT:
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
 - If no content found for a subsection after checking ALL sheets, leave it blank
+- Create tables for sections 5.1, 5.2 and 5.3
 
 VALIDATION CHECK:
 
