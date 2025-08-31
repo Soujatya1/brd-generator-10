@@ -106,6 +106,7 @@ def load_product_alignment():
 def expand_product_categories(impacted_products_text, product_alignment):
     """
     Enhanced version with better table parsing capabilities.
+    Only expands categories that have "Yes" impact status.
     """
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
@@ -147,12 +148,15 @@ def expand_product_categories(impacted_products_text, product_alignment):
                 if len(cells) >= 2:
                     category_cell = cells[0].lower()
                     
-                    # Check each category
+                    # Check each category with more precise matching
                     for category in category_mappings.keys():
-                        if category in category_cell:
-                            # Look for "Yes" in subsequent columns
+                        # More precise matching to avoid false positives
+                        if (category.lower() in category_cell or 
+                            any(category.lower() in word for word in category_cell.split())):
+                            # Look for "Yes" variations in subsequent columns
                             for status_cell in cells[1:]:
-                                if 'yes' in status_cell.lower():
+                                status_lower = status_cell.lower().strip()
+                                if status_lower in ['yes', 'y', 'true', '1', 'impacted']:
                                     impact_status[category] = True
                                     break
                             else:
@@ -165,10 +169,11 @@ def expand_product_categories(impacted_products_text, product_alignment):
     # Extract impact status for all categories
     impact_status = extract_impact_status_from_table(impacted_products_text)
     
-    # Expand only categories marked as impacted
+    # CHANGED: Only expand categories marked as impacted (True)
     categories_expanded = []
     
     for category, products in category_mappings.items():
+        # FIXED: Only add expansion if impact_status is True AND products exist
         if products and impact_status.get(category, False):
             product_list = '\n'.join([f"  - {product}" for product in products])
             category_section = f"\n\n**{category.upper()} Products (Impacted - Yes):**\n{product_list}"
