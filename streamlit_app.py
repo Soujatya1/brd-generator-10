@@ -103,7 +103,7 @@ def load_product_alignment():
         st.error(f"Error loading product alignment: {str(e)}")
         return {}
 
-def expand_product_categories_enhanced(impacted_products_text, product_alignment):
+def expand_product_categories(impacted_products_text, product_alignment):
     """
     Enhanced version with better table parsing capabilities.
     """
