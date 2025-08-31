@@ -270,8 +270,9 @@ Search across ALL processed sheets for key phrases: "purpose", "objective", "req
 1. Content from "PART B : (Mandatory) Detailed Requirement" 
 2. Content from other "Detailed Requirement" sections
 3. Content from other relevant sections across all sheets
-
 ### 1.2 As-is process
+
+**FORMAT: Present content as BULLET POINTS using markdown bullet format (- or *)**
 
 Extract the CURRENT state/process from ANY relevant sheet:
 - How does the current system/process work?
@@ -283,9 +284,11 @@ Extract the CURRENT state/process from ANY relevant sheet:
 
 Look for indicators across ALL sheets: "currently", "as-is", "existing", "present", "manual", "workaround", "problem with current", "limitations"
 
-OUTPUT FORMAT: In form of bullet pointers
+**CRITICAL: Format ALL extracted content as bullet points (- or *) - DO NOT use paragraphs or numbered lists**
 
 ### 1.3 To be process / High level solution
+
+**FORMAT: Present content as BULLET POINTS using markdown bullet format (- or *)**
 
 **SEARCH STRATEGY FOR TO-BE PROCESS:**
 1. **FIRST PRIORITY**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section
@@ -303,12 +306,12 @@ Extract the PROPOSED solution, prioritizing "PART B : (Mandatory) Detailed Requi
 
 Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
 
+**CRITICAL: Format ALL extracted content as bullet points (- or *) - DO NOT use paragraphs or numbered lists**
+
 **EXTRACTION PRIORITY ORDER:**
 1. Content from "PART B : (Mandatory) Detailed Requirement"
 2. Content from other "Detailed Requirement" sections  
 3. Content from other relevant sections across all sheets
-
-OUTPUT FORMAT: In form of bullet pointers
 
 ## 2.0 Impact Analysis
 
