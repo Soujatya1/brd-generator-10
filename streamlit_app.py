@@ -554,7 +554,7 @@ Extract SPECIFIC data requirements from ALL processed sheets and present in tabl
 
 Extract reporting requirements from ALL processed sheets and present in table format:
 
-| **Report/Dashboard Name** | **Metrics/KPIs** | **Data Source** | **Frequency** | **Audience** | **Tool/Platform** |
+| **Report/Dashboard Name** | **Metrics/KPIs** | **Data Source** | **Frequency** | **Chart/Plot** | **Tool/Platform** |
 |---------------------------|------------------|------------------|-------------|------------|-------------------|
 | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
 
