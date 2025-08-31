@@ -103,7 +103,7 @@ def load_product_alignment():
         st.error(f"Error loading product alignment: {str(e)}")
         return {}
 
-def expand_product_categories(impacted_products_text, product_alignment):
+def expand_product_categories(impacted_products_text, product_alignment, impacted_items_list=None):
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
     
@@ -122,10 +122,23 @@ def expand_product_categories(impacted_products_text, product_alignment):
         'ulip_pension': product_alignment.get('ulip_pension', [])
     }
     
-    for category, products in category_mappings.items():
-        if products and category.lower() in impacted_products_text.lower():
-            product_list = '\n'.join([f"  - {product}" for product in products])
-            expanded_text += f"\n\n**{category.upper()} Products:**\n{product_list}"
+    if impacted_items_list:
+        expanded_text += "\n\n**Detailed Product Breakdown (Impacted Only):**"
+        
+        for category, products in category_mappings.items():
+            category_impacted = any(
+                category.lower() in item.lower() or item.lower() in category.lower() 
+                for item in impacted_items_list
+            )
+            
+            if category_impacted and products:
+                product_list = '\n'.join([f"  - {product}" for product in products])
+                expanded_text += f"\n\n**{category.upper()} Products:**\n{product_list}"
+    else:
+        for category, products in category_mappings.items():
+            if products and category.lower() in impacted_products_text.lower():
+                product_list = '\n'.join([f"  - {product}" for product in products])
+                expanded_text += f"\n\n**{category.upper()} Products:**\n{product_list}"
     
     return expanded_text
 
@@ -219,9 +232,6 @@ Search across ALL processed sheets for key phrases: "purpose", "objective", "req
 1. Content from "PART B : (Mandatory) Detailed Requirement" 
 2. Content from other "Detailed Requirement" sections
 3. Content from other relevant sections across all sheets
-
-OUTPUT FORMAT:
-1. In form of bullet pointers
 
 ### 1.2 As-is process
 
@@ -934,7 +944,19 @@ def generate_brd_sequentially(chains, requirements):
                 print(combined_requirements[:500] + "..." if len(combined_requirements) > 500 else combined_requirements)
 
             if i == 0 and product_alignment:
-                result = expand_product_categories(result, product_alignment)
+                impacted_products = []
+                impacted_applications = []
+    
+                # Try to find impacted items from the processing results
+                if hasattr(chains[0], '_last_table_data'):  # You might need to store this during processing
+                    for table_info in chains[0]._last_table_data:
+                        if table_info.get("table_type") == "Products Impacted":
+                            impacted_products = table_info.get("impacted_items", [])
+                        elif table_info.get("table_type") == "Applications Impacted":
+                            impacted_applications = table_info.get("impacted_items", [])
+                
+                # Expand only for impacted products
+                result = expand_product_categories(result, product_alignment, impacted_products)
             
             print(f"\nCHAIN {i+1} OUTPUT:")
             print(f"Response length: {len(result)} characters")
@@ -1300,13 +1322,14 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         return str_val
     
-    def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
+        def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
         """Extract horizontal table structure starting from a given position"""
         table_data = {
             "table_type": table_identifier,
             "headers": [],
             "data_rows": [],
-            "raw_structure": []
+            "raw_structure": [],
+            "impacted_items": []  # NEW: Store only items with "Yes" impact
         }
         
         try:
@@ -1375,11 +1398,20 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                             "values": dict(zip(headers, row_values))
                         }
                         table_data["data_rows"].append(row_data)
+                        
+                        # NEW: Check if any value is "Yes" and extract the impacted item
+                        for header, value in row_data["values"].items():
+                            if str(value).strip().lower() == "yes":
+                                # The first column typically contains the product/application name
+                                item_name = clean_cell_value(row_description)
+                                if item_name not in table_data["impacted_items"]:
+                                    table_data["impacted_items"].append(item_name)
                 
                 if headers and table_data["data_rows"]:
                     table_data["raw_structure"] = {
                         "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
-                        "structured_data": table_data["data_rows"]
+                        "structured_data": table_data["data_rows"],
+                        "impacted_only": table_data["impacted_items"]  # NEW: Only impacted items
                     }
             
         except Exception as e:
