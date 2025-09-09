@@ -111,7 +111,7 @@ def load_product_alignment():
 def expand_product_categories(impacted_products_text, product_alignment):
     """
     Enhanced function to expand product categories based on product alignment
-    Only expands categories that are explicitly marked as "Yes" or equivalent in the source table
+    Only expands categories that are explicitly present in the source table and marked as "Yes"
     """
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
@@ -132,12 +132,12 @@ def expand_product_categories(impacted_products_text, product_alignment):
         'ulip_pension': product_alignment.get('ulip_pension', [])
     }
     
-    def extract_impact_status_from_table(text):
+    def extract_categories_from_table(text):
         """
-        Enhanced function to extract impact status from table text
-        Looks for various positive indicators beyond just "yes"
+        First identify which categories are actually present in the table,
+        then check their impact status
         """
-        impact_status = {}
+        found_categories = {}
         lines = text.split('\n')
         
         # Positive impact indicators
@@ -149,7 +149,7 @@ def expand_product_categories(impacted_products_text, product_alignment):
         
         # Negative impact indicators
         negative_indicators = [
-            'no', 'n', 'false', '0', 'not impacted', 'All'
+            'no', 'n', 'false', '0', 'not impacted',
             'not affected', 'excluded', 'not applicable',
             'na', 'n/a', 'nil', 'none'
         ]
@@ -168,7 +168,10 @@ def expand_product_categories(impacted_products_text, product_alignment):
                 if len(cells) >= 2:
                     category_cell = cells[0].lower().strip()
                     
-                    # Check each category mapping
+                    # Only check categories that exist in our mappings AND are present in the table
+                    matched_category = None
+                    
+                    # Check each category mapping to see if it's mentioned in this row
                     for category in category_mappings.keys():
                         category_matched = False
                         
@@ -189,39 +192,66 @@ def expand_product_categories(impacted_products_text, product_alignment):
                             category_matched = True
                         
                         if category_matched:
-                            # Check status in remaining cells
-                            category_status = False
+                            matched_category = category
+                            break
+                    
+                    # If we found a matching category, check its status
+                    if matched_category:
+                        category_status = False
+                        
+                        for status_cell in cells[1:]:
+                            status_lower = status_cell.lower().strip()
                             
-                            for status_cell in cells[1:]:
-                                status_lower = status_cell.lower().strip()
-                                
-                                # Check for positive indicators
-                                if any(indicator in status_lower for indicator in positive_indicators):
-                                    category_status = True
-                                    break
-                                # Check for explicit negative indicators
-                                elif any(indicator in status_lower for indicator in negative_indicators):
-                                    category_status = False
-                                    break
-                            
-                            # Only update if we found a match for this category
-                            if category not in impact_status:
-                                impact_status[category] = category_status
-                            # If already exists, prioritize positive status
-                            elif category_status:
-                                impact_status[category] = True
+                            # Check for positive indicators
+                            if any(indicator in status_lower for indicator in positive_indicators):
+                                category_status = True
+                                break
+                            # Check for explicit negative indicators
+                            elif any(indicator in status_lower for indicator in negative_indicators):
+                                category_status = False
+                                break
+                        
+                        # Only add if this category was actually found in the table
+                        found_categories[matched_category] = category_status
+        
+        return found_categories
     
-        return impact_status
+    def get_categories_present_in_table(text):
+        """
+        Alternative approach: First scan the table to identify which categories are mentioned,
+        then return only those categories for processing
+        """
+        present_categories = set()
+        lines = text.split('\n')
+        
+        for line in lines:
+            if '|' in line and not ('---' in line or '===' in line):
+                cells = [cell.strip() for cell in line.split('|')]
+                cells = [cell for cell in cells if cell]
+                
+                if len(cells) >= 1:
+                    category_cell = cells[0].lower().strip()
+                    
+                    # Check which of our predefined categories are mentioned
+                    for category in category_mappings.keys():
+                        if (category.lower() in category_cell or
+                            any(category.lower() in word.lower() for word in category_cell.split()) or
+                            (category == 'endowment' and ('endowment' in category_cell or 'traditional' in category_cell)) or
+                            (category == 'non_par' and ('non-par' in category_cell or 'non par' in category_cell)) or
+                            (category == 'ulip_pension' and ('pension' in category_cell and 'ulip' in category_cell))):
+                            present_categories.add(category)
+        
+        return present_categories
     
-    # Extract impact status from the input text
-    impact_status = extract_impact_status_from_table(impacted_products_text)
-    
-    # Build expanded content
+    # Method 1: Extract impact status only for categories present in table
+    impact_status = extract_categories_from_table(impacted_products_text)
+
     categories_expanded = []
     
-    for category, products in category_mappings.items():
+    for category, is_impacted in impact_status.items():
         # Only expand if category has products and is marked as impacted (True)
-        if products and impact_status.get(category, False):
+        products = category_mappings.get(category, [])
+        if products and is_impacted:
             # Create formatted product list
             product_list = '\n'.join([f"  - {product}" for product in products])
             
@@ -235,9 +265,9 @@ def expand_product_categories(impacted_products_text, product_alignment):
     if categories_expanded:
         expanded_text += ''.join(categories_expanded)
         
-        # Add summary section
-        impacted_categories = [cat.upper().replace('_', ' ') for cat in category_mappings.keys() 
-                             if impact_status.get(cat, False)]
+        # Add summary section only for categories that were actually found and impacted
+        impacted_categories = [cat.upper().replace('_', ' ') for cat in impact_status.keys() 
+                             if impact_status[cat]]
         
         if impacted_categories:
             expanded_text += f"\n\n**Summary of Impacted Product Categories:**\n"
