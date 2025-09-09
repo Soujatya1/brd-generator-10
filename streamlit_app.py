@@ -607,7 +607,7 @@ Create ONLY the following section with detailed content in markdown:
 
 Extract SPECIFIC data requirements from ALL processed sheets and present in table format:
 
-| **Data Element** | **Data Source** | **Format/Type** | **Validation Rules** | **Purpose** |
+| **Data Category** | **Data Source** | **Format/Type** | **Validation Rules** | **Purpose** |
 |------------------|-----------------|-----------------|---------------------|-------------|
 | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
 
