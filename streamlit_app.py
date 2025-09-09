@@ -111,12 +111,10 @@ def load_product_alignment():
 def expand_product_categories(impacted_products_text, product_alignment):
     """
     Enhanced function to expand product categories based on product alignment
-    Only expands categories that are explicitly marked as "Yes" or equivalent in the source table
+    Only shows expanded categories - does NOT include the original table
     """
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
-    
-    expanded_text = impacted_products_text
     
     # Define category mappings from product_alignment
     category_mappings = {
@@ -216,7 +214,7 @@ def expand_product_categories(impacted_products_text, product_alignment):
     # Extract impact status from the input text
     impact_status = extract_impact_status_from_table(impacted_products_text)
     
-    # Build expanded content
+    # Build ONLY the expanded content - no original table
     categories_expanded = []
     
     for category, products in category_mappings.items():
@@ -228,22 +226,25 @@ def expand_product_categories(impacted_products_text, product_alignment):
             # Format category name for display
             category_display = category.upper().replace('_', ' ')
             
-            category_section = f"\n\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
+            category_section = f"\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
             categories_expanded.append(category_section)
     
-    # Append expanded categories to original text
+    # Return ONLY expanded categories if any were found, otherwise return empty
     if categories_expanded:
-        expanded_text += ''.join(categories_expanded)
+        expanded_content = ''.join(categories_expanded)
         
         # Add summary section
         impacted_categories = [cat.upper().replace('_', ' ') for cat in category_mappings.keys() 
                              if impact_status.get(cat, False)]
         
         if impacted_categories:
-            expanded_text += f"\n\n**Summary of Impacted Product Categories:**\n"
-            expanded_text += '\n'.join([f"- {cat}" for cat in impacted_categories])
-    
-    return expanded_text
+            expanded_content += f"\n\n**Summary of Impacted Product Categories:**\n"
+            expanded_content += '\n'.join([f"- {cat}" for cat in impacted_categories])
+        
+        return expanded_content
+    else:
+        # Return empty string or a message if no impacted products found
+        return "No impacted products found in the source document."
 
 BRD_FORMAT = """
 ## 1.0 Introduction
@@ -389,31 +390,40 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 3. **THIRD PRIORITY**: Search for any mention of products across all sheets
 
 **EXTRACTION INSTRUCTIONS:**
-- If a structured table is found (like the example with ULIP, Term, Endowment, etc.), extract it in the following format:
-  - Create a markdown table preserving the original structure
-  - Show product types and their impact status (Yes/No/etc.)
-  - Include any additional columns or classifications found
-  - **EXPAND PRODUCT CATEGORIES**: When product categories like ULIP, Term, Endowment, etc. are mentioned, also list the specific product names under each category
-  
-**TABLE FORMAT EXAMPLE (if structured table found):**
-| Product Type | Impact Status |
-|--------------|---------------|
-| [Extract from source] | [Extract Yes/No/etc.] |
+- **CRITICAL**: DO NOT reproduce or display the original source table
+- **ONLY SHOW EXPANDED CATEGORIES**: Extract impact status from source table and expand ONLY the impacted categories to show specific product names
+- If structured table is found with product categories (ULIP, Term, Endowment, etc.), identify which categories are marked as "Yes" or equivalent
+- For each impacted category, list the specific product names under that category
 
-**PRODUCT CATEGORY EXPANSION:**
-- If ULIP is impacted, list specific ULIP products
-- If Term is impacted, list specific Term products  
-- If Endowment is impacted, list specific Endowment products
-- If Group is impacted, list specific Group products
-- And so on for other categories
+**OUTPUT FORMAT:**
+- **DO NOT include any markdown table from the source**
+- **ONLY show expanded product listings in this format:**
+
+**[CATEGORY NAME] Products (Impacted - Yes):**
+  - [Specific Product Name 1]
+  - [Specific Product Name 2]
+  - [Continue with all products in this category]
+
+**[NEXT IMPACTED CATEGORY] Products (Impacted - Yes):**
+  - [Specific Product Name 1]
+  - [Specific Product Name 2]
+  - [Continue with all products in this category]
+
+**Summary of Impacted Product Categories:**
+- [List only the impacted category names]
+
+**PRODUCT CATEGORY EXPANSION MAPPING:**
+- If ULIP is impacted, list specific ULIP products from the product alignment
+- If Term is impacted, list specific Term products from the product alignment
+- If Endowment is impacted, list specific Endowment products from the product alignment
+- If Group is impacted, list specific Group products from the product alignment
+- And so on for other categories (Annuity, Rider, Non-Par, Par, Combi, ULIP Pension)
 
 **IF NO STRUCTURED TABLE FOUND:**
 - List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
-- Extract from any column/row mentioning affected products/platforms
-- Check all sheets for product names, service names, or system names, platform names
-- **EXPAND any product categories found to include specific product names**
+- Expand any product categories found to include specific product names
 
-**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table AND expand any product categories mentioned to show specific product names.
+**CRITICAL RULE**: Never display the original source table structure. Only show the expanded product listings for impacted categories.
 
 ### 2.2 Applications Impacted
 
