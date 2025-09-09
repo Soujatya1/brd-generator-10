@@ -233,7 +233,7 @@ def expand_product_categories(impacted_products_text, product_alignment):
     
     # Append expanded categories to original text
     if categories_expanded:
-        expanded_text = ''.join(categories_expanded)
+        expanded_text += ''.join(categories_expanded)
         
         # Add summary section
         impacted_categories = [cat.upper().replace('_', ' ') for cat in category_mappings.keys() 
@@ -242,10 +242,6 @@ def expand_product_categories(impacted_products_text, product_alignment):
         if impacted_categories:
             expanded_text += f"\n\n**Summary of Impacted Product Categories:**\n"
             expanded_text += '\n'.join([f"- {cat}" for cat in impacted_categories])
-    
-    # If no categories were expanded, return a message indicating no impacted products found
-    if not expanded_text.strip():
-        expanded_text = "No specific product categories were identified as impacted in the source documents."
     
     return expanded_text
 
