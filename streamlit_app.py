@@ -336,6 +336,9 @@ Search across ALL processed sheets for key phrases: "purpose", "objective", "req
 2. Content from other "Detailed Requirement" sections
 3. Content from other relevant sections across all sheets
 
+**OUTPUT FORMAT**
+In form of pagagraph, not bullet pointers
+
 ### 1.2 As-is process
 
 **FORMAT: Present content as BULLET POINTS using markdown bullet format (- or *)**
