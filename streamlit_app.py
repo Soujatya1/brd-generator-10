@@ -245,7 +245,15 @@ def expand_product_categories(impacted_products_text, product_alignment):
     
     # Method 1: Extract impact status only for categories present in table
     impact_status = extract_categories_from_table(impacted_products_text)
-
+    
+    # Method 2 (Alternative): First get present categories, then check status
+    # present_categories = get_categories_present_in_table(impacted_products_text)
+    # impact_status = {}
+    # for category in present_categories:
+    #     # Then check status for only these categories using the original logic
+    #     pass
+    
+    # Build expanded content only for categories found in the table
     categories_expanded = []
     
     for category, is_impacted in impact_status.items():
