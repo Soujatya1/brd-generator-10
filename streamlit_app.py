@@ -111,10 +111,12 @@ def load_product_alignment():
 def expand_product_categories(impacted_products_text, product_alignment):
     """
     Enhanced function to expand product categories based on product alignment
-    Only shows expanded categories - does NOT include the original table
+    Only expands categories that are explicitly marked as "Yes" or equivalent in the source table
     """
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
+    
+    expanded_text = impacted_products_text
     
     # Define category mappings from product_alignment
     category_mappings = {
@@ -214,7 +216,7 @@ def expand_product_categories(impacted_products_text, product_alignment):
     # Extract impact status from the input text
     impact_status = extract_impact_status_from_table(impacted_products_text)
     
-    # Build ONLY the expanded content - no original table
+    # Build expanded content
     categories_expanded = []
     
     for category, products in category_mappings.items():
@@ -226,25 +228,22 @@ def expand_product_categories(impacted_products_text, product_alignment):
             # Format category name for display
             category_display = category.upper().replace('_', ' ')
             
-            category_section = f"\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
+            category_section = f"\n\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
             categories_expanded.append(category_section)
     
-    # Return ONLY expanded categories if any were found, otherwise return empty
+    # Append expanded categories to original text
     if categories_expanded:
-        expanded_content = ''.join(categories_expanded)
+        expanded_text += ''.join(categories_expanded)
         
         # Add summary section
         impacted_categories = [cat.upper().replace('_', ' ') for cat in category_mappings.keys() 
                              if impact_status.get(cat, False)]
         
         if impacted_categories:
-            expanded_content += f"\n\n**Summary of Impacted Product Categories:**\n"
-            expanded_content += '\n'.join([f"- {cat}" for cat in impacted_categories])
-        
-        return expanded_content
-    else:
-        # Return empty string or a message if no impacted products found
-        return "No impacted products found in the source document."
+            expanded_text += f"\n\n**Summary of Impacted Product Categories:**\n"
+            expanded_text += '\n'.join([f"- {cat}" for cat in impacted_categories])
+    
+    return expanded_text
 
 BRD_FORMAT = """
 ## 1.0 Introduction
