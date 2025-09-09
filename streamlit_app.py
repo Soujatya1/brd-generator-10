@@ -111,7 +111,7 @@ def load_product_alignment():
 def expand_product_categories(impacted_products_text, product_alignment):
     """
     Enhanced function to expand product categories based on product alignment
-    Only processes categories that are present in the source table AND marked as "Yes"
+    Only expands categories that are explicitly marked as "Yes" or equivalent in the source table
     """
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
@@ -132,42 +132,31 @@ def expand_product_categories(impacted_products_text, product_alignment):
         'ulip_pension': product_alignment.get('ulip_pension', [])
     }
     
-    def is_category_match(category_cell, category_key):
+    def extract_impact_status_from_table(text):
         """
-        Helper function to check if a table cell matches a category key
+        Enhanced function to extract impact status from table text
+        Looks for various positive indicators beyond just "yes"
         """
-        # Direct category match
-        if category_key.lower() in category_cell:
-            return True
-        
-        # Partial word match for category
-        if any(category_key.lower() in word.lower() for word in category_cell.split()):
-            return True
-        
-        # Special handling for specific terms
-        if category_key == 'endowment' and ('endowment' in category_cell or 'traditional' in category_cell):
-            return True
-        elif category_key == 'non_par' and ('non-par' in category_cell or 'non par' in category_cell):
-            return True
-        elif category_key == 'ulip_pension' and ('pension' in category_cell and 'ulip' in category_cell):
-            return True
-        
-        return False
-    
-    def get_categories_marked_as_yes_fixed(text):
-        """
-        Check which categories from category_mappings are present in the table AND marked as "Yes"
-        Ignores summary rows like "All", "Total", etc.
-        """
-        categories_marked_yes = {}
+        impact_status = {}
         lines = text.split('\n')
         
-        # Positive impact indicators (focusing on "Yes" as primary)
-        positive_indicators = ['yes', 'y', 'true', '1', 'impacted', 'affected', 'applicable']
+        # Positive impact indicators
+        positive_indicators = [
+            'yes', 'y', 'true', '1', 'impacted', 
+            'affected', 'included', 'applicable', 
+            'impact', 'required', 'needed'
+        ]
+        
+        # Negative impact indicators
+        negative_indicators = [
+            'no', 'n', 'false', '0', 'not impacted', 
+            'not affected', 'excluded', 'not applicable',
+            'na', 'n/a', 'nil', 'none'
+        ]
         
         for line in lines:
-            # Skip separator lines and empty lines
-            if '---' in line or '===' in line or line.strip() == '':
+            # Skip separator lines
+            if '---' in line or '===' in line:
                 continue
                 
             # Process table rows with pipe separators
@@ -179,58 +168,76 @@ def expand_product_categories(impacted_products_text, product_alignment):
                 if len(cells) >= 2:
                     category_cell = cells[0].lower().strip()
                     
-                    # Skip categories that are not in our predefined mappings (like "All", "Total", etc.)
-                    if category_cell in ['all', 'total', 'summary', 'overall']:
-                        continue
-                    
-                    # Check each category from our mappings
-                    for category_key in category_mappings.keys():
-                        if is_category_match(category_cell, category_key):
-                            # Check if status is marked as "Yes" in any of the status columns
-                            is_marked_yes = False
+                    # Check each category mapping
+                    for category in category_mappings.keys():
+                        category_matched = False
+                        
+                        # Direct category match
+                        if category.lower() in category_cell:
+                            category_matched = True
+                        
+                        # Partial word match for category
+                        elif any(category.lower() in word.lower() for word in category_cell.split()):
+                            category_matched = True
+                        
+                        # Special handling for specific terms
+                        elif category == 'endowment' and ('endowment' in category_cell or 'traditional' in category_cell):
+                            category_matched = True
+                        elif category == 'non_par' and ('non-par' in category_cell or 'non par' in category_cell):
+                            category_matched = True
+                        elif category == 'ulip_pension' and ('pension' in category_cell and 'ulip' in category_cell):
+                            category_matched = True
+                        
+                        if category_matched:
+                            # Check status in remaining cells
+                            category_status = False
                             
                             for status_cell in cells[1:]:
                                 status_lower = status_cell.lower().strip()
+                                
+                                # Check for positive indicators
                                 if any(indicator in status_lower for indicator in positive_indicators):
-                                    is_marked_yes = True
+                                    category_status = True
+                                    break
+                                # Check for explicit negative indicators
+                                elif any(indicator in status_lower for indicator in negative_indicators):
+                                    category_status = False
                                     break
                             
-                            # Only add to results if this category is found
-                            categories_marked_yes[category_key] = is_marked_yes
-                            break  # Found the category, no need to check other keys for this row
-        
-        return categories_marked_yes
+                            # Only update if we found a match for this category
+                            if category not in impact_status:
+                                impact_status[category] = category_status
+                            # If already exists, prioritize positive status
+                            elif category_status:
+                                impact_status[category] = True
     
-    # Get categories that are present in table AND marked as Yes
-    category_status = get_categories_marked_as_yes_fixed(impacted_products_text)
+        return impact_status
     
-    # Filter to only categories that are marked as Yes AND have products
-    valid_categories_with_yes = {
-        category: status for category, status in category_status.items() 
-        if status and category_mappings.get(category)
-    }
+    # Extract impact status from the input text
+    impact_status = extract_impact_status_from_table(impacted_products_text)
     
-    # Build expanded content only for valid categories marked as Yes
+    # Build expanded content
     categories_expanded = []
     
-    for category in valid_categories_with_yes.keys():
-        products = category_mappings[category]
-        
-        # Create formatted product list
-        product_list = '\n'.join([f"  - {product}" for product in products])
-        
-        # Format category name for display
-        category_display = category.upper().replace('_', ' ')
-        
-        category_section = f"\n\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
-        categories_expanded.append(category_section)
+    for category, products in category_mappings.items():
+        # Only expand if category has products and is marked as impacted (True)
+        if products and impact_status.get(category, False):
+            # Create formatted product list
+            product_list = '\n'.join([f"  - {product}" for product in products])
+            
+            # Format category name for display
+            category_display = category.upper().replace('_', ' ')
+            
+            category_section = f"\n\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
+            categories_expanded.append(category_section)
     
     # Append expanded categories to original text
     if categories_expanded:
         expanded_text += ''.join(categories_expanded)
         
         # Add summary section
-        impacted_categories = [cat.upper().replace('_', ' ') for cat in valid_categories_with_yes.keys()]
+        impacted_categories = [cat.upper().replace('_', ' ') for cat in category_mappings.keys() 
+                             if impact_status.get(cat, False)]
         
         if impacted_categories:
             expanded_text += f"\n\n**Summary of Impacted Product Categories:**\n"
