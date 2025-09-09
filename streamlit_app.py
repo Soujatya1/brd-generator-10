@@ -149,7 +149,7 @@ def expand_product_categories(impacted_products_text, product_alignment):
         
         # Negative impact indicators
         negative_indicators = [
-            'no', 'n', 'false', '0', 'not impacted', 
+            'no', 'n', 'false', '0', 'not impacted', 'All'
             'not affected', 'excluded', 'not applicable',
             'na', 'n/a', 'nil', 'none'
         ]
