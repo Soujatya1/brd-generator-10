@@ -22,93 +22,18 @@ from langchain_openai import AzureChatOpenAI
 from openpyxl import load_workbook
 import json
 
-def load_product_alignment():
-    try:
-        product_alignment = {
-            "annuity": [
-                "Bajaj Allianz Life Guaranteed Pension Goal II",
-                "Bajaj Allianz Life Saral Pension"
-            ],
-            "combi": [
-                "Bajaj Allianz Life Capital Goal Suraksha"
-            ],
-            "group": [
-                "Bajaj Allianz Life Group Term Life",
-                "Bajaj Allianz Life Group Credit Protection Plus",
-                "Bajaj Allianz Life Group Sampoorna Jeevan Suraksha",
-                "Bajaj Allianz Life Group Employee Benefit",
-                "Bajaj Allianz Life Group Superannuation Secure Plus",
-                "Bajaj Allianz Life Group Superannuation Secure",
-                "Bajaj Allianz Life Group Employee Care",
-                "Bajaj Allianz Life Group Secure Return",
-                "Bajaj Allianz Life Group Sampoorna Suraksha Kavach",
-                "Bajaj Allianz Life Pradhan Mantri Jeevan Jyoti Bima Yojana",
-                "Bajaj Allianz Life Group Secure Shield",
-                "Bajaj Allianz Life Group Investment Plan"
-            ],
-            "non_par": [
-                "Bajaj Allianz Life Goal Suraksha",
-                "Bajaj Allianz Life Assured Wealth Goal Platinum",
-                "Bajaj Allianz Life Guaranteed Wealth Goal",
-                "Bajaj Allianz Life Guaranteed Saving Goal",
-                "Bajaj Allianz Life Assured Wealth Goal"
-            ],
-            "par": [
-                "Bajaj Allianz Life ACE",
-                "Bajaj Allianz Life ACE Advantage"
-            ],
-            "rider": [
-                "Bajaj Allianz Accidental Death Benefit Rider",
-                "Bajaj Allianz Accidental Permanent Total/Partial Disability Benefit Rider",
-                "Bajaj Allianz Life Linked Accident Protection Rider II",
-                "Bajaj Allianz Life Family Protect Rider",
-                "Bajaj Allianz Life Group New Terminal Illness Rider",
-                "Bajaj Allianz Life Group Accelerated Critical Illness Rider",
-                "Bajaj Allianz Life Group Accidental Permanent Total/Partial Disability Benefit Rider",
-                "Bajaj Allianz Life Group Critical Illness Rider",
-                "Bajaj Allianz Life Group Accidental Death Benefit",
-                "Bajaj Allianz Life New Critical Illness Benefit Rider",
-                "Bajaj Allianz Life Care Plus Rider",
-                "Bajaj Allianz Life Linked Critical Illness Benefit Rider"
-            ],
-            "term": [
-                "Bajaj Allianz Life iSecure II",
-                "Bajaj Allianz Life eTouch II",
-                "Bajaj Allianz Life Saral Jeevan Bima",
-                "Bajaj Allianz Life Diabetic Term Plan II Sub 8 HbA1c",
-                "Bajaj Allianz Life Smart Protection Goal"
-            ],
-            "ulip": [
-                "Bajaj Allianz Life Goal Assure IV",
-                "Bajaj Allianz Life Magnum Fortune Plus III",
-                "Bajaj Allianz Life Invest Protect Goal III",
-                "Bajaj Allianz Life Fortune Gain II",
-                "Bajaj Allianz Life Future Wealth Gain IV",
-                "Bajaj Allianz Life LongLife Goal III",
-                "Bajaj Allianz Life Smart Wealth Goal V",
-                "Bajaj Allianz Life Goal Based Saving III",
-                "Bajaj Allianz Life Elite Assure"
-            ],
-            "ulip_pension": [
-                "Bajaj Allianz Life Smart Pension"
-            ],
-            "endowment_plans": [
-                "Bajaj Allianz Life Assured Wealth Goal Platinum",
-                "Bajaj Allianz Life ACE",
-                "Bajaj Allianz Life Goal Suraksha"
-            ]
-        }
-        return product_alignment
-    except Exception as e:
-        st.error(f"Error loading product alignment: {str(e)}")
-        return {}
 
 def expand_product_categories(impacted_products_text, product_alignment):
+    """
+    Enhanced function to expand product categories based on product alignment
+    Only expands categories that are explicitly marked as "Yes" or equivalent in the source table
+    """
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
     
     expanded_text = impacted_products_text
     
+    # Define category mappings from product_alignment
     category_mappings = {
         'ulip': product_alignment.get('ulip', []),
         'term': product_alignment.get('term', []),
@@ -123,47 +48,253 @@ def expand_product_categories(impacted_products_text, product_alignment):
     }
     
     def extract_impact_status_from_table(text):
-
+        """
+        Enhanced function to extract impact status from table text
+        Looks for various positive indicators beyond just "yes"
+        """
         impact_status = {}
         lines = text.split('\n')
         
+        # Positive impact indicators
+        positive_indicators = [
+            'yes', 'y', 'true', '1', 'impacted', 
+            'affected', 'included', 'applicable', 
+            'impact', 'required', 'needed'
+        ]
+        
+        # Negative impact indicators
+        negative_indicators = [
+            'no', 'n', 'false', '0', 'not impacted', 
+            'not affected', 'excluded', 'not applicable',
+            'na', 'n/a', 'nil', 'none'
+        ]
+        
         for line in lines:
-            if '---' in line:
+            # Skip separator lines
+            if '---' in line or '===' in line:
                 continue
                 
+            # Process table rows with pipe separators
             if '|' in line:
                 cells = [cell.strip() for cell in line.split('|')]
+                # Remove empty cells from start and end
                 cells = [cell for cell in cells if cell]
                 
                 if len(cells) >= 2:
-                    category_cell = cells[0].lower()
+                    category_cell = cells[0].lower().strip()
                     
+                    # Check each category mapping
                     for category in category_mappings.keys():
-                        if (category.lower() in category_cell or 
-                            any(category.lower() in word for word in category_cell.split())):
+                        category_matched = False
+                        
+                        # Direct category match
+                        if category.lower() in category_cell:
+                            category_matched = True
+                        
+                        # Partial word match for category
+                        elif any(category.lower() in word.lower() for word in category_cell.split()):
+                            category_matched = True
+                        
+                        # Special handling for specific terms
+                        elif category == 'endowment' and ('endowment' in category_cell or 'traditional' in category_cell):
+                            category_matched = True
+                        elif category == 'non_par' and ('non-par' in category_cell or 'non par' in category_cell):
+                            category_matched = True
+                        elif category == 'ulip_pension' and ('pension' in category_cell and 'ulip' in category_cell):
+                            category_matched = True
+                        
+                        if category_matched:
+                            # Check status in remaining cells
+                            category_status = False
+                            
                             for status_cell in cells[1:]:
                                 status_lower = status_cell.lower().strip()
-                                if status_lower in ['yes', 'y', 'true', '1', 'impacted']:
-                                    impact_status[category] = True
+                                
+                                # Check for positive indicators
+                                if any(indicator in status_lower for indicator in positive_indicators):
+                                    category_status = True
                                     break
-                            else:
-                                if category not in impact_status:
-                                    impact_status[category] = False
-        
+                                # Check for explicit negative indicators
+                                elif any(indicator in status_lower for indicator in negative_indicators):
+                                    category_status = False
+                                    break
+                            
+                            # Only update if we found a match for this category
+                            if category not in impact_status:
+                                impact_status[category] = category_status
+                            # If already exists, prioritize positive status
+                            elif category_status:
+                                impact_status[category] = True
+    
         return impact_status
     
+    # Extract impact status from the input text
     impact_status = extract_impact_status_from_table(impacted_products_text)
     
+    # Build expanded content
     categories_expanded = []
     
     for category, products in category_mappings.items():
+        # Only expand if category has products and is marked as impacted (True)
         if products and impact_status.get(category, False):
+            # Create formatted product list
             product_list = '\n'.join([f"  - {product}" for product in products])
-            category_section = f"\n\n**{category.upper()} Products (Impacted - Yes):**\n{product_list}"
+            
+            # Format category name for display
+            category_display = category.upper().replace('_', ' ')
+            
+            category_section = f"\n\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
             categories_expanded.append(category_section)
     
+    # Append expanded categories to original text
     if categories_expanded:
         expanded_text += ''.join(categories_expanded)
+        
+        # Add summary section
+        impacted_categories = [cat.upper().replace('_', ' ') for cat in category_mappings.keys() 
+                             if impact_status.get(cat, False)]
+        
+        if impacted_categories:
+            expanded_text += f"\n\n**Summary of Impacted Product Categories:**\n"
+            expanded_text += '\n'.join([f"- {cat}" for cat in impacted_categories])
+    
+    return expanded_text
+
+
+def expand_product_categories(impacted_products_text, product_alignment):
+    """
+    Enhanced function to expand product categories based on product alignment
+    Only expands categories that are explicitly marked as "Yes" or equivalent in the source table
+    """
+    if not product_alignment or not impacted_products_text:
+        return impacted_products_text
+    
+    expanded_text = impacted_products_text
+    
+    # Define category mappings from product_alignment
+    category_mappings = {
+        'ulip': product_alignment.get('ulip', []),
+        'term': product_alignment.get('term', []),
+        'endowment': product_alignment.get('endowment_plans', []),
+        'annuity': product_alignment.get('annuity', []),
+        'group': product_alignment.get('group', []),
+        'rider': product_alignment.get('rider', []),
+        'non_par': product_alignment.get('non_par', []),
+        'par': product_alignment.get('par', []),
+        'combi': product_alignment.get('combi', []),
+        'ulip_pension': product_alignment.get('ulip_pension', [])
+    }
+    
+    def extract_impact_status_from_table(text):
+        """
+        Enhanced function to extract impact status from table text
+        Looks for various positive indicators beyond just "yes"
+        """
+        impact_status = {}
+        lines = text.split('\n')
+        
+        # Positive impact indicators
+        positive_indicators = [
+            'yes', 'y', 'true', '1', 'impacted', 
+            'affected', 'included', 'applicable', 
+            'impact', 'required', 'needed'
+        ]
+        
+        # Negative impact indicators
+        negative_indicators = [
+            'no', 'n', 'false', '0', 'not impacted', 
+            'not affected', 'excluded', 'not applicable',
+            'na', 'n/a', 'nil', 'none'
+        ]
+        
+        for line in lines:
+            # Skip separator lines
+            if '---' in line or '===' in line:
+                continue
+                
+            # Process table rows with pipe separators
+            if '|' in line:
+                cells = [cell.strip() for cell in line.split('|')]
+                # Remove empty cells from start and end
+                cells = [cell for cell in cells if cell]
+                
+                if len(cells) >= 2:
+                    category_cell = cells[0].lower().strip()
+                    
+                    # Check each category mapping
+                    for category in category_mappings.keys():
+                        category_matched = False
+                        
+                        # Direct category match
+                        if category.lower() in category_cell:
+                            category_matched = True
+                        
+                        # Partial word match for category
+                        elif any(category.lower() in word.lower() for word in category_cell.split()):
+                            category_matched = True
+                        
+                        # Special handling for specific terms
+                        elif category == 'endowment' and ('endowment' in category_cell or 'traditional' in category_cell):
+                            category_matched = True
+                        elif category == 'non_par' and ('non-par' in category_cell or 'non par' in category_cell):
+                            category_matched = True
+                        elif category == 'ulip_pension' and ('pension' in category_cell and 'ulip' in category_cell):
+                            category_matched = True
+                        
+                        if category_matched:
+                            # Check status in remaining cells
+                            category_status = False
+                            
+                            for status_cell in cells[1:]:
+                                status_lower = status_cell.lower().strip()
+                                
+                                # Check for positive indicators
+                                if any(indicator in status_lower for indicator in positive_indicators):
+                                    category_status = True
+                                    break
+                                # Check for explicit negative indicators
+                                elif any(indicator in status_lower for indicator in negative_indicators):
+                                    category_status = False
+                                    break
+                            
+                            # Only update if we found a match for this category
+                            if category not in impact_status:
+                                impact_status[category] = category_status
+                            # If already exists, prioritize positive status
+                            elif category_status:
+                                impact_status[category] = True
+    
+        return impact_status
+    
+    # Extract impact status from the input text
+    impact_status = extract_impact_status_from_table(impacted_products_text)
+    
+    # Build expanded content
+    categories_expanded = []
+    
+    for category, products in category_mappings.items():
+        # Only expand if category has products and is marked as impacted (True)
+        if products and impact_status.get(category, False):
+            # Create formatted product list
+            product_list = '\n'.join([f"  - {product}" for product in products])
+            
+            # Format category name for display
+            category_display = category.upper().replace('_', ' ')
+            
+            category_section = f"\n\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
+            categories_expanded.append(category_section)
+    
+    # Append expanded categories to original text
+    if categories_expanded:
+        expanded_text += ''.join(categories_expanded)
+        
+        # Add summary section
+        impacted_categories = [cat.upper().replace('_', ' ') for cat in category_mappings.keys() 
+                             if impact_status.get(cat, False)]
+        
+        if impacted_categories:
+            expanded_text += f"\n\n**Summary of Impacted Product Categories:**\n"
+            expanded_text += '\n'.join([f"- {cat}" for cat in impacted_categories])
     
     return expanded_text
 
