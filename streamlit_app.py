@@ -132,52 +132,6 @@ def expand_product_categories(impacted_products_text, product_alignment):
         'ulip_pension': product_alignment.get('ulip_pension', [])
     }
     
-    def get_categories_marked_as_yes(text):
-        """
-        Check which categories from category_mappings are present in the table AND marked as "Yes"
-        Returns only categories that meet both conditions
-        """
-        categories_marked_yes = {}
-        lines = text.split('\n')
-        
-        # Positive impact indicators (focusing on "Yes" as primary)
-        positive_indicators = ['yes', 'y', 'true', '1', 'impacted', 'affected', 'applicable']
-        
-        for line in lines:
-            # Skip separator lines
-            if '---' in line or '===' in line or line.strip() == '':
-                continue
-                
-            # Process table rows with pipe separators
-            if '|' in line:
-                cells = [cell.strip() for cell in line.split('|')]
-                # Remove empty cells from start and end
-                cells = [cell for cell in cells if cell]
-                
-                if len(cells) >= 2:
-                    category_cell = cells[0].lower().strip()
-                    
-                    # Check each category from our mappings
-                    for category_key in category_mappings.keys():
-                        if self.is_category_match(category_cell, category_key):
-                            # Check if status is marked as "Yes" in any of the status columns
-                            is_marked_yes = False
-                            
-                            for status_cell in cells[1:]:
-                                status_lower = status_cell.lower().strip()
-                                if any(indicator in status_lower for indicator in positive_indicators):
-                                    is_marked_yes = True
-                                    break
-                            
-                            # Only include if marked as Yes and has products
-                            if is_marked_yes and category_mappings[category_key]:
-                                categories_marked_yes[category_key] = True
-                            elif category_key not in categories_marked_yes:
-                                # If found but not marked as Yes, explicitly mark as False
-                                categories_marked_yes[category_key] = False
-        
-        return categories_marked_yes
-    
     def is_category_match(category_cell, category_key):
         """
         Helper function to check if a table cell matches a category key
@@ -200,32 +154,10 @@ def expand_product_categories(impacted_products_text, product_alignment):
         
         return False
     
-    # Fix the method call issue by making it a standalone function
-    def is_category_match_standalone(category_cell, category_key):
-        """
-        Standalone helper function to check if a table cell matches a category key
-        """
-        # Direct category match
-        if category_key.lower() in category_cell:
-            return True
-        
-        # Partial word match for category
-        if any(category_key.lower() in word.lower() for word in category_cell.split()):
-            return True
-        
-        # Special handling for specific terms
-        if category_key == 'endowment' and ('endowment' in category_cell or 'traditional' in category_cell):
-            return True
-        elif category_key == 'non_par' and ('non-par' in category_cell or 'non par' in category_cell):
-            return True
-        elif category_key == 'ulip_pension' and ('pension' in category_cell and 'ulip' in category_cell):
-            return True
-        
-        return False
-    
     def get_categories_marked_as_yes_fixed(text):
         """
         Check which categories from category_mappings are present in the table AND marked as "Yes"
+        Ignores summary rows like "All", "Total", etc.
         """
         categories_marked_yes = {}
         lines = text.split('\n')
@@ -247,9 +179,13 @@ def expand_product_categories(impacted_products_text, product_alignment):
                 if len(cells) >= 2:
                     category_cell = cells[0].lower().strip()
                     
+                    # Skip categories that are not in our predefined mappings (like "All", "Total", etc.)
+                    if category_cell in ['all', 'total', 'summary', 'overall']:
+                        continue
+                    
                     # Check each category from our mappings
                     for category_key in category_mappings.keys():
-                        if is_category_match_standalone(category_cell, category_key):
+                        if is_category_match(category_cell, category_key):
                             # Check if status is marked as "Yes" in any of the status columns
                             is_marked_yes = False
                             
