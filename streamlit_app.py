@@ -402,7 +402,7 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 **TABLE FORMAT EXAMPLE (if structured table found):**
 | Application Name | Impact Status | High level Impact Description |
 |------------------|---------------|------------------|
-| [Extract from source] | [Extract Yes/No/etc.] | [as per the application name understand and state how it affects the process on a high level] |
+| [Extract from source] | [Extract Yes/No/etc.] | [as per the application name understand correctly and state how it affects the process on a high level] |
 
 **IF NO STRUCTURED TABLE FOUND:**
 - List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted
