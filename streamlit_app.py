@@ -1,6 +1,6 @@
 import streamlit as st
 from langchain_openai import ChatOpenAI
-from langchain_groq import ChatGroq
+#from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain, SimpleSequentialChain
 from docx import Document
@@ -23,41 +23,16 @@ from openpyxl import load_workbook
 import json
 
 def expand_product_categories(impacted_products_text, product_alignment):
-
     if not product_alignment or not impacted_products_text:
         return impacted_products_text
     
-    expanded_text = impacted_products_text
-    
-    category_mappings = {
-        'ulip': product_alignment.get('ulip', []),
-        'term': product_alignment.get('term', []),
-        'endowment': product_alignment.get('endowment_plans', []),
-        'annuity': product_alignment.get('annuity', []),
-        'group': product_alignment.get('group', []),
-        'rider': product_alignment.get('rider', []),
-        'non_par': product_alignment.get('non_par', []),
-        'par': product_alignment.get('par', []),
-        'combi': product_alignment.get('combi', []),
-        'ulip_pension': product_alignment.get('ulip_pension', [])
-    }
-    
     def extract_impact_status_from_table(text):
-
         impact_status = {}
         lines = text.split('\n')
         
-        positive_indicators = [
-            'yes', 'y', 'true', '1', 'impacted', 
-            'affected', 'included', 'applicable', 
-            'impact', 'required', 'needed'
-        ]
-        
-        negative_indicators = [
-            'no', 'n', 'false', '0', 'not impacted', 
-            'not affected', 'excluded', 'not applicable',
-            'na', 'n/a', 'nil', 'none'
-        ]
+        # More specific indicators
+        positive_indicators = ['yes', 'y', 'true', '1', 'impacted', 'affected']
+        negative_indicators = ['no', 'n', 'false', '0', 'not impacted', 'not affected', 'na', 'n/a']
         
         for line in lines:
             if '---' in line or '===' in line:
@@ -70,67 +45,96 @@ def expand_product_categories(impacted_products_text, product_alignment):
                 if len(cells) >= 2:
                     category_cell = cells[0].lower().strip()
                     
-                    for category in category_mappings.keys():
-                        category_matched = False
+                    # CRITICAL: Skip "All" or "ALL" completely
+                    if category_cell in ['all', 'all products', 'all categories']:
+                        continue
+                    
+                    # Check for exact matches with JSON keys
+                    matched_category = None
+                    for json_key in product_alignment.keys():
+                        if json_key.lower() == category_cell:
+                            matched_category = json_key
+                            break
+                        elif json_key.lower() in category_cell:
+                            matched_category = json_key
+                            break
+                        elif category_cell == 'endowment' and json_key == 'endowment_plans':
+                            matched_category = json_key
+                            break
+                    
+                    if matched_category:
+                        # Check status in subsequent cells
+                        category_status = False
+                        for status_cell in cells[1:]:
+                            status_lower = status_cell.lower().strip()
+                            if any(indicator in status_lower for indicator in positive_indicators):
+                                category_status = True
+                                break
+                            elif any(indicator in status_lower for indicator in negative_indicators):
+                                category_status = False
+                                break
                         
-                        if category.lower() in category_cell:
-                            category_matched = True
-                        
-                        elif any(category.lower() in word.lower() for word in category_cell.split()):
-                            category_matched = True
-                        
-                        elif category == 'endowment' and ('endowment' in category_cell or 'traditional' in category_cell):
-                            category_matched = True
-                        elif category == 'non_par' and ('non-par' in category_cell or 'non par' in category_cell):
-                            category_matched = True
-                        elif category == 'ulip_pension' and ('pension' in category_cell and 'ulip' in category_cell):
-                            category_matched = True
-                        
-                        if category_matched:
-                            category_status = False
-                            
-                            for status_cell in cells[1:]:
-                                status_lower = status_cell.lower().strip()
-                                
-                                if any(indicator in status_lower for indicator in positive_indicators):
-                                    category_status = True
-                                    break
-                                elif any(indicator in status_lower for indicator in negative_indicators):
-                                    category_status = False
-                                    break
-                            
-                            if category not in impact_status:
-                                impact_status[category] = category_status
-                            elif category_status:
-                                impact_status[category] = True
-    
+                        impact_status[matched_category] = category_status
+        
         return impact_status
     
+    # Extract impact status
     impact_status = extract_impact_status_from_table(impacted_products_text)
     
-    categories_expanded = []
+    # Sanitize the "### 2.1 Impacted Products" section: keep only the first markdown table, drop any lists/headings that LLM may have added
+    try:
+        lower_text = impacted_products_text.lower()
+        start_tokens = ["### 2.1 impacted products", "## 2.1 impacted products"]
+        end_tokens = ["### 2.2", "## 2.2", "### 2.2 applications impacted", "## 2.2 applications impacted"]
+        start_idx = -1
+        for t in start_tokens:
+            si = lower_text.find(t)
+            if si != -1:
+                start_idx = si
+                break
+        if start_idx != -1:
+            end_idx = len(impacted_products_text)
+            for t in end_tokens:
+                ei = lower_text.find(t, start_idx + 1)
+                if ei != -1:
+                    end_idx = min(end_idx, ei)
+            section = impacted_products_text[start_idx:end_idx]
+            section_lines = section.split('\n')
+            kept = []
+            table_started = False
+            table_ended = False
+            for ln in section_lines:
+                if not table_started:
+                    kept.append(ln)
+                    if '|' in ln:
+                        table_started = True
+                else:
+                    if ('|' in ln) and not table_ended:
+                        kept.append(ln)
+                    else:
+                        # once a non-table line appears after table has started, stop keeping further lines
+                        table_ended = True
+                
+            sanitized_section = '\n'.join(kept)
+            impacted_products_text = impacted_products_text[:start_idx] + sanitized_section + impacted_products_text[end_idx:]
+    except Exception:
+        pass
     
-    for category, products in category_mappings.items():
-        if products and impact_status.get(category, False):
-            product_list = '\n'.join([f"  - {product}" for product in products])
-            
-            category_display = category.upper().replace('_', ' ')
-            
-            category_section = f"\n\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
-            categories_expanded.append(category_section)
+    # Only expand categories with explicit "Yes" status
+    expanded_sections = []
+    for category, products in product_alignment.items():
+        if products and impact_status.get(category, False):  # Only if explicitly True
+            if impact_status[category] == "Yes" or impact_status[category] == "All":
+                product_list = '\n'.join([f"  - {product}" for product in products])
+                category_display = category.upper().replace('_', ' ')
+                category_section = f"\n\n**{category_display} Products (Impacted - Yes):**\n{product_list}"
+                expanded_sections.append(category_section)
     
-    if categories_expanded:
-        expanded_text += ''.join(categories_expanded)
-        
-        impacted_categories = [cat.upper().replace('_', ' ') for cat in category_mappings.keys() 
-                             if impact_status.get(cat, False)]
-        
-        if impacted_categories:
-            expanded_text += f"\n\n**Summary of Impacted Product Categories:**\n"
-            expanded_text += '\n'.join([f"- {cat}" for cat in impacted_categories])
-    
-    return expanded_text
-
+    # Append expansions to sanitized text
+    if expanded_sections:
+        return impacted_products_text + ''.join(expanded_sections)
+    else:
+        return impacted_products_text
 
 def load_product_alignment():
 
@@ -237,20 +241,24 @@ BRD_FORMAT = """
 """
 
 SECTION_TEMPLATES = {
-
+ 
     "intro_impact": """
-
+ 
 You are a Business Analyst expert creating sections 1.0–2.0 of a comprehensive Business Requirements Document (BRD).
-
+ 
 IMPORTANT: Do not output any ``` code fences or Mermaid syntax.
 All text should be plain markdown (headings, lists, tables) only - no code blocks or fenced content.
-
+Never expose the processing steps and instructions to the user while creating the BRD.
+- Do not include "\n", "\\n", "/n", "<br>", "<br/>", or any other escape/HTML line break.
+- For new line, just insert an actual line break (press Enter).
+- For paragraph break, insert one blank line (double Enter).
+ 
 SOURCE REQUIREMENTS:
-
+ 
 {requirements}
-
+ 
 EXCEL FILE PROCESSING INSTRUCTIONS:
-
+ 
 **FOR EXCEL FILES (.xlsx/.xls):**
 - Process ALL sheets EXCEPT "Test Scenarios" sheet
 - **PRIORITY FOCUS**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section in any sheet
@@ -258,39 +266,39 @@ EXCEL FILE PROCESSING INSTRUCTIONS:
 - Extract content from ALL relevant columns and rows in each sheet
 - Look for business requirements, processes, impacts, and technical specifications across all sheets
 - If sheet names are different from expected, process all sheets except those explicitly containing test scenarios
-
+ 
 **SPECIAL INSTRUCTION FOR PURPOSE AND TO-BE PROCESS:**
 For sections 1.1 Purpose and 1.3 To be process / High level solution:
 - **PRIMARY PRIORITY**: Search for and extract information from "PART B : (Mandatory) Detailed Requirement" section
 - Look for this exact text or similar variations like:
   - "PART B"
-  - "Mandatory Detailed Requirement" 
+  - "Mandatory Detailed Requirement"
   - "Detailed Requirement"
   - "Part B - Detailed Requirement"
   - "PART B : Detailed Requirement"
 - If found, prioritize this section's content for Purpose and To-be process extraction
 - If not found, then search across ALL other processed sheets for relevant content
-
+ 
 CRITICAL INSTRUCTIONS:
-
+ 
 - Extract information from ALL available sheets (except Test Scenarios sheet)
-- **For Purpose and To-be process: PRIORITIZE "PART B : (Mandatory) Detailed Requirement" content**
+- **For Purpose and To-be process: PRIORITIZE "PART B"  Detailed Requirement" content**
 - Identify the ACTUAL business problem being solved from any relevant sheet
 - Focus on what is explicitly mentioned across all processed sheets
 - Do NOT create, assume, or fabricate any content not present in the source
 - If a section has no relevant information across ALL processed sheets, leave it BLANK
 - Adapt to any domain (training, payments, integration, access control, etc.)
-
+ 
 Create ONLY the following sections with detailed content in markdown:
-
+ 
 ## 1.0 Introduction
-
+ 
 ### 1.1 Purpose
-
+ 
 **SEARCH STRATEGY FOR PURPOSE:**
 1. **FIRST PRIORITY**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section
 2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet
-
+ 
 Extract the EXACT business purpose, focusing on:
 - Capture from "PART B : (Mandatory) Detailed Requirement" if available
 - If PART B not found, capture from "Detailed Requirement" sections in any sheet
@@ -299,18 +307,22 @@ Extract the EXACT business purpose, focusing on:
 - What restrictions, validations, or controls are being introduced?
 - What business processes are being improved or changed?
 - What compliance, security, or operational requirements are being met?
-
+ 
 Search across ALL processed sheets for key phrases: "purpose", "objective", "requirement", "need", "problem", "solution", "implement", "restrict", "validate", "improve", "ensure"
-
+ 
 **EXTRACTION PRIORITY ORDER:**
-1. Content from "PART B : (Mandatory) Detailed Requirement" 
+1. Content from "PART B : (Mandatory) Detailed Requirement"
 2. Content from other "Detailed Requirement" sections
 3. Content from other relevant sections across all sheets
-
+ 
+**CRITICAL**:
+1. Do not use bullet points, numbering, or line breaks inside Purpose for output
+2. If multiple lines exist, merge them into one cohesive paragraph with proper sentence flow.
+ 
 ### 1.2 As-is process
-
+ 
 **FORMAT: Present content as BULLET POINTS using markdown bullet format (- or *)**
-
+ 
 Extract the CURRENT state/process from ANY relevant sheet:
 - How does the current system/process work?
 - What are the existing workflows or user journeys?
@@ -318,20 +330,20 @@ Extract the CURRENT state/process from ANY relevant sheet:
 - What manual processes or workarounds are currently used?
 - What system behaviors need to be changed?
 - Any screenshots, process flows, or current state descriptions
-
+ 
 Look for indicators across ALL sheets: "currently", "as-is", "existing", "present", "manual", "workaround", "problem with current", "limitations"
-
+ 
 **CRITICAL: Format ALL extracted content as bullet points (- or *) - DO NOT use paragraphs or numbered lists**
-
+ 
 ### 1.3 To be process / High level solution
-
+ 
 **FORMAT: Present content as BULLET POINTS using markdown bullet format (- or *)**
-
+ 
 **SEARCH STRATEGY FOR TO-BE PROCESS:**
 1. **FIRST PRIORITY**: Look specifically for "PART B : (Mandatory) Detailed Requirement" section
-2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet  
+2. **SECOND PRIORITY**: Search other sections in "Requirement" sheet
 3. **THIRD PRIORITY**: Search "Ops Risk Assessment" and other sheets
-
+ 
 Extract the PROPOSED solution, prioritizing "PART B : (Mandatory) Detailed Requirement" content:
 - Content from "PART B : (Mandatory) Detailed Requirement" if available
 - What is the new process or system behavior?
@@ -340,79 +352,214 @@ Extract the PROPOSED solution, prioritizing "PART B : (Mandatory) Detailed Requi
 - What automated processes will replace manual ones?
 - What new capabilities or features will be added?
 - Any conditional logic, decision trees, or multi-step processes
-
+ 
 Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new process", "will be", "should be", "automated", "enhanced", "improved", "step-by-step", "workflow", "condition", "if-then"
-
+ 
 **CRITICAL: Format ALL extracted content as bullet points (- or *) - DO NOT use paragraphs or numbered lists**
-
+ 
 **EXTRACTION PRIORITY ORDER:**
 1. Content from "PART B : (Mandatory) Detailed Requirement"
-2. Content from other "Detailed Requirement" sections  
+2. Content from other "Detailed Requirement" sections
 3. Content from other relevant sections across all sheets
-
+ 
+ 
 ## 2.0 Impact Analysis
-
+ 
 ### 2.1 Impacted Products
-
-**PRIORITY SEARCH STRATEGY:**
-1. **FIRST PRIORITY**: Look for tables/sections with headers ONLY like "Products Impacted", "Product Impacted", "Type of Product" from "Part C"
-2. **SECOND PRIORITY**: Look for tables containing product names: ULIP, Term, Endowment, Annuity, Health, Group
-3. **THIRD PRIORITY**: Search for any mention of products across all sheets
-
-**EXTRACTION INSTRUCTIONS:**
-- If a structured table is found (like the example with ULIP, Term, Endowment, etc.), extract it in the following format:
-  - Create a markdown table preserving the original structure
-  - Show product types and their impact status (Yes/No/etc.)
-  - Include any additional columns or classifications found
-  - **EXPAND PRODUCT CATEGORIES**: When product categories like ULIP, Term, Endowment, etc. are mentioned, also list the specific product names under each category
-  
-**TABLE FORMAT EXAMPLE (if structured table found):**
-| Product Type | Impact Status |
-|--------------|---------------|
-| [Extract from source] | [Extract Yes/No/etc.] |
-
-**PRODUCT CATEGORY EXPANSION:**
-- If ULIP is impacted, list specific ULIP products
-- If Term is impacted, list specific Term products  
-- If Endowment is impacted, list specific Endowment products
-- If Group is impacted, list specific Group products
-- And so on for other categories
-
-**IF NO STRUCTURED TABLE FOUND:**
-- List ONLY the products/platforms explicitly mentioned across ALL processed sheets which are impacted
-- Extract from any column/row mentioning affected products/platforms
-- Check all sheets for product names, service names, or system names, platform names
-- **EXPAND any product categories found to include specific product names**
-
-**CRITICAL**: If a "Products Impacted" table exists in the source, reproduce it exactly as a markdown table AND expand any product categories mentioned to show specific product names.
-
+ 
+STEP BY STEP Process:
+1. From part_c, extract the list `data_rows` containing products and their impact status, e.g.,  
+   ```json
+        "data_rows": [
+           curly bracket
+                "row_description": "List of products in which the change has to be done",
+                "values": curly bracket
+                    "Type of Product": "List of products in which the change has to be done",
+                    "ULIP": "-",
+                    "TERM": "-",
+                    "All": "Yes"
+                curly bracket
+            curly bracket
+        ]
+2. Create a list of product names with their impact status.
+ 
+3. From the section '=== PRODUCT ALIGNMENT DATA ===' in the source requirements,
+   identify product names from Step 2 that EXACTLY match the JSON keys in PRODUCT ALIGNMENT DATA.
+ 
+   - If no product names match, STOP here and output:
+     No impacted products found.
+ 
+   - Do NOT proceed to impact status check unless a match with PRODUCT ALIGNMENT DATA keys is found.
+ 
+4. For every matched product name, apply IMPACT STATUS check as a mandatory second filter:
+   - A product is eligible for expansion ONLY IF:
+        (product_name is present in PRODUCT ALIGNMENT DATA keys) AND (impact_status is "Yes" OR "All")
+   - If impact_status is "-" or "No" or "NA" or blank → DO NOT EXPAND, even if the product_name matches.
+   - This rule is absolute. Example: If ULIP exists in PRODUCT ALIGNMENT DATA but its status is "-",
+     then ULIP must NOT be expanded and should be excluded from the final output.
+ 
+5. Only for this final filtered product list, extract and expand the full list of mapped values under PRODUCT ALIGNMENT DATA.
+ 
+6. Format the output as a markdown table with the following structure:
+ 
+| Product Category | Individual Products Name |
+|------------------|---------------------------|
+| [PRODUCT_NAME]   | [Product 1]              |
+| [PRODUCT_NAME]   | [Product 2]              |
+ 
+ 
+7. If the final filtered list is empty (i.e., no products with status "Yes" or "All"), output exactly:
+    No impacted products found.
+ 
+---
+ 
+### VERY IMPORTANT NOTES:
+- Do NOT expand or include any product whose status is not explicitly "Yes" or "All".
+- Do NOT assume impact; strictly follow the source status.
+- Maintain the exact markdown format above.
+ 
+---
+ 
+ 
+ 
+ 
+### Example 1 (Negative case – No impacts)
+ 
+Input part_c product list:
+["ULIP":"-", "Product B":"-", "Product C":"-", "All":"Yes"]
+Input PRODUCT ALIGNMENT DATA:
+```json
+"ULIP": [
+  "Bajaj Allianz Life Future Wealth Gain IV",
+  "Bajaj Allianz Life Smart Wealth Goal V"
+],
+"Product B": [
+  "..."
+]
+```
+ 
+Matched products = ULIP, Product B  
+Impact status check → ULIP = "-", Product B = "-"  
+Because none have "Yes"/"All" status, the final list is empty.  
+CRITICAL : STRICTLY DO NOT EXPAND ULIP because its status is "-".  
+ 
+Final Output:
+No impacted products found.
+ 
+NOTE: Even though ULIP exists in PRODUCT ALIGNMENT DATA, its impact status is "-" so it is STRICTLY EXCLUDED.
+ 
+---
+ 
+### Example 2 (Positive case – ULIP impacted with "Yes")
+ 
+Input part_c product list:
+`["ULIP":"Yes", "TERM":"-", "All":"Yes"]`
+ 
+Input PRODUCT ALIGNMENT DATA:
+```json
+"ULIP": [
+  "Bajaj Allianz Life Goal Assure IV",
+  "Bajaj Allianz Life Magnum Fortune Plus III"
+],
+"TERM": [
+  "Bajaj Allianz Life Term Care"
+]
+```
+part_c matched product name  with '==PRODUCT ALIGNMENT DATA=' json keys are : ULIP = "Yes" , TERM = "-"
+Filtering according to impact status → ULIP = "Yes" → keep, TERM = "-" → ignore,  (AS impact status of only Ulip is yes so keep it only.)
+**Final Output:**
+| Product Category | Individual Products Name              |
+|------------------|----------------------------------------|
+| ULIP             | Bajaj Allianz Life Goal Assure IV      |
+| ULIP             | Bajaj Allianz Life Magnum Fortune Plus III |
+ 
+ 
+---
+ 
+### Example 3 (Positive case – ULIP impacted with "All")
+ 
+Input part_c product list:
+`["ULIP":"All", "TERM":"-", "All":"Yes"]`
+ 
+Input PRODUCT ALIGNMENT DATA:
+```json
+"ULIP": [
+  "Bajaj Allianz Life Future Wealth Gain IV",
+  "Bajaj Allianz Life Smart Wealth Goal V"
+],
+"TERM": [
+  "Bajaj Allianz Life Term Care"
+]
+```
+part_c matched product name  with '==PRODUCT ALIGNMENT DATA=' json keys are : ULIP = "All" , TERM = "-"
+Filtering  according to impact status → ULIP = "All" → keep, TERM = "-" → ignore,  ( as Impact status of Ulip is All so keep that only.)
+**Final Output:**
+| Product Category | Individual Products Name                |
+|------------------|------------------------------------------|
+| ULIP             | Bajaj Allianz Life Future Wealth Gain IV |
+| ULIP             | Bajaj Allianz Life Smart Wealth Goal V   |
+ 
+ 
+### Example 4 (Positive case and No matched product name with  PRODUCT ALIGNMENT DATA)
+Input part_c product list:
+`["Traditional":"All",]`
+ 
+Input PRODUCT ALIGNMENT DATA:
+```json
+"ULIP": [
+  "Bajaj Allianz Life Future Wealth Gain IV",
+  "Bajaj Allianz Life Smart Wealth Goal V"
+],
+"TERM": [
+  "Bajaj Allianz Life Term Care"
+]
+```
+**VERY VERY CRITICAL **:part_c matched product name  with '==PRODUCT ALIGNMENT DATA=' json keys are : empty no one is matching.
+** STRICTLY AVOID **: Expanding Trational by only looking impact status yes bcz first condition is it should match with '==PRODUCT ALIGNMENT DATA=' json keys and it is not matching as there is no Traditional product name in json key of Product_Alignment_data.
+Filtering step is not required as no product name is matching with product alignment data json keys so final list is empty.
+**Final Output:**
+```
+No impacted products found.
+```
+ 
+IMPORTANT VALIDATION RULES:
+- Do NOT expand a product if it is not present in PRODUCT ALIGNMENT DATA keys,
+  even if its status is "Yes" or "All". (Example 4 case)
+- Do NOT expand a product that has status "-" or "No" or "NA", even if it exists in PRODUCT ALIGNMENT DATA. (Example 1 case)
+ 
+ 
 ### 2.2 Applications Impacted
-
+ 
 **PRIORITY SEARCH STRATEGY:**
 1. **FIRST PRIORITY**: Look for tables/sections with headers ONLY like "Applications Impacted", "Application Impacted", "Application Name" from "Part C"
 2. **SECOND PRIORITY**: Look for tables containing application names: OPUS, INSTAB, NGIN, PMAC, CRM, Cashier
 3. **THIRD PRIORITY**: Search for any mention of applications across all sheets
-
+ 
 **EXTRACTION INSTRUCTIONS:**
 - If a structured table is found (like the example with OPUS, INSTAB, NGIN, etc.), extract it in the following format:
   - Create a markdown table preserving the original structure
-  - Show application names and their impact status (Yes/No/etc.)
-  - Include any additional columns or classifications found
-  
+  - You will get application names and their impact status (Yes/No/etc.) but you need to select only only those applications name whose imapact status is (Yes).
+  - Don't assume that all applications are impacted strictly only and only check by impact status. Example you get APP_NAME1 : No, APP_NAME2:Yes then only APP_NAME2 will included bcz its impact status 'Yes is given".
+  - Include only two columns Application Name (only those whose impact status is yes according to source table) and thier high level Description (From Document find whatever descriprtion given about that category).
+  - If Application Name is given 'Other' and in other some particular name is given like 'DigiBanca' Then Application Name Will Be DigiBanca,Not 'Other'.And In Impact Status Give Yes Or No By Extracting The Impact Status of DigiBanca.
+ 
+- *VERY CRITICAL* : In finding impact status don;t hallucinate or assume impact stuatus by yourself .carefully see, ,many times you are doing mistake "OPUS' impact  is given 'no' or 'blank' you are doing yes.It should be no.
 **TABLE FORMAT EXAMPLE (if structured table found):**
-| Application Name | Impact Status | High level Impact Description |
-|------------------|---------------|------------------|
-| [Extract from source] | [Extract Yes/No/etc.] | [as per the application name understand correctly and state how it affects the process on a high level] |
-
+| Application Name  | High level Description |
+hen
+| [Extract from source whose impact impact status is yes] | [high level descriptions of Applications basic overview how it is impacted] |
+ 
+**VERY VERY CRITICAL**: Only Include those application for whose impact status is yes for Example if for Digibanca impact status is yes then only  application name 'Digibanca' and its high level description will be there.
+ 
 **IF NO STRUCTURED TABLE FOUND:**
 - List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted
 - Extract from any column/row mentioning affected applications
 - Check all sheets for application names
-
-**CRITICAL**: If an "Applications Impacted" table exists in the source, reproduce it exactly as a markdown table. Do NOT create a generic list.
-
+ 
+**VERY CRITICAL**: If an "Applications Impacted" table exists in the source, reproduce it exactly as a markdown table. Do NOT create a generic list.
+ 
 ### 2.3 List of APIs required
-
+ 
 Extract SPECIFIC technical requirements from ALL processed sheets:
 - New APIs or services that need to be created
 - Existing APIs that need modification
@@ -420,9 +567,30 @@ Extract SPECIFIC technical requirements from ALL processed sheets:
 - Database access or query requirements
 - Authentication, authorization, or security services
 - Any technical specifications or interface requirements
-
+ 
+CATALOG MATCHING (use appended block titled "=== KNOWN API CATALOG (READ-ONLY REFERENCE) ==="):
+- Parse the JSON catalog provided in the appended block
+- For each requirement, first attempt to MATCH the requirement description/intent with catalog descriptions
+- If a match is found, output the EXACT method and endpoint from the catalog (do not modify), and use the catalog description
+- If a requirement has no catalog match, add a "Custom API – [METHOD] [endpoint]" row with a concise description from the source requirement
+ 
+OUTPUT FORMAT (MANDATORY TABLE ONLY):
+| S. No | API Name | API Description |
+|-------|----------|-----------------|
+| 1 | GET /AgentDetails | Retrieve agent details including training completion status. |
+| 2 | POST /TrainingStatusValidation | Validate training completion flag. |
+| 3 | Custom API – POST /DisplayRestrictionMessage | Display restriction message if training is incomplete. |
+ 
+HARD RULES:
+- OUTPUT ONLY the table above (no paragraphs, bullet lists, or extra text before/after)
+- Table must have EXACTLY 3 columns: S. No, API Name, API Description.
+- API Name must be exactly "[METHOD] [endpoint]" for catalog matches
+- Do NOT invent/alter catalog endpoints or methods.
+- Do NOT add extra columns or split descriptions across multiple columns
+- If nothing is identified, output a single-row table stating "No APIs identified from source"
+ 
 IMPORTANT:
-
+ 
 - Use markdown headings (##, ###)
 - **CRITICAL**: For sections 2.1 and 2.2, if structured tables exist in source, reproduce them as markdown tables
 - Sections 1.2 and 1.3 to be in form of bullet pointers
@@ -430,52 +598,52 @@ IMPORTANT:
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
 - If no content found for a subsection after checking ALL sheets, leave it blank
-
+ 
 VALIDATION CHECK:
-
+ 
 Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). For Purpose and To-be process sections, ensure you've prioritized "PART B : (Mandatory) Detailed Requirement" content when available.
-
+ 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 1.0 Introduction, ### 1.1 Purpose, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
-
+ 
 """,
-
+ 
     "process_requirements": """
-
+ 
 You are a Business Analyst expert creating sections 3.0–4.0 of a comprehensive BRD.
-
+ 
 PREVIOUS CONTENT:
-
+ 
 {previous_content}
-
+ 
 SOURCE REQUIREMENTS:
-
+ 
 {requirements}
-
+ 
 EXCEL FILE PROCESSING INSTRUCTIONS:
-
+ 
 **FOR EXCEL FILES (.xlsx/.xls):**
 - Process ALL sheets EXCEPT "Test Scenarios" sheet
 - Include data from sheets: "Requirement", "Ops Risk Assessment", and any other available sheets
 - Extract workflow, process, and business rule information from ALL relevant columns and rows
 - Look for step-by-step processes, business rules, and functional requirements across all sheets
-
+ 
 CRITICAL INSTRUCTIONS:
-
+ 
 - Extract information from ALL available sheets (except Test Scenarios sheet)
 - Identify ACTUAL workflows, processes, and business rules from ANY relevant sheet
 - Focus on step-by-step logic, conditions, and decision points mentioned across ALL processed sheets
 - Adapt to any business domain (training, validation, integration, access control, etc.)
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-
+ 
 Create ONLY the following sections with detailed content in markdown:
-
+ 
 ## 3.0 Process / Data Flow diagram / Figma
-
+ 
 Extract DETAILED workflow/process information from ALL processed sheets:
-
+ 
 ### 3.1 Workflow Description
-
+ 
 Create step-by-step process based on what's described across ALL processed sheets:
 - What triggers the process or workflow?
 - What are the sequential steps or stages?
@@ -483,34 +651,28 @@ Create step-by-step process based on what's described across ALL processed sheet
 - What are the different paths or outcomes?
 - How are errors, exceptions, or edge cases handled?
 - What user interactions or system responses are involved?
-
+ 
 Format as logical flow:
 - Step 1: [Action/Trigger from any relevant sheet]
   - If [condition mentioned in any sheet]: [result/next step]
   - If [alternative condition]: [alternative result]
 - Step 2: [Next Action from any relevant sheet]
   - [Continue based on source content from processed sheets]
-
+ 
 Look for process indicators across ALL sheets: "workflow", "process", "steps", "sequence", "flow", "journey", "condition", "if", "then", "when", "trigger", "action", "response"
-
+ 
 ## 4.0 Business / System Requirement
+ 
+### 4.1 Functional Requirements
 
-### 4.1 System Requirements
-
-Extract BUSINESS functional requirements from ALL processed sheets:
-- Look for detailed requirement sections in the "Requirement" sheet primarily
-- Also check other sheets for additional functional requirements
-- Extract information from any columns containing requirement descriptions
-- Include business rules, validation requirements, and functional specifications
-
-### 4.2 Application / Module Name: [Extract exact application/module name from ANY processed sheet]
-
+Module Name: [Extract exact application/module name from ANY processed sheet]
+ 
 Create detailed requirement table based on content from ALL processed sheets:
-
-| **Rule ID** | **Rule Description** | **Expected Result** | **Dependency** |
+ 
+| Rule ID| Rule Description | Expected Result| Dependency |
 |-------------|---------------------|-------------------|----------------|
-| **4.1.1** | [Extract specific business rule from ANY processed sheet] | [Exact expected behavior mentioned in ANY sheet] | [Technical/system dependencies noted in ANY sheet] |
-
+| 4.1.1 | [Extract specific business rule from ANY processed sheet] | [Exact expected behavior mentioned in ANY sheet] | [Technical/system dependencies noted in ANY sheet] |
+ 
 Focus on extracting from ALL processed sheets:
 - Specific business rules, validations, or logic mentioned
 - Functional requirements and expected system behaviors
@@ -518,113 +680,110 @@ Focus on extracting from ALL processed sheets:
 - Data validation, processing, or transformation rules
 - Integration requirements and system interactions
 
-**SPECIFIC FOR EXCEL:** 
+### 4.2 System Requirements
+ 
+Extract BUSINESS functional requirements from ALL processed sheets:
+- Look for detailed requirement sections in the "Requirement" sheet primarily
+- Also check other sheets for additional functional requirements
+- Extract information from any columns containing requirement descriptions
+- Include business rules, validation requirements, and functional specifications
+ 
+**SPECIFIC FOR EXCEL:**
 - If there's a "Requirement" sheet, prioritize extracting from detailed requirement sections
 - Check for cells like "Detailed Requirement", "Business Rule", "Functional Spec", etc.
 - Process other sheets for supplementary functional requirements
-
+ 
 IMPORTANT:
-
+ 
 - Use markdown headings
 - Create detailed requirement tables with multiple columns
 - Base all content on what's explicitly stated across ALL processed sheets
 - Adapt terminology and focus to match the source domain
 - Leave blank if no content found after checking ALL relevant sheets
-
+ 
 VALIDATION CHECK:
-
+ 
 Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). Remove any content that cannot be directly attributed to the source documents.
-
+ 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 3.0, ### 3.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
-
+ 
 """,
-
+ 
     "data_communication": """
-
+ 
 You are a Business Analyst expert creating section 5.0 of a comprehensive BRD.
-
+ 
 PREVIOUS CONTENT:
-
+ 
 {previous_content}
-
+ 
 SOURCE REQUIREMENTS:
-
+ 
 {requirements}
-
+ 
 EXCEL FILE PROCESSING INSTRUCTIONS:
-
+ 
 **FOR EXCEL FILES (.xlsx/.xls):**
 - Process ALL sheets EXCEPT "Test Scenarios" sheet
 - Include data from sheets: "Requirement", "Ops Risk Assessment", and any other available sheets
 - Extract data requirements, specifications, and communication needs from ALL relevant sheets
 - Look for data-related requirements across all processed sheets
-
+ 
 CRITICAL INSTRUCTIONS:
-
+ 
 - Extract information from ALL available sheets (except Test Scenarios sheet)
 - Identify ACTUAL data and communication needs from ANY relevant sheet
 - Adapt to any type of data requirements (user data, transaction data, training data, etc.)
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-
+ 
 Create ONLY the following section with detailed content in markdown:
-
+ 
 ## 5.0 MIS / DATA Requirement
-
+ 
 ### 5.1 Data Specifications
-
-**IMPORTANT: Create a markdown table for data specifications found in the source documents.**
-
-Extract SPECIFIC data requirements from ALL processed sheets and present in table format:
-
-| **Data Category** | **Data Source** | **Format/Type** | **Validation Rules** | **Purpose** |
-|------------------|-----------------|-----------------|---------------------|-------------|
-| [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
-
-**Search for:**
-- Data elements, fields, or attributes needed
-- Data sources, databases, or systems providing this data
-- Data formats, structures, or schemas required
-- Data validation, quality, or integrity requirements
-- Data processing, transformation, or calculation needs
-- Data retention, archival, or lifecycle requirements
-
-**IF NO structured data specifications found in source:**
-- Create table with message: "No specific data specifications found in source documents"
-
+ 
+OUTPUT FORMAT (MANDATORY TABLE ONLY):
+| Data Category | Specific Fields/Elements | Frequency/Trigger | Business Purpose |
+|---------------|--------------------------|-------------------|------------------|
+| [Extract from source] | [field1, field2, ...] | [e.g., Daily/On Event] | [purpose from source] |
+ 
+RULES:
+- OUTPUT ONLY the table above (no extra text)
+** for filling table search for:**
+- Data category,
+- fields, or attributes needed
+- frequency trigger like monthly , daily, weekkly
+- Busines purpose : purpose of the data categories functionally and as per business logic.
+ 
 ### 5.2 Reporting and Analytics Needs
-
-**IMPORTANT: Create a markdown table for reporting requirements found in the source documents.**
-
-Extract reporting requirements from ALL processed sheets and present in table format:
-
-| **Report/Dashboard Name** | **Metrics/KPIs** | **Data Source** | **Frequency** | **Chart/Plot** | **Tool/Platform** |
-|---------------------------|------------------|------------------|-------------|------------|-------------------|
-| [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
-
-**Search for:**
-- Reports, dashboards, or analytics required
-- Metrics, KPIs, or measurements to track
-- Data visualization or presentation requirements
-- Frequency or scheduling of reports
-- User roles or audiences needing access
-- Real-time monitoring or alerting requirements
-- Plots/charts applicable to be built as per the metrics
-- Best tools to build these plots/charts (specifically which BI tool)
-
-**IF NO reporting requirements found in source:**
-- Create table with message: "No specific reporting requirements found in source documents"
-
+ 
+OUTPUT FORMAT (MANDATORY TABLE ONLY):
+| Report/Dashboard Name | Visualization Type | Analytics Tool Suggestion | Target Audience | Frequency | Business Value |
+|-----------------------|--------------------|---------------------------|-----------------|-----------|----------------|
+| [Extract from source] | [e.g., Line chart] | [e.g., Tableau/Power BI]  | [e.g., Business users] | [e.g., Daily] | [value/goal from source] |
+ 
+RULES:
+- OUTPUT ONLY the table above (no extra text)
+** for filling table search for:**
+    -Reports, dashboards, or analytics required
+    - Data visualization or presentation requirements
+    - Best tools to build these plots/charts (specifically which BI tool)
+    - User roles or audiences needing access
+    - Frequency or scheduling of reports
+    - business values.
+ 
+ 
 ### 5.3 Data Sources and Destinations
-
-**IMPORTANT: Create a markdown table for data flow information found in the source documents.**
-
+ 
+**IMPORTANT: Create a markdown table for data flow information found in the source requirements.**
+ 
 Extract data flow information from ALL processed sheets and present in table format:
-
-| **Source System** | **Destination System** | **Data Type** | **Integration Method** | **Frequency** | **Dependencies** |
+ 
+| Source System | Destination System | Data Type | Integration Method | Frequency | Dependencies |
 |-------------------|------------------------|---------------|----------------------|---------------|------------------|
 | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] | [Extract from source] |
-
+ 
 **Search for:**
 - Source systems, databases, or applications providing data
 - Target systems, repositories, or destinations for data
@@ -632,177 +791,171 @@ Extract data flow information from ALL processed sheets and present in table for
 - Data flow directions and transformation requirements
 - External systems, third-party sources, or partner integrations
 - Master data management or reference data needs
-
-**IF NO data flow information found in source:**
-- Create table with message: "No specific data flow requirements found in source documents"
-
+ 
+ 
+ 
 ## 6.0 Communication Requirement
-
-**EMAIL CONTENT EXTRACTION:**
-- Look for email communication patterns in the source requirements including:
-  - Email addresses (containing @ symbol)
-  - Email headers like "From:", "To:", "Subject:", "Date:"
-  - Email greetings like "Hi [Name]", "Hello [Name]", "Dear [Name]"
-  - Email signatures with names, titles, phone numbers
-  - Reply chains and conversation threads
-  - Email closings like "Regards", "Thanks", "Best Regards"
-  - Corporate email signatures with company names
-
-**SEARCH FOR EMAIL PATTERNS:**
-- @ symbols indicating email addresses
-- Phone numbers in signatures
-- Corporate titles and designations
-- Email thread conversations
-- Any communication that looks like email correspondence
-
-**IF email-like content IS FOUND:**
-- Extract and include all email communications found in the source
-- Preserve the conversation flow and chronological order
-- Include email addresses, names, and contact information
-- Maintain the original format and structure
-- Format as:
-
-### Email Communication Thread
-
-[Extract and preserve the complete email conversation as it appears in the source, maintaining the original format, names, email addresses, signatures, and conversation flow]
-
-**IF NO email-like content is found:**
-- State: "No communication requirement content found in source documents"
-- Do NOT generate, create, or simulate any email content
-
-**CRITICAL:** Only extract actual email-like content that exists in the source requirements. Never generate, create, assume, or fabricate any email content.
-
+**VERY CRITICAL** : Never skip Communication requirement section.
+ 
+**PRIORITY SEARCH STRATEGY:**
+1. **FIRST PRIORITY**: Look specifically for "part_e" content and adjacent_content list in the priority_content section
+2. **SECOND PRIORITY**: Search for "PART E : (Mandatory/Optional)" or similar patterns
+ 
+**EXTRACTION INSTRUCTIONS:**
+STEP BY STEP
+   1.In part_e you will see list of content in that you will be having row no. and  text .
+   2.from context list you have the questions in text :
+      - Whether the any change has to be done in communication related to given modules"
+      - IF YES, please specify the communication list
+      -If YES, please confirm whether the communication format is attached in the call"
+      - Please confirm whether necessary approvals taken on the communication format (HOD Approval, Legal approval)
+      - To whom the communication has to be addressed
+      - Mode of communication
+  3.for all above text question you will be having row no.
+  4. Now go to adjacent context lists, now match the same row no. of question to the row no. of adjacent context context list and text corresponding to that row in adjacet_context will be answer of that question.
+ 
+**VERY CRITICAL**: Even if all the answers in the adjacent context list are no or blank, display the communications section in that case as well.
+ 
+**OUTPUT Format **
+   As you got all the questions and its respective answers in step 4.
+   Now State the statements like , if your  answer for 1st question is no or blank then 1st statement will be -  No any changes has to be done in communication related to given modules.
+   Now State the statements like , if your  answer 1st question is yes then 1st statement will be . The changes has to be done to be done in communication related to given modules.
+   Now State the second statement , The list of communication is : if no list is given or answer for that row is blank then say no list is given in source document.
+   similarly state other statement for all the questions.
+   If your question;s answer is No that is no changes made in communication related modeule , then obviously there will be no list of communication so you skip the statemnt and go for rest of the statements.
+   **CRITICAL**:- For line breaks, insert an actual Enter instead directly  giving literal '\n\n'
+ 
 IMPORTANT:
-
+ 
 - **MANDATORY: Create tables for sections 5.1, 5.2 and 5.3 using the specified formats above**
 - Use markdown headings
 - Extract content based on what's ACTUALLY across ALL processed sheets, regardless of domain
 - Adapt language and focus to match the source content type
 - If no content found for a subsection after checking ALL sheets, use the specified "not found" table format
 - Preserve any existing tables in markdown format from ANY processed sheet
-
+ 
 VALIDATION CHECK:
-
+ 
 Before finalizing each section, verify that every piece of information can be traced back to the source requirements from the processed Excel sheets (excluding Test Scenarios). Remove any content that cannot be directly attributed to the source documents.
-
+ 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 5.0, ### 5.1, etc.) with the extracted content in TABLE FORMAT for sections 5.1, 5.2, and 5.3. Do not include any of these instructions, validation checks, or processing guidelines in your response.
-
+ 
 """,
-
+ 
     "testing_final": """
-
+ 
 You are a Business Analyst expert creating sections 7.0–11.0 of a comprehensive BRD.
-
+ 
 PREVIOUS CONTENT:
-
+ 
 {previous_content}
-
+ 
 SOURCE REQUIREMENTS:
-
+ 
 {requirements}
-
+ 
 CRITICAL INSTRUCTIONS FOR ALL SECTIONS:
-
+ 
 - Extract information ONLY from the provided source requirements
 - For Test Scenarios: PRIORITY CHECK - First look for existing test scenarios in source
 - Adapt to any business domain or requirement type
 - Do NOT create, assume, or fabricate any content not explicitly present in the source
-
+ 
 Create ONLY the following sections with detailed content in markdown:
-
+ 
 ## 7.0 Test Scenarios
-
+ 
 **PRIMARY APPROACH - Extract Existing Test Scenarios:**
 FIRST, thoroughly scan ALL source requirements documents for existing test content using these keywords:
 - "Test Scenarios" / "Test Scenario"
-- "Test Cases" / "Test Case" 
+- "Test Cases" / "Test Case"
 - "Test case Scenarios"
 - "Testing" / "Test Plan"
 - "Verification" / "Validation"
-
+ 
 **IF existing test scenarios/cases ARE FOUND in source documents:**
 - Extract and preserve ALL the EXACT test scenarios from the source (require all the test scenarios from the source)
 - Maintain original test structure, format, and content
 - Convert to standardized markdown table format:
-
-| **Test ID** | **Test Scenario Name** | **Objective** | **Test Steps** | **Expected Results** | **Type** |
+ 
+| Test ID | Test Scenario Name | Objective | Test Steps | Expected Results | Type |
 |-------------|---------------|---------------|----------------|---------------------|----------|
 | [Extract ID] | [Extract Name] | [Extract Objective] | [Extract Steps] | [Extract Results] | [Extract Type] |
-
+ 
 Also, ADDING on to this, generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements
-
+ 
 **STOP HERE - Do not proceed to Secondary Approach if existing tests are found**
-
+ 
 ---
-
+ 
 **SECONDARY APPROACH - Generate from Functional Requirements:**
 **ONLY EXECUTE IF PRIMARY APPROACH YIELDS NO RESULTS**
-
+ 
 IF NO existing test scenarios are found in ANY source documents, THEN generate test scenarios based EXCLUSIVELY on functionality explicitly described in source requirements:
-
-| **Test ID** | **Test Name** | **Objective** | **Test Steps** | **Expected Results** | **Type** |
+ 
+| Test ID | Test Name | Objective | Test Steps | Expected Results | Type |
 |-------------|---------------|---------------|----------------|---------------------|----------|
-
+ 
 Create exactly 5 test scenarios covering:
 - Primary functional requirements mentioned in source
 - Different user roles, permissions, or access levels described  
 - Various input conditions, data scenarios, or edge cases noted
 - Error conditions, exceptions, or validation failures mentioned
 - Integration points, API calls, or system interactions described
-
+ 
 **CRITICAL:** Base ALL generated test scenarios ONLY on what is explicitly described in the source requirements. Do not infer or assume functionality not documented.
-
+ 
 **EXECUTION RULE:** Use Primary Approach OR Secondary Approach - NEVER BOTH.
-
+ 
 ## 8.0 Questions / Suggestions
-
+ 
 **SEARCH STRATEGY:**
 - Scan ALL source documents for explicit questions, suggestions, or clarifications
 - Look for keywords: "Question", "Clarification", "Unknown", "Assumption", "Dependency", "Suggestion", "Recommendation"
-
+ 
 **IF questions/suggestions ARE FOUND in source:**
 - List exact questions, clarifications, or unknowns from source
 - List exact assumptions, dependencies, or prerequisites from source  
 - List exact suggestions, recommendations, or enhancements from source
-
+ 
 **IF NO questions/suggestions are found in source:**
 - Leave this section completely BLANK
 - Do NOT generate, create, or assume any questions or suggestions
 - Do NOT infer potential issues or recommendations
-
+ 
 **CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate any questions, suggestions, or recommendations not present in the source.
-
+ 
 ## 9.0 Reference Document
-
+ 
 List exact source documents
-
+ 
 **CRITICAL:** Only extract content that is explicitly stated in the source documents. Never generate, create, assume, or fabricate anything
-
+ 
 ## 10.0 Appendix
-
+ 
 **SEARCH STRATEGY:**
 - Scan ALL source documents for explicit appendix and supporting information
 - Look for keywords: "Appendix"
-
+ 
 **IF appendix/supporting information ARE FOUND in source:**
 - List exact appendix and supporting information
-
+ 
 **IF NO appendix/supporting information are found in source:**
 - Leave this section completely BLANK
 - Do NOT generate, create, or assume any appendix or supporting information
 - Do NOT infer potential supporting information
-
+ 
 ## 11.0 Risk Evaluation
-
-**CRITICAL EXTRACTION RULE:** 
+ 
+**CRITICAL EXTRACTION RULE:**
 Extract the EXACT table content from the source documents. Do NOT modify, interpret, or reformat the content.
-
+ 
 **SEARCH FOR RISK CONTENT:**
 - Look for any sheet named "Ops Risk Assessment", "Risk Evaluation", "Risk Assessment", or similar
 - Look for any table or structured data containing risk-related information
 - Search for keywords: "risk", "evaluation", "assessment", "impact", "controls"
-
+ 
 **EXTRACTION PROCESS:**
 1. **IF a risk table/data is found in the source:**
    - Copy the EXACT column headers from the source
@@ -810,43 +963,45 @@ Extract the EXACT table content from the source documents. Do NOT modify, interp
    - Maintain the EXACT table structure and content
    - Convert to clean markdown table format WITHOUT changing any text content
    - Include ALL rows and columns as they appear in the source
-
+ 
 2. **EXAMPLE - If source has this table:**
    ```
    | Risk Type | Impact | Mitigation | Status |
    | High Risk | Operational | Control A | Active |
    ```
-   
+ 
    **OUTPUT EXACTLY:**
    ```
    | Risk Type | Impact | Mitigation | Status |
    |-----------|--------|------------|---------|
    | High Risk | Operational | Control A | Active |
    ```
-
+ 
 3. **IF NO risk content found:**
    - State: "No Risk Evaluation content found in source documents"
    - Do NOT create any template or sample content
-
+ 
 **FORBIDDEN:**
 - Do NOT generate placeholder text like "List down the business risks"
-- Do NOT create template structures 
+- Do NOT create template structures
 - Do NOT interpret or modify the source content
 - Do NOT add explanatory text or instructions in table cells
-
+ 
 **VALIDATION:**
 Every piece of content in this section must be traceable to the exact source document content.
-
+ 
 VALIDATION CHECK:
-
+ 
 Before finalizing sections 8.0-11.0, verify that every piece of information can be traced back to the source requirements. Remove any content that cannot be directly attributed to the source documents.
-
+ 
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 7.0, ### 7.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
-
+ 
+ 
 """
-
+ 
 }
+ 
 
 def estimate_content_size(text):
     return len(text)
@@ -951,12 +1106,23 @@ def generate_brd_sequentially(chains, requirements):
     st.write("="*120)
 
     product_alignment = load_product_alignment()
+    # Load API catalog and append as reference block for the LLM (prompt-only usage)
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "apis_full.json"), "r", encoding="utf-8") as _f:
+            apis_catalog_json = json.load(_f)
+    except Exception:
+        apis_catalog_json = {}
 
     if product_alignment:
         product_alignment_text = "\n\n=== PRODUCT ALIGNMENT DATA ===\n"
         product_alignment_text += json.dumps(product_alignment, indent=2)
         product_alignment_text += "\n" + "="*50
         combined_requirements = combined_requirements + product_alignment_text
+    
+    if apis_catalog_json:
+        combined_requirements += "\n\n=== KNOWN API CATALOG (READ-ONLY REFERENCE) ===\n"
+        combined_requirements += json.dumps(apis_catalog_json, indent=2)
+        combined_requirements += "\n" + "="*50
     
     with st.expander("📄 View Complete Requirements Content", expanded=False):
         st.text_area("Full Content", combined_requirements, height=400)
@@ -1057,6 +1223,8 @@ def generate_brd_sequentially(chains, requirements):
 
             if i == 0 and product_alignment:
                 result = expand_product_categories(result, product_alignment)
+            
+            # Removed API injection: rely on prompt with catalog JSON only
             
             print(f"\nCHAIN {i+1} OUTPUT:")
             print(f"Response length: {len(result)} characters")
@@ -1260,52 +1428,17 @@ def add_section_with_bookmark(doc, heading_text, bookmark_name, level=1):
     
     return heading
 
-def create_table_in_doc(doc, table_data):
-    def clean_table_cell_value(cell_text):
-        if cell_text is None:
-            return "-"
-        
-        str_val = str(cell_text).strip()
-        
-        if str_val.lower() == 'nan':
-            return "-"
-        
-        if str_val.startswith("Unnamed"):
-            return "Insert Column Name"
-        
-        return str_val
-    
-    if not table_data or len(table_data) < 2:
-        return None
-    
-    table = doc.add_table(rows=len(table_data), cols=len(table_data[0]))
-    table.style = 'Table Grid'
-    
-    for i, cell_text in enumerate(table_data[0]):
-        cell = table.rows[0].cells[i]
-        cleaned_text = clean_table_cell_value(cell_text)
-        cell.text = cleaned_text
-        for paragraph in cell.paragraphs:
-            for run in paragraph.runs:
-                run.bold = True
-    
-    for row_idx, row_data in enumerate(table_data[1:], 1):
-        for col_idx, cell_text in enumerate(row_data):
-            if row_idx < len(table.rows) and col_idx < len(table.rows[row_idx].cells):
-                cleaned_text = clean_table_cell_value(cell_text)
-                table.rows[row_idx].cells[col_idx].text = cleaned_text
-    
-    return table
+
 
 def parse_markdown_table(table_text):
     def clean_cell_value(cell_text):
         if cell_text is None:
-            return "-"
+            return ""
         
         str_val = str(cell_text).strip()
         
         if str_val.lower() == 'nan':
-            return "-"
+            return ""
         
         if str_val.startswith("Unnamed"):
             return "Insert Column Name"
@@ -1317,55 +1450,126 @@ def parse_markdown_table(table_text):
     if len(lines) < 2:
         return None
     
-    if len(lines) >= 2 and '---' in lines[1]:
-        lines.pop(1)
+    # Remove separator line (the one with ---)
+    filtered_lines = []
+    for line in lines:
+        if not re.match(r'^[\s\|\-]+$', line):  # Skip lines that only contain |, -, and spaces
+            filtered_lines.append(line)
+    
+    if len(filtered_lines) < 2:  # Need at least header + 1 data row
+        return None
     
     table_data = []
-    max_cols = 0
     
-    for line in lines:
-        if line.startswith('|') and line.endswith('|'):
-            line = line[1:-1]
+    for line in filtered_lines:
+        # Clean up the line - remove leading/trailing pipes
+        if line.startswith('|'):
+            line = line[1:]
+        if line.endswith('|'):
+            line = line[:-1]
         
+        # Split by | and clean each cell
         cells = [clean_cell_value(cell.strip()) for cell in line.split('|')]
         
+        # Remove empty cells from the end
         while cells and not cells[-1]:
             cells.pop()
         
-        if cells:
+        if cells:  # Only add if there are non-empty cells
             table_data.append(cells)
-            max_cols = max(max_cols, len(cells))
     
     if not table_data:
         return None
     
-
-    normalized_data = []
-    for row in table_data:
-        normalized_row = row + ['-'] * (max_cols - len(row))
-        normalized_data.append(normalized_row)
-    
-    while max_cols > 1:
-        last_col_has_data = False
-        for row in normalized_data:
-            if len(row) >= max_cols and row[max_cols-1].strip() and row[max_cols-1] != '-':
-                last_col_has_data = True
-                break
+    # Ensure all rows have the same number of columns as the header
+    if len(table_data) > 0:
+        max_cols = len(table_data[0])  # Use header row as reference
         
-        if last_col_has_data:
-            break
-        else:
-            for row in normalized_data:
-                if len(row) >= max_cols:
-                    row.pop()
-            max_cols -= 1
+        # Normalize all rows to have the same number of columns
+        normalized_data = []
+        for i, row in enumerate(table_data):
+            if i == 0:  # Header row
+                normalized_row = row[:max_cols]  # Don't extend header, just truncate if needed
+            else:  # Data rows
+                # Extend with empty strings if needed, truncate if too long
+                if len(row) < max_cols:
+                    normalized_row = row + [''] * (max_cols - len(row))
+                else:
+                    normalized_row = row[:max_cols]
+            normalized_data.append(normalized_row)
+        
+        return normalized_data
     
-    final_data = []
-    for row in normalized_data:
-        final_row = row[:max_cols] + ['-'] * max(0, max_cols - len(row))
-        final_data.append(final_row)
+    return None
+
+def create_table_in_doc(doc, table_data):
+    def clean_table_cell_value(cell_text):
+        if cell_text is None:
+            return ""
+        
+        str_val = str(cell_text).strip()
+        
+        if str_val.lower() == 'nan':
+            return ""
+        
+        if str_val.startswith("Unnamed"):
+            return "Insert Column Name"
+        
+        return str_val
     
-    return final_data if final_data else None
+    if not table_data or len(table_data) < 1:
+        return None
+    
+    # Filter out completely empty columns
+    filtered_data = []
+    if len(table_data) > 0:
+        num_cols = len(table_data[0])
+        
+        # Check which columns have actual data
+        columns_with_data = []
+        for col_idx in range(num_cols):
+            has_data = False
+            for row in table_data:
+                if col_idx < len(row) and clean_table_cell_value(row[col_idx]):
+                    has_data = True
+                    break
+            if has_data:
+                columns_with_data.append(col_idx)
+        
+        # Create filtered table data with only columns that have data
+        for row in table_data:
+            filtered_row = []
+            for col_idx in columns_with_data:
+                if col_idx < len(row):
+                    filtered_row.append(clean_table_cell_value(row[col_idx]))
+                else:
+                    filtered_row.append("")
+            if filtered_row:  # Only add if row has content
+                filtered_data.append(filtered_row)
+    
+    if not filtered_data or len(filtered_data) < 1:
+        return None
+    
+    table = doc.add_table(rows=len(filtered_data), cols=len(filtered_data[0]))
+    table.style = 'Table Grid'
+    
+    # Style header row
+    for i, cell_text in enumerate(filtered_data[0]):
+        if i < len(table.rows[0].cells):
+            cell = table.rows[0].cells[i]
+            cell.text = cell_text if cell_text else ""
+            for paragraph in cell.paragraphs:
+                for run in paragraph.runs:
+                    run.bold = True
+    
+    # Fill data rows
+    for row_idx, row_data in enumerate(filtered_data[1:], 1):
+        if row_idx < len(table.rows):
+            for col_idx, cell_text in enumerate(row_data):
+                if col_idx < len(table.rows[row_idx].cells):
+                    table.rows[row_idx].cells[col_idx].text = cell_text if cell_text else ""
+    
+    return table
 
 def extract_content_from_docx(doc_file):
     doc = Document(doc_file)
@@ -1532,12 +1736,14 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         },
         "priority_content": {
             "part_b": [],
-            "part_c": []
+            "part_c": [],
+            "part_e": [] 
         },
         "sheets": [],
         "summary": {
             "part_b_found": False,
             "part_c_found": False,
+            "part_e_found": False,
             "total_rows_processed": 0,
             "total_columns_processed": 0,
             "detailed_requirements_found": False
@@ -1701,7 +1907,66 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                             result["priority_content"]["part_b"].append(part_b_entry)
                             result["summary"]["part_b_found"] = True
                             break
-        
+
+        part_e_patterns = [
+            "PART E : (Mandatory/Optional)",
+            "PART E (Mandatory/Optional)",
+            "PART E:",
+            "Part E :",
+            "Part E:",
+            "PART E"
+        ]
+
+        for sheet_name, df in excel_data.items():
+            if df.empty:
+                continue
+
+            for col_idx, col in enumerate(df.columns):
+                for row_idx, cell_value in enumerate(df[col]):
+                    cell_str = str(cell_value).strip()
+
+                    for pattern in part_e_patterns:
+                        if pattern.lower() in cell_str.lower():
+                            part_e_entry = {
+                                "sheet_name": sheet_name,
+                                "column": col,
+                                "row": row_idx + 2,
+                                "header": cell_str,
+                                "content": [],
+                                "adjacent_content": [],
+                                "detailed_responses": []
+                            }
+
+                            # ↓ Collect exactly next 8 rows (dynamic but fixed count)
+                            for offset in range(1, 9):
+                                next_row = row_idx + offset
+                                if next_row < len(df):
+                                    next_cell = df.iloc[next_row][col]
+                                    part_e_entry["content"].append({
+                                        "row": next_row + 2,
+                                        "text": "" if pd.isna(next_cell) else str(next_cell).strip()
+                                    })
+
+                            # ↓ Collect adjacent values for same 8 rows
+                            for adj_col_offset in [-1, 1]:
+                                adj_col_index = col_idx + adj_col_offset
+                                if 0 <= adj_col_index < len(df.columns):
+                                    adj_col = df.columns[adj_col_index]
+                                    for offset in range(1, 9):
+                                        next_row = row_idx + offset
+                                        if next_row < len(df):
+                                            adj_cell = df.iloc[next_row][adj_col]
+                                            part_e_entry["adjacent_content"].append({
+                                                "column": adj_col,
+                                                "row": next_row + 2,
+                                                "text": "" if pd.isna(adj_cell) else str(adj_cell).strip()
+                                            })
+
+                            result["priority_content"]["part_e"].append(part_e_entry)
+                            result["summary"]["part_e_found"] = True
+                            break
+
+
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
@@ -1924,6 +2189,39 @@ def create_word_document(content, logo_data=None):
                     j += 1
     
     return doc
+
+def inject_apis_table_into_section(full_text: str, api_table_md: str) -> str:
+    if not api_table_md:
+        return full_text
+    lower = full_text.lower()
+    start_markers = ["### 2.3 list of apis required", "## 2.3 list of apis required"]
+    end_markers = ["## 3.0", "### 3.0", "## 3.0 process", "### 3.0 process"]
+    start_idx = -1
+    for m in start_markers:
+        i = lower.find(m)
+        if i != -1:
+            start_idx = i
+            break
+    if start_idx == -1:
+        return full_text
+    # Find end of header line
+    header_end = full_text.find('\n', start_idx)
+    if header_end == -1:
+        header_end = start_idx
+    end_idx = len(full_text)
+    for m in end_markers:
+        j = lower.find(m, header_end + 1)
+        if j != -1:
+            end_idx = min(end_idx, j)
+    header_text = full_text[start_idx:header_end]
+    original_body = full_text[header_end:end_idx]
+    # Remove default "No specific APIs" lines from original body
+    cleaned_body = "\n".join([
+        ln for ln in original_body.split('\n')
+        if 'no specific apis' not in ln.lower()
+    ]).strip()
+    new_section = header_text + "\n\n" + api_table_md + ("\n\n" + cleaned_body if cleaned_body else "") + "\n"
+    return full_text[:start_idx] + new_section + full_text[end_idx:]
 
 st.title("Business Requirements Document Generator")
 
