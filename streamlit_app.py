@@ -548,16 +548,6 @@ IMPORTANT VALIDATION RULES:
 | Application Name  | High level Description |
 hen
 | [Extract from source whose impact impact status is yes] | [high level descriptions of Applications basic overview how it is impacted] |
-
-
-EXAMPLES FOR REFERENCE:
-
-Input part_c under Applications Impacted table, "Application Name":
-`["OPUS":"No", "INSTAB": "No", "Other": "All Digi platforms"]`
-OUTPUT should be:
-| Application Name | High Level Description                |
-|------------------|------------------------------------------|
-| All Digi platforms | A description for the application |
  
 **VERY VERY CRITICAL**: Only Include those application for whose impact status is yes for Example if for Digibanca impact status is yes then only  application name 'Digibanca' and its high level description will be there.
  
