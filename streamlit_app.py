@@ -543,11 +543,21 @@ IMPORTANT VALIDATION RULES:
   - Include only two columns Application Name (only those whose impact status is yes according to source table) and thier high level Description (From Document find whatever descriprtion given about that category).
   - If Application Name is given 'Other' and in other some particular name is given like 'DigiBanca' Then Application Name Will Be DigiBanca,Not 'Other'.And In Impact Status Give Yes Or No By Extracting The Impact Status of DigiBanca.
  
-- *VERY CRITICAL* : In finding impact status don;t hallucinate or assume impact stuatus by yourself .carefully see, ,many times you are doing mistake "OPUS' impact  is given 'no' or 'blank' you are doing yes.It should be no.
+- *VERY CRITICAL* : In finding impact status don't hallucinate or assume impact stuatus by yourself .carefully see many times you are doing mistake "OPUS' impact  is given 'no' or 'blank' you are doing yes.It should be no.
 **TABLE FORMAT EXAMPLE (if structured table found):**
 | Application Name  | High level Description |
 hen
 | [Extract from source whose impact impact status is yes] | [high level descriptions of Applications basic overview how it is impacted] |
+
+
+EXAMPLES FOR REFERENCE:
+
+Input part_c under Applications Impacted table, "Application Name":
+`["OPUS":"No", "INSTAB": "No", "Other": "All Digi platforms"]`
+OUTPUT should be:
+| Application Name | High Level Description                |
+|------------------|------------------------------------------|
+| All Digi platforms | A description for the application |
  
 **VERY VERY CRITICAL**: Only Include those application for whose impact status is yes for Example if for Digibanca impact status is yes then only  application name 'Digibanca' and its high level description will be there.
  
