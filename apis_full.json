@@ -1,0 +1,1043 @@
+{
+  "Policy": [
+    {
+      "method": "POST",
+      "endpoint": "/GetDetailsService/getDetails",
+      "description": "Get details of customer based on policy no and request type"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetUnclaimedAmountService/getUnclaimedAmount",
+      "description": "Get Unclaimed Amount"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/MyProfileService/getMyProfile",
+      "description": "Provides profile details of a user based on the customer_id passed"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetDashboardDetailsService/getDashboardDetail",
+      "description": "Fetch dashboard details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RenewalDueListService/getRenewalDueList",
+      "description": "Get Renewal Due List , providers are Opus and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FetchCategoryDetailService/fetchCategoryDetail",
+      "description": "Fetch details for given category , provider is NGIN"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetChargeDetailsService/getChargeDetails",
+      "description": "Calculate charges , provider is NGIN"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/InterestWaiverDetailService/getInterestWaiverDetails",
+      "description": "Get InterestWaiver Details , provide is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/LoyaltyDetailService/getLoyaltyDetailsByPolicy",
+      "description": "Get Loyalty Details , provider in CRM Legacy and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SumAssuredCalculationService/calculateSumAssured",
+      "description": "Calculates sum assured on basis of premium amount, providers are Opus and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/getPremiumReceiptService/getPremiumReceipt",
+      "description": "Get Premium Receipt Details , provider is Opus/ICSM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/NameSearchService/searchName",
+      "description": "Retrieves registered PH,Policy number against agent code , providers are Opus and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CRMAppSrchMsupDtls/CRMAppSrchMsupDtlsProxy/getDetails",
+      "description": "Mashup Service to retrieve policydetails , providers are CRM and NGIN"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SMSDetailsByPolicyService/getSMSDetailsByPolicy",
+      "description": "Get SMS Details By Policy , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RenewalMailerDetailService/getRenewalMailerDetails",
+      "description": "Retrieves mail details sent for renewal tracking , providers are CRM and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FatcaNRIService/getFatcaNRI",
+      "description": "FATCA NRI details of the customer for the given policy number , providers are CRM and Ngin (to-be)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/AutoCallingDetailsServices/getAutoCallingDetails",
+      "description": "Generates calling details for given number of policy no"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PasLoginService/pasLogin",
+      "description": "Returns url for each sr category post processing , provider is Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UpdateFundAlertSMSService/AlertSMS",
+      "description": "Updates frequncy of sms alert notification opted , providers are Ngin and CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FundDetailsService/getFundDetails",
+      "description": "Retrieves Policy Fund & Nav (Net Asset Value) details , providers are Opus , CRM and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetFundsService/getFunds",
+      "description": "This API is used to get the Funds Bencmarking Details. provider is GBO (Goal Based Orientation)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PolicyDetailsService/getPolicyDetails",
+      "description": "Retrives Policy Details (Inception Date,Frequency,etc) , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetPayeeDetailsService/getPayeeDetails",
+      "description": "Get Payee Details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GenerateNGINTokenService/generateNGINToken",
+      "description": "generate NGIN Token"
+    }
+  ],
+  "Policy Servicing": [
+    {
+      "method": "POST",
+      "endpoint": "/UpdateFTReceiptStatusService/updateFTReceiptStatus",
+      "description": "This API is used to update FT Receipt status"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ValidatePartialWithdrawalAmountService/validatePartialWithdrawalAmount",
+      "description": "This API is used to validate Partial Withdrawal Amount"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SaveAnswerService/saveAnswer",
+      "description": "The Api saves the question list and gives a status which indicates its success"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SubmitRevivalDGHResponseService/submitRevivalDGHResponse",
+      "description": "The Api is used to submit the revival DGH request for the policy no"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SubmitPartialWithdrawalRequestService/updatePartialWithdrawal",
+      "description": "Submit the partial withdrawal request and generate a service request number for same"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GPARequestDetailsService/saveGPARequestDetails",
+      "description": "Save GPA request details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/AutopayDetailsService/saveAutopayDetails",
+      "description": "Save Autopayment Details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CalculateFeesGSTandTDSService/calculateFeesGSTandTDS",
+      "description": "Calculate taxes applicable on transactions , provider is PAS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FTRequestDetailsService/saveFTRequestDetails",
+      "description": "Save fund transfer Request , update happens in CRM or Ngin system"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RetrieveModalPremiumForSelectedFrequency/getRetrieveModalPremium",
+      "description": "Get ModalPremium For given policy and payment frequency, providers are NGIN and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/NAVHistoryService/getNAVHistory",
+      "description": "Get NAV(Net Asset value) History , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PayoutDetailsService/getPayoutDetails",
+      "description": "Get Payout Details, providers are Ngin and CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PremiumRedirectionService/savePremiumRedirection",
+      "description": "Save Premium Redirection Details , update happens in Ngin or Customer Portal"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UWCommentsService/getUWComments",
+      "description": "Get underwriter Comments for Policy , providers are NGIN or CMR and iONE"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RenewalIntimationCoverDetailsService/getcoverdetails",
+      "description": "Returns coverage details of a policy"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GenerateSMSService/generateSMS",
+      "description": "Generate SMS , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/validateCOEService/validateCOE",
+      "description": "Validate Certificate of Existence , provider is Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/LoanDetailService/getLoanDetails",
+      "description": "Get Loan Details , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/BonusDetailService/getBonusDetails",
+      "description": "Get Bonus Details , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/NomineeDetailsService/NomineeDetailsService_PS/getNomineeDetails",
+      "description": "Get policy holder's Nominee Detail , providers are Ngin, Opus and CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ValidateSettlementService/validateSettlement",
+      "description": "Validate settlement for the given policy number , providers are CRM and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UpdatePremiumFrequencyService/updatePremiumFrequency",
+      "description": "Update Premium frequency for the given policy detail , details update in Ngin and CRM system based on Policy Number"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ClickToCallService/getCall",
+      "description": "Customer details & mobile number are saved to opt for clicktocall , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ViewRequestHistoryService/viewRequestHistory",
+      "description": "Checks service request history against each policy , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/MRNachStatusService/updateNachStatus",
+      "description": "Updates NACH (Bank, transaction, etc.) details for policyNo , update in Ngin(CRT) and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SaveFundSwitchService/saveFund",
+      "description": "Save fund switch details based on the policy number , providers are Opus and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SaveFundSwitchSTPService/saveFundSwitchSTP",
+      "description": "Save fund switch systematic transfer plan details based on the policy number , data updates in Ngin or Opus System based on Policy"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ProductDetailsService/ProductDetailsService_PS/getProductList",
+      "description": "List of products , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FundValueService/fetchPolicyData",
+      "description": "Fund Value details based on the policy no, application no, insurance type and manufacturer name , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetCashReceiptValService/getCashReceiptValService",
+      "description": "Cash Receipt details based on the policy no, application no , provider is Ngin(Cashiering and DC Activation)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SaveTopupPaymentService/saveTopupPayment",
+      "description": "Save topup details against Policy , provider is Opus and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SimultaneousCaseDetailsService/getSimultaneousCaseDetails",
+      "description": "Retrieves simultaneous case details against application no, policy details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/OTPVerificationService/fetchAgentData",
+      "description": "Retrieves agent profile details. Provider is Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PremiumRedirectionService/getPremiumRedirection",
+      "description": "Retrieves fund apportionment of policies , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/MandateTransDetailService/getMandateTransDetails",
+      "description": "Used to get the mandate Transaction details , providers are CRM and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PolicyListService/getPolicyList",
+      "description": "Retrieves payment url for policies eligible for renewal against user id . Providers are CRM and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PreviousRequestSTPService/getPreviousRequestSTP",
+      "description": "Display details of fund transfer for a given policy (from/to lists)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/validateBalicPolicy/rest/ValidatePolicyNo/",
+      "description": "Used to validate the policy, providers are Opus and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ReverseUpdateStatusLeadsService/reverseUpdateStatusLeads",
+      "description": "Used to get the item key , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UWCOPUSService/getUWCDetails",
+      "description": "Used for underwriting computation , provider is Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SaveNomineeDetailsService/saveNomineeDetails",
+      "description": "Saves the details of nominee for a given policy number , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ValidateAadhaarService/validateAadhaar",
+      "description": "Validate details for a given Aadhaar number , provider is Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UpdateAadharService/UpdateAadhar",
+      "description": "Updates Aadhar details for given number of policy , detail updates in Ngin and Opus based on given Policy"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/KYCDetailsService/getKYCDetails",
+      "description": "Generates KYC details for given number of policy , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SavePayoutDetailsService/savePayoutDetails",
+      "description": "Saves payout details for given number of policy , providers are Ngin and CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ReverseUpdateStatusService/getReverseStatus",
+      "description": "Provides reverse SR status , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SRStatusService/getSRStatus",
+      "description": "Gives the current status of SR , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ExtendRevivalService/getExtendRevival",
+      "description": "Generates message for extending revival period for given policy , provider is CRM and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/getInstallmentAmount/InstallmentAmount",
+      "description": "Get Installment amount , provider is Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/getTotalNetAmount/TotNetAmount",
+      "description": "Get total net amount , provider is Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/DocumentEligilbleService/getDocumentEligible",
+      "description": "Get Document Eligible , provider is GBO (Goal Based Orientation) platform"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CurrentPayableByAgentCodeService/getCurrentPayableByAgentCode",
+      "description": "Amount payable by respective agent code , providers are ICSM portal and Ngin"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/updateApprovalStatus/updateApproval",
+      "description": "Updates application Approval Status for PLVC, detail updates in Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SearchFundRequestService/getSearchFundRequest",
+      "description": "Get service request details of funds , provider is ICSM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PreLoginContactUpdateService/PreLoginContactUpdate",
+      "description": "Contact updated in Ngin and Opus systems for given application number"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/AllocationDetailsService/getAllocationDetails",
+      "description": "Retrieve policy fund allocation details, providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ActivityLogService/getActivityLog",
+      "description": "Get Activity Details against policy (address change, contact update etc) , providers are Ngin and CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UploadCOEService/uploadCOE",
+      "description": "Upload Certificate of Existence , updates in CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CancelSTPRequestService/cancelSTPRequest",
+      "description": "Discontinue STP fund transfer for given policy number , updates in Ngin and CRM system"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FamilyDetailsService/getFamilyDetailsByPolicy",
+      "description": "Get Details of Family members , providers are Ngin and CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PartnerDetailService/getPartnerDetails",
+      "description": "Get Details of Partner , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PolicyEligibilityDetailsService/getPolicyEligibilityDetails",
+      "description": "Details of surrender value, partial withdrawal etc , providers are Ngin and CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FTAppDetailService/getFTApplnRequestDetails",
+      "description": "Mashup details for Fund transfer application details , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PremiumDetailsService/getPremiumDetails",
+      "description": "Premium payment details based on Policy , providers are Ngin and Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/STPDetailsService/saveSTPDetails",
+      "description": "Saves information for SRs like portfolio switch, fund switch name change for given policy , updates in Ngin or Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ProfileInfoService/getProfileInfo",
+      "description": "Fetches profile details on the basis of either profile number or mobile number from PMAC"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CustomerRetentionFutureFundDetailsService/customerRetentionFutureFundDetails",
+      "description": "Fetch the customer retention future fund details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CPIDMergeService/cpidMerge",
+      "description": "Merge/change the cp_id of policy"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SubmitMedicalClaimService/submitmedicaldetails",
+      "description": "Submit medical claim details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CPMergingStatusService/getCPMergingStatus",
+      "description": "Get CP merging status , provider is OPUS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetMedicalClaimdetailsService/GetMedicalClaimdetails",
+      "description": "Get medical claim details , provider is OPUS"
+    }
+  ],
+  "New Business": [
+    {
+      "method": "POST",
+      "endpoint": "/FetchNBPremiumInfoService/getNBPremiumDetails",
+      "description": "Get receipt and premium details based on application number"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/LeadSearchDetailsService/getLeadSearchDetails",
+      "description": "Search lead details based on request data , provider is OPUS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/LeadDetailsService/getLeadDetailsUsingLeadNo",
+      "description": "Fetch lead details based on request data , provider is OPUS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SubmitDocumentDataService/saveDocument",
+      "description": "Copy documents of existing policy to new Policy , provider is OPUS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CustomerPriorStatusService/getCustomerPriorStatus",
+      "description": "Get Customer Prior Status"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/GetCountryService/getCountry",
+      "description": "Get Country Details i.e. Country Code & Country Name"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/DistrictDetailService/getDistrict",
+      "description": "List all districts in the given state"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CreateMerchantAndSendNotificationService/createMerchantAndSendNotification",
+      "description": "Create Merchant for PIVC journey (Signzy)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UCSService/getUCS",
+      "description": "Get Underwriting Computation Service (Ione)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UCSProposalPolicyService/getUCSDetails",
+      "description": "Get Underwriting Computation Channel Service (Ione)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/getMicrDetails/MicrDetails",
+      "description": "Get MICR Details , Provider is Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/getIndividualCaseDetails/getIndividualCase",
+      "description": "Get Individual case Details once application data entry completes (PAS Systems)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/DownloadLatestReceiptDetailsService/downloadReceipt",
+      "description": "Provide Receipting statement in PDF (Opus, Cashiering, CCM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/MobileDedupeService/getDedupeDetails",
+      "description": "Get Dedupe Details (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CustomerDetailsService/fetchCustomerDetails",
+      "description": "Retrieve customer details from Opus system for given Policy and Search Criteria"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/MedicalDetailsService/getMedicalDetails",
+      "description": "Get Medical Details (Ione, OPUS)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ValidateOnlineRenewalService/validateOnlineRenewal",
+      "description": "Validate policy renewal and generate renewal payment URL (Ngin cashiering, CRM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ApplicationStatusDetailsService/getApplicationStatus",
+      "description": "Retrieve application status against application number (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RenewalPolicyDetailService/getRenewalPolicyDetailService",
+      "description": "Retrieve policy renewal premium details (cashiering, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PasaEligibilityDetailsService/getPasaEligibityDtls",
+      "description": "PASA eligibility details based on the policy number (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ValidateRequestService/validateRequest",
+      "description": "Validate SR request (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CPIDDedupeService/cpIdDedupe",
+      "description": "Validate customer duplication; provides duplicate CPID info (Ixight)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/BranchLocatorService/getBranchLocator",
+      "description": "Get branch location details (WCM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PANValidationService/ValidatePAN",
+      "description": "Validate PAN details (Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ApplicationSearchService/searchApplication",
+      "description": "Get application details (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UpdateAddressDetailsService/updateAddressDetails",
+      "description": "Update address details for a given application number (PLVC, Ngin)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FTDetailsService/getFtDetails",
+      "description": "Retrieve fund transfer details (CRM, Ngin)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PremiumCollectionDetailsService/getPremiumCollectionDetails",
+      "description": "Retrieve premium collection details for renewal (OPUS, NGIN Cashiering & billing)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RenewalPremiumDetailsService/getRenewalPremiumDetails",
+      "description": "Retrieve renewal premium details for policy for STP (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RenewalOnlinePaymentService/getRenewalOnlinePayment",
+      "description": "Expose online payment link for renewal payment (Ngin cashiering, Opus, Bitly API Instab)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CityDetailService/getCity",
+      "description": "Return list of cities in state (Common master)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/FinancialEligibilityService/getFinancialEligibilityDetails",
+      "description": "Decision whether desired sum assured can be offered (Ione)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ValidateUniqueIdService/ValidateUniqueId",
+      "description": "Validate unique ID against application number (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/StateDetailService/getState",
+      "description": "Return list of states (Common master)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/AutoPaymentLinkService/getAutoPaymentLink",
+      "description": "Generate a URL for payment (Ngin, Opus, CRM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/AutoUnderwritingService/autoUnderwriting",
+      "description": "Update Underwriting details in Ione for NB journey"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CustomerPanVerificationService/customerpanverification",
+      "description": "Validate blacklisted customer / retrieve payout details, death claim status, policy details (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/DocumentChecklistService/getDocumentChecklist",
+      "description": "Retrieve document checklist for NB journey (GBO, Ione)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ClaimStatusService/ClaimStatusService_PS/getClaimStatus",
+      "description": "Provide claim Status for given Policy (Opus or Ngin)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CreateSRService/createSR",
+      "description": "Create SR for updating details like frequency, EIA, PAN, address, occupation changes etc. (Opus or Ngin based on Policy)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetCalculateTDSService/getCalculateTDS",
+      "description": "Get the TDS details like TDS amount for a list of policies and amounts"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetFTEligibleamount/getFTEligibleamount",
+      "description": "Get eligible amount of the FT type for the policy"
+    }
+  ],
+  "CRT": [
+    {
+      "method": "POST",
+      "endpoint": "/RenewalIntimationDetailsService/getRenewalIntimationDetails",
+      "description": "Get Renewal Intimation Details , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/AutoMandateRegService/getAutoMandateReg",
+      "description": "Auto mandate registration details for given policy (CRM, Ngin)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RegisterMandateWithGroupIDService/registerMandateWithGroupIDService",
+      "description": "Mandate registration with group ID (Ngin CRT, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/MandateRegDetailsService/MandateRegDetailsService_PS/regDtls",
+      "description": "Mandate registration details based on policy number (Ngin, Opus, CRM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RenewalDetailsService/getRenewalDetails",
+      "description": "Renewal info details based on policy number (CRM, Ngin)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RevivalDetailsService/getRevivalDetails",
+      "description": "Get revival details (Ngin, CRM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GroupIDForMultiplePolicyMandateRegistrationService/getGroupIDfromMultiplePolicy",
+      "description": "Generate group id of multiple policies for Mandate Registration (Ngin CRT, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GroupIdDetailsForMRService/getGroupIdDetails",
+      "description": "Get policy details against particular group id from Opus and Ngin systems"
+    }
+  ],
+  "Performance Portal": [
+    {
+      "method": "POST",
+      "endpoint": "/CustomerPortfolioSearchByName/SearchCustomerPortfolio",
+      "description": "Search customer portfolio by name for an agent (Opus, Ngin)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SearchCustomerService/searchCustomer",
+      "description": "Retrieve customer details by mobile/dob/name (Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CustomerPortfolioWithChartService/getSelectedCustomerPortfolioWithChart",
+      "description": "Provide customer portfolio list for selected customer for a given policy number (Ngin, Opus ICSM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PolicySnapshotWithChartService/getPolicySnapshotWithChart",
+      "description": "Get Customer Fund Value Details (Opus ICSM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CustomerPortfolioSearchByDateService/customerPortfolioSearch",
+      "description": "Search customer portfolio by date for an agent (ICSM)"
+    }
+  ],
+  "Claims": [
+    {
+      "method": "POST",
+      "endpoint": "/ClaimsPartnerService/getPartnerDetails",
+      "description": "Claims Partner Details (NGIN, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ClaimPayoutDetailsService/getClaimPayoutDetails",
+      "description": "Get Claim Payout Details (NGIN, CRM legacy)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ClaimRepudiationDetailsService/getClaimRepudiationDetails",
+      "description": "Claim repudiation details for given policy (Ngin claims, CRM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ClaimPolicyListService/getClaimPolicyList",
+      "description": "Get claim policy list (Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ClaimNotificationService/getClaimNotification",
+      "description": "Get Claim Notification"
+    }
+  ],
+  "Common": [
+    {
+      "method": "POST",
+      "endpoint": "/LOVDetailService/getLOV",
+      "description": "Get LOV Details , provider is Common Master"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RoutingInfoService/{RoutingOperation}",
+      "description": "getRoutingInfo - target System"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CPIDFromUserId/getCPIDFromUserId",
+      "description": "Get CPID based on the user ID"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GenerateAadharOTPService/generateOTP",
+      "description": "Send OTP on registered mobile linked with Aadhaar Number (Aadhaar Vault/Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ValidateAadhaarOTPService/ValidateAadhaarOTP",
+      "description": "Validate Aadhaar with OTP and provide Reference Number; name match with PAS (Aadhaar Vault, Opus, Ngin)"
+    }
+  ],
+  "Sentimeter": [
+    {
+      "method": "POST",
+      "endpoint": "/SentimeterCOVDetailsService/getCOVDetails",
+      "description": "Get the Sentimeter COV details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/SentimeterInfluencerDetailsService/getInfluencerDetails",
+      "description": "Get the Sentimeter influencer details"
+    }
+  ],
+  "Websales": [
+    {
+      "method": "POST",
+      "endpoint": "/GetAccountStatementService/GetAccountStatement_PS/getAccountStatement",
+      "description": "Generate the account statement"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/BalicWSRest/BalicWSRest",
+      "description": "Save application details in NB Journey for partner services; updates data in Opus"
+    }
+  ],
+  "SFDC": [
+    {
+      "method": "POST",
+      "endpoint": "/MasterPolicyInsuranceService/getInsuranceDetails",
+      "description": "Save the master policy insurance data"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ReceiptCreationService/generateReceipt",
+      "description": "Generate receipt number (OPUS)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CCMPushDataService/saveCCMData",
+      "description": "Save CCM Data in DWH (OPUS)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PartnerIdCreationService/getPartnerIdCreation",
+      "description": "Create the partner id for the customer based on provided details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/QuotationIdCreationService/getQuotationIdCreation",
+      "description": "Create the quotation id for the customer based on provided details"
+    }
+  ],
+  "external_api": [
+    {
+      "method": "POST",
+      "endpoint": "/GetApplicationTrackerDetailsService/getApplicationTrackerDetails",
+      "description": "Track application details for a given Application/Policy Number"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetUserIdFlagService/getUserIdFlag",
+      "description": "Get user_flag for a given login Id (mobile/email/user Id)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/TrackerDocumentService/getDocument",
+      "description": "Send list of documents to user via mail or SMS (OPUS, NGIN & CCM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PinCodeDetailService/getPincodeDetails",
+      "description": "Get Pincode Details (CRM, CP, GBO)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CreateMerchantAndSendNotificationService/createMerchantAndSendNotification",
+      "description": "Create Merchant for PIVC journey (Signzy)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ProfileDetailsService/getProfileDetails",
+      "description": "Get Profile Details (OPUS, NGIN)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PolicyDetailsDashboardService/getPolicyDetailsDashboard",
+      "description": "Get Policy Details of a given User Id (OPUS, NGIN)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/getMicrDetails/MicrDetails",
+      "description": "Get MICR Details , Provider is Opus"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetDocumentService/getDocument",
+      "description": "Provide encrypted PDF statements (PAS systems, CCM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/DownloadLatestReceiptDetailsService/downloadReceipt",
+      "description": "Provide Receipting statement in PDF (Opus, cashiering, CCM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/getReceiptDetails/getReceiptDetails",
+      "description": "Get Receipt Details (Opus, Ngin)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CustomerDetailsService/fetchCustomerDetails",
+      "description": "Retrieve customer details from Opus for given Policy and Search Criteria"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/WhatsappPolicyChartService/getWhatsappPolicyChart",
+      "description": "Get Whatsapp Policy Chart Details (PAS system)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GenerateReceiptService/generateReceiptNumber",
+      "description": "Generate receipt based on payment transaction details (application or policy) (Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RenewalPolicyDetailService/getRenewalPolicyDetailService",
+      "description": "Retrieve policy renewal premium details (cashiering, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GetRenewalDetailsService/getRenewalDetails",
+      "description": "Retrieve policy renewal details against agent (Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UpdatePANService/UpdatePAN",
+      "description": "Update PAN details (Opus, Ngin, CRM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PANValidationService/ValidatePAN",
+      "description": "Validate PAN details (Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ApplicationSearchService/searchApplication",
+      "description": "Get application details (Ngin, Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/CustPaymentLinkService/getCustPaymentLink",
+      "description": "Get CustPaymentLink for a given policy number (Opus, Ngin, CRM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/UpdateContactDetailsService/UpdateContact",
+      "description": "Update contact details for given policy (Ngin or Opus)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/BankDetailsService/getIFSCDetails",
+      "description": "Get Bank Details (Opus, Ngin, CRM)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PremiumCollectionDetailsService/getPremiumCollectionDetails",
+      "description": "Retrieve premium collection details for renewal (OPUS, NGIN Cashiering & billing)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PIVCApplication/SubmitProductQestionnaire",
+      "description": "Accept Questionnaire info submitted by Merchant in Digital PIVC journey (updates in PAS by application number)"
+    }
+  ],
+  "Mandate Registration": [
+    {
+      "method": "POST",
+      "endpoint": "/AutomandateLinkService/sendAutomandateLink",
+      "description": "Send Automandate Link"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GroupIdDetailsForUniversalMandate/getGroupId",
+      "description": "Get Group Id"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/RegisterAutoMandateService/registerAutoMandate",
+      "description": "Register Automandate"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/MandateRegistrationService/getMandateRegister",
+      "description": "Get Mandate Register"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/GenerateAutoModeReceiptService/generateAutoModeReceipt",
+      "description": "Generate AutoModeReceipt (cashiering, Opus)"
+    }
+  ],
+  "Finance": [
+    {
+      "method": "POST",
+      "endpoint": "/StopPaymentReissueService/saveStopPaymentReissue",
+      "description": "Stop Payment Reissue , data saves in SPRP system"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PaymentAvenuesService/getPaymentAvenues",
+      "description": "Provides branchname based on pincode, city , provider is CRM"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PaymentReceiptService/getPaymentReceipt",
+      "description": "Generate payment receipt for given policy (Opus, Ngin cashiering)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/getTransactionDetail/getTransaction",
+      "description": "Get Transaction Details"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/PaymentReissueDetailsService/getPaymentReissueDetails",
+      "description": "Mashup API to get cheque details from payout module based on policy number (Ngin, CRM, SPRP)"
+    }
+  ]
+}
