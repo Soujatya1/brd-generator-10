@@ -530,26 +530,26 @@ IMPORTANT VALIDATION RULES:
  
 ### 2.2 Applications Impacted
  
-**PRIORITY SEARCH STRATEGY:**
-1. **FIRST PRIORITY**: Look for tables/sections with headers ONLY like "Applications Impacted", "Application Impacted", "Application Name" from "Part C"
-2. **SECOND PRIORITY**: Look for tables containing application names: OPUS, INSTAB, NGIN, PMAC, CRM, Cashier
-3. **THIRD PRIORITY**: Search for any mention of applications across all sheets
+STEP BY STEP Process:
+1. From part_c, extract the list `data_rows` containing applications and their impact status, e.g.,  
+   ```json
+        "data_rows": [
+           curly bracket
+                "row_description": "Pls select correct response",
+                "values": curly bracket
+                    "Type of Product": "Pls select correct response",
+                    "OPUS": "-",
+                    "INSTAB": "-",
+                    "Other": "DigiAgency"
+                curly bracket
+            curly bracket
+        ]
  
-**EXTRACTION INSTRUCTIONS:**
-- If a structured table is found (like the example with OPUS, INSTAB, NGIN, etc.), extract it in the following format:
-  - Create a markdown table preserving the original structure
-  - You will get application names and their impact status (Yes/No/etc.) but you need to select only only those applications name whose imapact status is (Yes).
-  - Don't assume that all applications are impacted strictly only and only check by impact status. Example you get APP_NAME1 : No, APP_NAME2:Yes then only APP_NAME2 will included bcz its impact status 'Yes is given".
-  - Include only two columns Application Name (only those whose impact status is yes according to source table) and thier high level Description (From Document find whatever descriprtion given about that category).
-  - If Application Name is given 'Other' and in other some particular name is given like 'DigiBanca' Then Application Name Will Be DigiBanca,Not 'Other'.And In Impact Status Give Yes Or No By Extracting The Impact Status of DigiBanca.
+2. Create a list of application names with their impact status.
  
-- *VERY CRITICAL* : In finding impact status don't hallucinate or assume impact stuatus by yourself .carefully see many times you are doing mistake "OPUS' impact  is given 'no' or 'blank' you are doing yes.It should be no.
-**TABLE FORMAT EXAMPLE (if structured table found):**
-| Application Name  | High level Description |
-hen
+3. Display in the below format:
+| Application Name  | High level Description |
 | [Extract from source whose impact impact status is yes] | [high level descriptions of Applications basic overview how it is impacted] |
- 
-**VERY VERY CRITICAL**: Only Include those application for whose impact status is yes for Example if for Digibanca impact status is yes then only  application name 'Digibanca' and its high level description will be there.
  
 **IF NO STRUCTURED TABLE FOUND:**
 - List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted
