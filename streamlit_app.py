@@ -686,7 +686,7 @@ Extract BUSINESS functional requirements from ALL processed sheets:
 - Look for detailed requirement sections in the "Requirement" sheet primarily
 - Also check other sheets for additional functional requirements
 - Extract information from any columns containing requirement descriptions
-- Include business rules, validation requirements, and functional specifications
+- Include business rules, validation requirements, and functional specifications and it should releate more towards the technical side of things
  
 **SPECIFIC FOR EXCEL:**
 - If there's a "Requirement" sheet, prioritize extracting from detailed requirement sections
