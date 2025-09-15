@@ -580,6 +580,7 @@ STEP BY STEP Process:
  
 **CRITICAL VALIDATION RULE:**
 - List ONLY the applications explicitly whose "Pls select correct response" is ANYTHING except for "NA", "No", "", "-".
+- DO NOT list any applications with "NA", "No", "", "-", "No impact"
  
 ### 2.3 List of APIs required
  
