@@ -368,7 +368,7 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 ### 2.1 Impacted Products
  
 STEP BY STEP Process:
-1. From part_c, extract the list `data_rows` containing "Type of Product" and their "List of products in which the change has to be done", e.g.,  
+1. From part_c, extract the list `data_rows` containing "Type of Product" and their "List of products in which the change has to be done", For Example.,  
    ```json
         "data_rows": [
            curly bracket
@@ -381,31 +381,37 @@ STEP BY STEP Process:
                 curly bracket
             curly bracket
         ]
-2. Create a list of product names with their impact status.
+2. Create a list of all product names with their impact status.
  
 3. From the section '=== PRODUCT ALIGNMENT DATA ===' in the source requirements,
-   identify product names from Step 2 that EXACTLY match the JSON keys in PRODUCT ALIGNMENT DATA.
+   identify all the product names from Step 2 that EXACTLY match the JSON keys in PRODUCT ALIGNMENT DATA.
  
-   - If no product names match, STOP here and output:
+   - If no any product names match, STOP here and output:
      No impacted products found.
  
-   - Do NOT proceed to impact status check unless a match with PRODUCT ALIGNMENT DATA keys is found.
+   - Do NOT proceed to impact status check unless a match with PRODUCT ALIGNMENT DATA keys is found.and Donot stop only on first match ,there can be multiple product which can match with PRODUCT ALIGNMENT DATA keys.
  
 4. For every matched product name, apply IMPACT STATUS check as a mandatory second filter:
    - A product is eligible for expansion ONLY IF:
         (product_name is present in PRODUCT ALIGNMENT DATA keys) AND (impact_status is "Yes" OR "All")
    - If impact_status is "-" or "No" or "NA" or blank → DO NOT EXPAND, even if the product_name matches.
-   - This rule is absolute. Example: If ULIP exists in PRODUCT ALIGNMENT DATA but its status is "-",
-     then ULIP must NOT be expanded and should be excluded from the final output.
- 
-5.**CRITICAL** Only for this final filtered product list, extract and expand the full list of mapped values under PRODUCT ALIGNMENT DATA.Pls include all the application name whose impact status is Yes and All don't skip any and their respective full list of mapped values under PRODUCT ALIGNMENT DATA.
- 
-6. Format the output as a markdown table with the following structure:
+   - This rule is absolute. Example: If Prduct exists in PRODUCT ALIGNMENT DATA but its status is "-",
+     then Product must NOT be expanded and should be excluded from the final output.
+5. Expansion Rule:
+   - For every product name that passes Step 4 (status is "Yes" or "All"), expand its entire mapped product list from PRODUCT ALIGNMENT DATA.
+   -**VERY CRITICAL** If multiple product names qualify, expand all of them, not just the first.
+   - The final output table must include every qualifying product category and each of its mapped values as separate rows.
+   - Do not skip or collapse duplicates. Every eligible mapping must appear in the output table.
+6. Important :Format the output as a markdown table with the following structure in product category all product names which get qualified and it a product should be repeated util it shows all its mapped product values:
  
 | Product Category | Individual Products Name |
 |------------------|---------------------------|
-| [PRODUCT_NAME]   | [Product 1]              |
-| [PRODUCT_NAME]   | [Product 2]              |
+| [PRODUCT_NAME1]   | [Product 1]              |
+| [PRODUCT_NAME1]   | [Product 2]              |
+| [PRODUCT_NAME2]   | [Product 3]              |
+| [PRODUCT_NAME2]   | [Product 4]              |
+| [PRODUCT_NAME3]   | [Product 5]              |
+| [PRODUCT_NAME3]   | [Product 6]              |
  
  
 7. If the final filtered list is empty (i.e., no products with status "Yes" or "All"), output exactly:
@@ -422,138 +428,24 @@ STEP BY STEP Process:
  
  
  
+VERY VERY CRITICAL  VALIDATION RULES:
  
-### Example 1 (Negative case – No impacts)
+1. Matching with PRODUCT ALIGNMENT DATA keys:
+   - Perform **case-insensitive exact key match**.
+   - Example: "term" in part_c matches "TERM" in PRODUCT ALIGNMENT DATA.
  
-Input part_c product list:
-["ULIP":"-", "Product B":"-", "Product C":"-", "All":"Yes"]
-Input PRODUCT ALIGNMENT DATA:
-```json
-"ULIP": [
-  "Bajaj Allianz Life Future Wealth Gain IV",
-  "Bajaj Allianz Life Smart Wealth Goal V"
-],
-"Product B": [
-  "..."
-]
-```
+2. Impact status normalization:
+   - Convert all statuses to lowercase before comparison.
+   - Treat "yes", "all" (in any case: Yes/YES/All/ALL) as positive.
+   - Treat "-", "no", "na", "" (blank) as negative.
  
-Matched products = ULIP, Product B  
-Impact status check → ULIP = "-", Product B = "-"  
-Because none have "Yes"/"All" status, the final list is empty.  
-CRITICAL : STRICTLY DO NOT EXPAND ULIP because its status is "-".  
+3. Multi-product expansion:
+   - If multiple products pass the filter, expand **ALL of them**.
+   - Never stop after the first match. Iterate through all qualifying products.
  
-Final Output:
-No impacted products found.
- 
-NOTE: Even though ULIP exists in PRODUCT ALIGNMENT DATA, its impact status is "-" so it is STRICTLY EXCLUDED.
- 
----
- 
-### Example 2 (Positive case – ULIP impacted with "Yes")
- 
-Input part_c product list:
-`["ULIP":"Yes", "TERM":"-", "All":"Yes"]`
- 
-Input PRODUCT ALIGNMENT DATA:
-```json
-"ULIP": [
-  "Bajaj Allianz Life Goal Assure IV",
-  "Bajaj Allianz Life Magnum Fortune Plus III"
-],
-"TERM": [
-  "Bajaj Allianz Life Term Care"
-]
-```
-part_c matched product name  with '==PRODUCT ALIGNMENT DATA=' json keys are : ULIP = "Yes" , TERM = "-"
-Filtering according to impact status → ULIP = "Yes" → keep, TERM = "-" → ignore,  (AS impact status of only Ulip is yes so keep it only.)
-**Final Output:**
-| Product Category | Individual Products Name              |
-|------------------|----------------------------------------|
-| ULIP             | Bajaj Allianz Life Goal Assure IV      |
-| ULIP             | Bajaj Allianz Life Magnum Fortune Plus III |
- 
- 
----
- 
-### Example 3 (Positive case – ULIP impacted with "All")
- 
-Input part_c product list:
-`["ULIP":"All", "TERM":"-", "All":"Yes"]`
- 
-Input PRODUCT ALIGNMENT DATA:
-```json
-"ULIP": [
-  "Bajaj Allianz Life Future Wealth Gain IV",
-  "Bajaj Allianz Life Smart Wealth Goal V"
-],
-"TERM": [
-  "Bajaj Allianz Life Term Care"
-]
-```
-part_c matched product name  with '==PRODUCT ALIGNMENT DATA=' json keys are : ULIP = "All" , TERM = "-"
-Filtering  according to impact status → ULIP = "All" → keep, TERM = "-" → ignore,  ( as Impact status of Ulip is All so keep that only.)
-**Final Output:**
-| Product Category | Individual Products Name                |
-|------------------|------------------------------------------|
-| ULIP             | Bajaj Allianz Life Future Wealth Gain IV |
-| ULIP             | Bajaj Allianz Life Smart Wealth Goal V   |
- 
- 
-### Example 4 (Positive case and No matched product name with  PRODUCT ALIGNMENT DATA)
-Input part_c product list:
-`["Traditional":"All",]`
- 
-Input PRODUCT ALIGNMENT DATA:
-```json
-"ULIP": [
-  "Bajaj Allianz Life Future Wealth Gain IV",
-  "Bajaj Allianz Life Smart Wealth Goal V"
-],
-"TERM": [
-  "Bajaj Allianz Life Term Care"
-]
-```
-**VERY VERY CRITICAL **:part_c matched product name  with '==PRODUCT ALIGNMENT DATA=' json keys are : empty no one is matching.
-** STRICTLY AVOID **: Expanding Trational by only looking impact status yes bcz first condition is it should match with '==PRODUCT ALIGNMENT DATA=' json keys and it is not matching as there is no Traditional product name in json key of Product_Alignment_data.
-Filtering step is not required as no product name is matching with product alignment data json keys so final list is empty.
-**Final Output:**
-```
-No impacted products found.
-```
- 
-###Example 5
-## Example 4 (Positive case with Impact status multiple Yes)
-Input part_c product list:
-`["ULIP":"All","TERM":"All", "Product C":""]`
- 
-Input PRODUCT ALIGNMENT DATA:
-```json
-"ULIP": [
-  "Bajaj Allianz Life Future Wealth Gain IV",
-  "Bajaj Allianz Life Smart Wealth Goal V"
-],
-"TERM": [
-  "Bajaj Allianz Life Term Care"
-]
-```
- 
-part_c matched product name  with '==PRODUCT ALIGNMENT DATA=' json keys are : ULIP = "All" , TERM = "ALL"
-Filtering  according to impact status → ULIP = "All" → keep, TERM = "ALL"  ( as Impact status of Ulip is All and TERM is ALL so keep that only.)
-**Final Output:**
-| Product Category | Individual Products Name                |
-|------------------|------------------------------------------|
-| ULIP             | Bajaj Allianz Life Future Wealth Gain IV |
-| ULIP             | Bajaj Allianz Life Smart Wealth Goal V   |
-| TERM             | Bajaj Allianz Life Term Care              |
- 
- 
-IMPORTANT VALIDATION RULES:
-- Do NOT expand a product if it is not present in PRODUCT ALIGNMENT DATA keys,
-  even if its status is "Yes" or "All". (Example 4 case)
-- Do NOT expand a product that has status "-" or "No" or "NA", even if it exists in PRODUCT ALIGNMENT DATA. (Example 1 case)
-- While matching to the PRODUCT ALIGNMENT DATA, keep in mind that regard the product names insenstitive to case.
- 
+4. No fallbacks:
+   - Do not assume impact if not matched.
+   - Do not collapse duplicates.
  
 ### 2.2 Applications Impacted
  
@@ -567,20 +459,33 @@ STEP BY STEP Process:
                     "Type of Product": "Pls select correct response",
                     "OPUS": "-",
                     "INSTAB": "-",
-                    "Other": "DigiBanca"
+                    "Other": "DigiAgency"
                 curly bracket
             curly bracket
         ]
  
-2. Create a list of application names with their impact status.
+2. Extract applications list from part_c (Application Name : Pls select correct response).
  
-3. Display in the below format:
+3.Filter logic:
+ 
+    If value = "-", "No", "NA", or "" (blank) → exclude from output completely.
+ 
+    Otherwise (any other value) → include.
+ 
+4.Special case for "Other":
+ 
+    If "Other" has a valid value (after filter), replace "Other" with that value as the Application Name.
+ 
+5. For every application that passed the filter, output in markdown table containing two columns:
+   - **Application Name**
+   - **High level Description**: a short 1–2 line explanation of how this application is impacted by the change.
+     IMPORTANT: Do not copy the placeholder text "High level descriptions of Applications basically the overview how it is impacted".
+     Instead, generate a meaningful description based on the application name and context.
 | Application Name | High level Description |
-| DigiBanca | [high level descriptions of Applications basic overview how it is impacted] |
+| DigiAgency | Impact description of how App is impacted |
  
-**CRITICAL VALIDATION RULE:**
-- List ONLY the applications explicitly whose "Pls select correct response" is ANYTHING except for "NA", "No", "", "-".
-- DO NOT list any applications with "NA", "No", "", "-", "No impact"
+**VALIDATION RULE:**
+- List ONLY the applications explicitly with an impact status of those application whose vakue of Pls select correct response is anything except for "-", "" and "No","NA" and "".
  
 ### 2.3 List of APIs required
  
@@ -1020,6 +925,7 @@ Before finalizing sections 8.0-11.0, verify that every piece of information can 
  
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 7.0, ### 7.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
+q
  
 """
  
