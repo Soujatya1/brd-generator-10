@@ -398,7 +398,7 @@ STEP BY STEP Process:
    - This rule is absolute. Example: If ULIP exists in PRODUCT ALIGNMENT DATA but its status is "-",
      then ULIP must NOT be expanded and should be excluded from the final output.
  
-5. Only for this final filtered product list, extract and expand the full list of mapped values under PRODUCT ALIGNMENT DATA.
+5.**CRITICAL** Only for this final filtered product list, extract and expand the full list of mapped values under PRODUCT ALIGNMENT DATA.Pls include all the application name whose impact status is Yes and All don't skip any and their respective full list of mapped values under PRODUCT ALIGNMENT DATA.
  
 6. Format the output as a markdown table with the following structure:
  
@@ -522,6 +522,32 @@ Filtering step is not required as no product name is matching with product align
 No impacted products found.
 ```
  
+###Example 5
+## Example 4 (Positive case with Impact status multiple Yes)
+Input part_c product list:
+`["ULIP":"All","TERM":"All", "Product C":""]`
+ 
+Input PRODUCT ALIGNMENT DATA:
+```json
+"ULIP": [
+  "Bajaj Allianz Life Future Wealth Gain IV",
+  "Bajaj Allianz Life Smart Wealth Goal V"
+],
+"TERM": [
+  "Bajaj Allianz Life Term Care"
+]
+```
+ 
+part_c matched product name  with '==PRODUCT ALIGNMENT DATA=' json keys are : ULIP = "All" , TERM = "ALL"
+Filtering  according to impact status → ULIP = "All" → keep, TERM = "ALL"  ( as Impact status of Ulip is All and TERM is ALL so keep that only.)
+**Final Output:**
+| Product Category | Individual Products Name                |
+|------------------|------------------------------------------|
+| ULIP             | Bajaj Allianz Life Future Wealth Gain IV |
+| ULIP             | Bajaj Allianz Life Smart Wealth Goal V   |
+| TERM             | Bajaj Allianz Life Term Care              |
+ 
+ 
 IMPORTANT VALIDATION RULES:
 - Do NOT expand a product if it is not present in PRODUCT ALIGNMENT DATA keys,
   even if its status is "Yes" or "All". (Example 4 case)
@@ -552,8 +578,8 @@ STEP BY STEP Process:
 | Application Name | High level Description |
 | DigiBanca | high level descriptions of Applications basic overview how it is impacted |
  
-**IF NO STRUCTURED TABLE FOUND:**
-- List ONLY the applications explicitly with an impact status of anything except for "-", "" and "No"
+**VALIDATION RULE:**
+- List ONLY the applications explicitly with an impact status of those application whose impact status is anything except for "-", "" and "No","NA" and "".
  
 ### 2.3 List of APIs required
  
@@ -661,7 +687,7 @@ Look for process indicators across ALL sheets: "workflow", "process", "steps", "
 ## 4.0 Business / System Requirement
  
 ### 4.1 Functional Requirements
-
+ 
 Module Name: [Extract exact application/module name from ANY processed sheet]
  
 Create detailed requirement table based on content from ALL processed sheets:
@@ -676,7 +702,7 @@ Focus on extracting from ALL processed sheets:
 - User access controls, permissions, or restrictions
 - Data validation, processing, or transformation rules
 - Integration requirements and system interactions
-
+ 
 ### 4.2 System Requirements
  
 Extract BUSINESS functional requirements from ALL processed sheets:
@@ -993,7 +1019,6 @@ Before finalizing sections 8.0-11.0, verify that every piece of information can 
  
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 7.0, ### 7.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
- q
  
 """
  
