@@ -567,7 +567,7 @@ STEP BY STEP Process:
                     "Type of Product": "Pls select correct response",
                     "OPUS": "-",
                     "INSTAB": "-",
-                    "Other": "DigiAgency"
+                    "Other": "DigiBanca"
                 curly bracket
             curly bracket
         ]
@@ -576,10 +576,10 @@ STEP BY STEP Process:
  
 3. Display in the below format:
 | Application Name | High level Description |
-| DigiBanca | high level descriptions of Applications basic overview how it is impacted |
+| DigiBanca | [high level descriptions of Applications basic overview how it is impacted] |
  
-**VALIDATION RULE:**
-- List ONLY the applications explicitly with an impact status of those application whose impact status is anything except for "-", "" and "No","NA" and "".
+**CRITICAL VALIDATION RULE:**
+- List ONLY the applications explicitly whose "Pls select correct response" is ANYTHING except for "NA", "No", "", "-".
  
 ### 2.3 List of APIs required
  
