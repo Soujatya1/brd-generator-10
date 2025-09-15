@@ -368,7 +368,7 @@ Look for indicators across ALL sheets: "to-be", "proposed", "solution", "new pro
 ### 2.1 Impacted Products
  
 STEP BY STEP Process:
-1. From part_c, extract the list `data_rows` containing products and their impact status, e.g.,  
+1. From part_c, extract the list `data_rows` containing "Type of Product" and their "List of products in which the change has to be done", e.g.,  
    ```json
         "data_rows": [
            curly bracket
@@ -526,12 +526,13 @@ IMPORTANT VALIDATION RULES:
 - Do NOT expand a product if it is not present in PRODUCT ALIGNMENT DATA keys,
   even if its status is "Yes" or "All". (Example 4 case)
 - Do NOT expand a product that has status "-" or "No" or "NA", even if it exists in PRODUCT ALIGNMENT DATA. (Example 1 case)
+- While matching to the PRODUCT ALIGNMENT DATA, keep in mind that regard the product names insenstitive to case.
  
  
 ### 2.2 Applications Impacted
  
 STEP BY STEP Process:
-1. From part_c, extract the list `data_rows` containing applications and their impact status, e.g.,  
+1. From part_c, extract the list `data_rows` containing "Application Name" and their "Pls select correct response", e.g.,  
    ```json
         "data_rows": [
            curly bracket
@@ -548,15 +549,11 @@ STEP BY STEP Process:
 2. Create a list of application names with their impact status.
  
 3. Display in the below format:
-| Application Name  | High level Description |
-| [Extract from source whose impact impact status is yes] | [high level descriptions of Applications basic overview how it is impacted] |
+| Application Name | High level Description |
+| DigiBanca | high level descriptions of Applications basic overview how it is impacted |
  
 **IF NO STRUCTURED TABLE FOUND:**
-- List ONLY the applications explicitly mentioned across ALL processed sheets which are impacted
-- Extract from any column/row mentioning affected applications
-- Check all sheets for application names
- 
-**VERY CRITICAL**: If an "Applications Impacted" table exists in the source, reproduce it exactly as a markdown table. Do NOT create a generic list.
+- List ONLY the applications explicitly with an impact status of anything except for "-", "" and "No"
  
 ### 2.3 List of APIs required
  
@@ -996,7 +993,7 @@ Before finalizing sections 8.0-11.0, verify that every piece of information can 
  
 OUTPUT FORMAT:
 Provide ONLY the markdown sections (## 7.0, ### 7.1, etc.) with the extracted content. Do not include any of these instructions, validation checks, or processing guidelines in your response.
- 
+ q
  
 """
  
@@ -1625,7 +1622,8 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         return str_val
     
-    def extract_horizontal_table(df, start_row_idx, start_col_idx, table_identifier):
+    def extract_horizontal_table(df, trigger_row_idx, start_col_idx, table_identifier):
+        """Extract horizontal table structure starting from a trigger row"""
         table_data = {
             "table_type": table_identifier,
             "headers": [],
@@ -1634,77 +1632,92 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         }
         
         try:
-            current_row = start_row_idx
-            max_search_rows = min(start_row_idx + 10, len(df))
-            
-            found_headers = False
+            # Look for header row - it should be the next non-empty row after trigger
             header_row_idx = None
+            data_start_row_idx = None
             
-            for search_row in range(current_row, max_search_rows):
-                if search_row >= len(df):
+            # Search for the actual header row (next 3 rows max)
+            for search_offset in range(1, 4):
+                check_row_idx = trigger_row_idx + search_offset
+                if check_row_idx >= len(df):
                     break
-                    
-                row_data = df.iloc[search_row].values
                 
-                non_empty_cells = [str(cell).strip() for cell in row_data if pd.notna(cell) and str(cell).strip()]
+                # Get the row data starting from the same column as trigger
+                row_data = df.iloc[check_row_idx, start_col_idx:].values
+                non_empty_count = sum(1 for cell in row_data if pd.notna(cell) and str(cell).strip())
                 
-                product_indicators = ['ULIP', 'Term', 'Endowment', 'Annuity', 'Health', 'Group', 'All']
-                app_indicators = ['OPUS', 'INSTAB', 'NGIN', 'PMAC', 'CRM', 'Cashier', 'Other']
-                
-                if any(indicator in ' '.join(non_empty_cells).upper() for indicator in product_indicators + app_indicators):
-                    header_row_idx = search_row
-                    found_headers = True
+                # If we find a row with multiple non-empty cells, it's likely the header
+                if non_empty_count >= 3:  # At least 3 columns for a proper table
+                    header_row_idx = check_row_idx
+                    data_start_row_idx = check_row_idx + 1
                     break
             
-            if found_headers and header_row_idx is not None:
-                header_row = df.iloc[header_row_idx]
-                headers = []
-                header_positions = []
+            if header_row_idx is None:
+                return table_data
+            
+            # Extract headers from the identified header row
+            header_row = df.iloc[header_row_idx]
+            headers = []
+            header_col_indices = []
+            
+            # Start from the trigger column and move right to collect headers
+            for col_idx in range(start_col_idx, len(header_row)):
+                cell_value = header_row.iloc[col_idx]
+                if pd.notna(cell_value) and str(cell_value).strip():
+                    clean_header = clean_cell_value(cell_value)
+                    if clean_header not in ["-", ""]:
+                        headers.append(clean_header)
+                        header_col_indices.append(col_idx)
+                elif headers:  # Stop when we hit empty cells after finding headers
+                    break
+            
+            table_data["headers"] = headers
+            
+            if not headers:
+                return table_data
+            
+            # Extract data rows (typically just one row for this type of table)
+            max_data_rows = min(data_start_row_idx + 3, len(df))  # Check next 3 rows max
+            
+            for data_row_idx in range(data_start_row_idx, max_data_rows):
+                if data_row_idx >= len(df):
+                    break
                 
-                for col_idx, cell_value in enumerate(header_row):
-                    if pd.notna(cell_value) and str(cell_value).strip():
-                        clean_header = clean_cell_value(cell_value)
-                        if clean_header != "-" and not clean_header.startswith("Insert"):
-                            headers.append(clean_header)
-                            header_positions.append(col_idx)
+                data_row = df.iloc[data_row_idx]
+                row_values = []
+                has_meaningful_data = False
                 
-                table_data["headers"] = headers
+                # Extract values for each header column
+                for col_idx in header_col_indices:
+                    if col_idx < len(data_row):
+                        cell_val = clean_cell_value(data_row.iloc[col_idx])
+                        row_values.append(cell_val)
+                        # Check for meaningful data (not just "-" or empty)
+                        if cell_val not in ["-", "", "nan"]:
+                            has_meaningful_data = True
+                    else:
+                        row_values.append("-")
                 
-                data_start_row = header_row_idx + 1
-                max_data_rows = min(data_start_row + 5, len(df))
-                
-                for data_row_idx in range(data_start_row, max_data_rows):
-                    if data_row_idx >= len(df):
-                        break
-                        
-                    data_row = df.iloc[data_row_idx]
+                if has_meaningful_data:
+                    # Use the first column value as row description, or create a generic one
+                    row_description = "Data Row"
+                    if start_col_idx > 0:
+                        desc_cell = data_row.iloc[start_col_idx - 1] if start_col_idx - 1 < len(data_row) else None
+                        if pd.notna(desc_cell):
+                            row_description = clean_cell_value(desc_cell)
                     
-                    row_values = []
-                    has_data = False
-                    
-                    for pos in header_positions:
-                        if pos < len(data_row):
-                            cell_val = clean_cell_value(data_row.iloc[pos])
-                            row_values.append(cell_val)
-                            if cell_val not in ["-", ""]:
-                                has_data = True
-                        else:
-                            row_values.append("-")
-                    
-                    if has_data:
-                        row_description = data_row.iloc[0] if pd.notna(data_row.iloc[0]) else f"Row {data_row_idx + 1}"
-                        
-                        row_data = {
-                            "row_description": clean_cell_value(row_description),
-                            "values": dict(zip(headers, row_values))
-                        }
-                        table_data["data_rows"].append(row_data)
-                
-                if headers and table_data["data_rows"]:
-                    table_data["raw_structure"] = {
-                        "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
-                        "structured_data": table_data["data_rows"]
+                    row_data = {
+                        "row_description": row_description,
+                        "values": dict(zip(headers, row_values))
                     }
+                    table_data["data_rows"].append(row_data)
+            
+            # Create markdown table if we have data
+            if headers and table_data["data_rows"]:
+                table_data["raw_structure"] = {
+                    "markdown_table": create_markdown_table(headers, table_data["data_rows"]),
+                    "structured_data": table_data["data_rows"]
+                }
             
         except Exception as e:
             table_data["error"] = str(e)
@@ -1725,6 +1738,37 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
             data_lines.append(data_line)
         
         return "\n".join([header_line, separator_line] + data_lines)
+    
+    def find_and_extract_part_c_tables(df, part_c_row_idx, part_c_col_idx):
+        """Find and extract both Products Impacted and Applications Impacted tables"""
+        tables = []
+        
+        # Search in a wider range after the Part C header
+        search_range = min(part_c_row_idx + 25, len(df))
+        
+        for search_row in range(part_c_row_idx + 1, search_range):
+            if search_row >= len(df):
+                break
+            
+            # Check the entire row for table triggers
+            for col_idx in range(len(df.columns)):
+                search_cell = df.iloc[search_row, col_idx]
+                if pd.notna(search_cell):
+                    cell_text = str(search_cell).strip()
+                    
+                    # Look for "Products Impacted" trigger
+                    if "Products Impacted" in cell_text:
+                        products_table = extract_horizontal_table(df, search_row, col_idx, "Products Impacted")
+                        if products_table["headers"]:
+                            tables.append(products_table)
+                    
+                    # Look for "Applications Impacted" trigger  
+                    elif "Applications Impacted" in cell_text:
+                        apps_table = extract_horizontal_table(df, search_row, col_idx, "Applications Impacted")
+                        if apps_table["headers"]:
+                            tables.append(apps_table)
+        
+        return tables
     
     result = {
         "metadata": {
@@ -1774,6 +1818,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
         
         result["metadata"]["total_sheets"] = len(excel_data)
         
+        # Extract Part C content with improved table detection
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
@@ -1806,6 +1851,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                 "horizontal_tables": []
                             }
                             
+                            # Extract content below Part C header
                             for next_row in range(row_idx + 1, min(row_idx + 10, len(df))):
                                 if next_row < len(df):
                                     next_cell = df.iloc[next_row][col]
@@ -1815,6 +1861,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                             "text": str(next_cell).strip()
                                         })
                             
+                            # Extract adjacent content
                             for adj_col_offset in [-1, 1]:
                                 adj_col_index = col_idx + adj_col_offset
                                 if 0 <= adj_col_index < len(df.columns):
@@ -1828,29 +1875,15 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                                 "text": str(adj_cell).strip()
                                             })
                             
-
-                            for search_row in range(row_idx + 1, min(row_idx + 15, len(df))):
-                                if search_row < len(df):
-                                    search_cell = df.iloc[search_row][col]
-                                    if pd.notna(search_cell) and "Products Impacted" in str(search_cell):
-                                        products_table = extract_horizontal_table(df, search_row, col_idx, "Products Impacted")
-                                        if products_table["headers"]:
-                                            part_c_entry["horizontal_tables"].append(products_table)
-                                        break
-                            
-                            for search_row in range(row_idx + 1, min(row_idx + 20, len(df))):
-                                if search_row < len(df):
-                                    search_cell = df.iloc[search_row][col]
-                                    if pd.notna(search_cell) and "Applications Impacted" in str(search_cell):
-                                        apps_table = extract_horizontal_table(df, search_row, col_idx, "Applications Impacted")
-                                        if apps_table["headers"]:
-                                            part_c_entry["horizontal_tables"].append(apps_table)
-                                        break
+                            # Use the improved table extraction function
+                            tables = find_and_extract_part_c_tables(df, row_idx, col_idx)
+                            part_c_entry["horizontal_tables"] = tables
                             
                             result["priority_content"]["part_c"].append(part_c_entry)
                             result["summary"]["part_c_found"] = True
                             break
         
+        # Extract Part B content (unchanged)
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
@@ -1908,6 +1941,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                             result["summary"]["part_b_found"] = True
                             break
 
+        # Extract Part E content (unchanged)
         part_e_patterns = [
             "PART E : (Mandatory/Optional)",
             "PART E (Mandatory/Optional)",
@@ -1937,7 +1971,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                 "detailed_responses": []
                             }
 
-                            # ↓ Collect exactly next 8 rows (dynamic but fixed count)
+                            # Collect exactly next 8 rows
                             for offset in range(1, 9):
                                 next_row = row_idx + offset
                                 if next_row < len(df):
@@ -1947,7 +1981,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                                         "text": "" if pd.isna(next_cell) else str(next_cell).strip()
                                     })
 
-                            # ↓ Collect adjacent values for same 8 rows
+                            # Collect adjacent values for same 8 rows
                             for adj_col_offset in [-1, 1]:
                                 adj_col_index = col_idx + adj_col_offset
                                 if 0 <= adj_col_index < len(df.columns):
@@ -1966,7 +2000,7 @@ def extract_content_from_excel(excel_file, max_rows_per_sheet=70, max_sample_row
                             result["summary"]["part_e_found"] = True
                             break
 
-
+        # Process remaining sheets (unchanged)
         for sheet_name, df in excel_data.items():
             if df.empty:
                 continue
