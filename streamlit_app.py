@@ -140,80 +140,19 @@ def expand_product_categories(impacted_products_text, product_alignment):
 def load_product_alignment():
 
     try:
-        product_alignment = {
-            "annuity": [
-                "Bajaj Allianz Life Guaranteed Pension Goal II",
-                "Bajaj Allianz Life Saral Pension"
-            ],
-            "combi": [
-                "Bajaj Allianz Life Capital Goal Suraksha"
-            ],
-            "group": [
-                "Bajaj Allianz Life Group Term Life",
-                "Bajaj Allianz Life Group Credit Protection Plus",
-                "Bajaj Allianz Life Group Sampoorna Jeevan Suraksha",
-                "Bajaj Allianz Life Group Employee Benefit",
-                "Bajaj Allianz Life Group Superannuation Secure Plus",
-                "Bajaj Allianz Life Group Superannuation Secure",
-                "Bajaj Allianz Life Group Employee Care",
-                "Bajaj Allianz Life Group Secure Return",
-                "Bajaj Allianz Life Group Sampoorna Suraksha Kavach",
-                "Bajaj Allianz Life Pradhan Mantri Jeevan Jyoti Bima Yojana",
-                "Bajaj Allianz Life Group Secure Shield",
-                "Bajaj Allianz Life Group Investment Plan"
-            ],
-            "non_par": [
-                "Bajaj Allianz Life Goal Suraksha",
-                "Bajaj Allianz Life Assured Wealth Goal Platinum",
-                "Bajaj Allianz Life Guaranteed Wealth Goal",
-                "Bajaj Allianz Life Guaranteed Saving Goal",
-                "Bajaj Allianz Life Assured Wealth Goal"
-            ],
-            "par": [
-                "Bajaj Allianz Life ACE",
-                "Bajaj Allianz Life ACE Advantage"
-            ],
-            "rider": [
-                "Bajaj Allianz Accidental Death Benefit Rider",
-                "Bajaj Allianz Accidental Permanent Total/Partial Disability Benefit Rider",
-                "Bajaj Allianz Life Linked Accident Protection Rider II",
-                "Bajaj Allianz Life Family Protect Rider",
-                "Bajaj Allianz Life Group New Terminal Illness Rider",
-                "Bajaj Allianz Life Group Accelerated Critical Illness Rider",
-                "Bajaj Allianz Life Group Accidental Permanent Total/Partial Disability Benefit Rider",
-                "Bajaj Allianz Life Group Critical Illness Rider",
-                "Bajaj Allianz Life Group Accidental Death Benefit",
-                "Bajaj Allianz Life New Critical Illness Benefit Rider",
-                "Bajaj Allianz Life Care Plus Rider",
-                "Bajaj Allianz Life Linked Critical Illness Benefit Rider"
-            ],
-            "term": [
-                "Bajaj Allianz Life iSecure II",
-                "Bajaj Allianz Life eTouch II",
-                "Bajaj Allianz Life Saral Jeevan Bima",
-                "Bajaj Allianz Life Diabetic Term Plan II Sub 8 HbA1c",
-                "Bajaj Allianz Life Smart Protection Goal"
-            ],
-            "ulip": [
-                "Bajaj Allianz Life Goal Assure IV",
-                "Bajaj Allianz Life Magnum Fortune Plus III",
-                "Bajaj Allianz Life Invest Protect Goal III",
-                "Bajaj Allianz Life Fortune Gain II",
-                "Bajaj Allianz Life Future Wealth Gain IV",
-                "Bajaj Allianz Life LongLife Goal III",
-                "Bajaj Allianz Life Smart Wealth Goal V",
-                "Bajaj Allianz Life Goal Based Saving III",
-                "Bajaj Allianz Life Elite Assure"
-            ],
-            "ulip_pension": [
-                "Bajaj Allianz Life Smart Pension"
-            ],
-            "endowment_plans": [
-                "Bajaj Allianz Life Assured Wealth Goal Platinum",
-                "Bajaj Allianz Life ACE",
-                "Bajaj Allianz Life Goal Suraksha"
-            ]
-        }
+        
+product_alignment = {
+    'annuity': ['annuity_1', 'annuity_2'],
+    'combi': ['combi_1'],
+    'group': ['group_1', 'group_2', 'group_3', 'group_4', 'group_5', 'group_6', 'group_7', 'group_8', 'group_9', 'group_10', 'group_11', 'group_12'],
+    'non_par': ['non_par_1', 'non_par_2', 'non_par_3', 'non_par_4', 'non_par_5'],
+    'par': ['par_1', 'par_2'],
+    'rider': ['rider_1', 'rider_2', 'rider_3', 'rider_4', 'rider_5', 'rider_6', 'rider_7', 'rider_8', 'rider_9', 'rider_10', 'rider_11', 'rider_12'],
+    'term': ['term_1', 'term_2', 'term_3', 'term_4', 'term_5'],
+    'ulip': ['ulip_1', 'ulip_2', 'ulip_3', 'ulip_4', 'ulip_5', 'ulip_6', 'ulip_7', 'ulip_8', 'ulip_9'],
+    'ulip_pension': ['ulip_pension_1'],
+    'endowment_plans': ['endowment_plans_1', 'endowment_plans_2', 'endowment_plans_3']
+}
         
         return product_alignment
         
