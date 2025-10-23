@@ -2162,7 +2162,6 @@ def inject_apis_table_into_section(full_text: str, api_table_md: str) -> str:
 
 st.title("Business Requirements Document Generator")
 
-st.subheader("AI Model Selection")
 with st.sidebar:
     st.header("⚙️ API Configuration")
     
