@@ -987,41 +987,29 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
     output_parser = StrOutputParser()
     
     chains = []
-    chain1 = (
-        PromptTemplate(
-            input_variables=['requirements'],
-            template=SECTION_TEMPLATES["intro_impact"]
-        ),
-        | model
-        | output_parser
+    prompt1 = PromptTemplate(
+        input_variables=['requirements'],
+        template=SECTION_TEMPLATES["intro_impact"]
     )
+    chain1 = prompt1.pipe(model).pipe(output_parser)
     
-    chain2 = (
-        PromptTemplate(
-            input_variables=['previous_content', 'requirements'],
-            template=SECTION_TEMPLATES["process_requirements"]
-        ),
-        | model
-        | output_parser
+    prompt2 = PromptTemplate(
+        input_variables=['previous_content', 'requirements'],
+        template=SECTION_TEMPLATES["process_requirements"]
     )
+    chain2 = prompt2.pipe(model).pipe(output_parser)
     
-    chain3 = (
-        PromptTemplate(
-            input_variables=['previous_content', 'requirements'],
-            template=SECTION_TEMPLATES["data_communication"]
-        ),
-        | model
-        | output_parser
+    prompt3 = PromptTemplate(
+        input_variables=['previous_content', 'requirements'],
+        template=SECTION_TEMPLATES["data_communication"]
     )
+    chain3 = prompt3.pipe(model).pipe(output_parser)
     
-    chain4 = (
-        PromptTemplate(
-            input_variables=['previous_content', 'requirements'],
-            template=SECTION_TEMPLATES["testing_final"]
-        ),
-        | model
-        | output_parser
+    prompt4 = PromptTemplate(
+        input_variables=['previous_content', 'requirements'],
+        template=SECTION_TEMPLATES["testing_final"]
     )
+    chain4 = prompt4.pipe(model).pipe(output_parser)
     
     return [chain1, chain2, chain3, chain4]
 
