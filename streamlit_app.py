@@ -21,6 +21,7 @@ from docx.enum.style import WD_STYLE_TYPE
 from langchain_openai import AzureChatOpenAI
 from openpyxl import load_workbook
 import json
+from langchain_core.runnables import RunnableSequence
 
 def expand_product_categories(impacted_products_text, product_alignment):
     if not product_alignment or not impacted_products_text:
@@ -984,32 +985,45 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
             temperature=0.2,
             top_p=0.2
         )
+    
     output_parser = StrOutputParser()
     
-    chains = []
-    prompt1 = PromptTemplate(
-        input_variables=['requirements'],
-        template=SECTION_TEMPLATES["intro_impact"]
+    # Create chains using RunnableSequence
+    chain1 = RunnableSequence(
+        PromptTemplate(
+            input_variables=['requirements'],
+            template=SECTION_TEMPLATES["intro_impact"]
+        ),
+        model,
+        output_parser
     )
-    chain1 = prompt1.pipe(model).pipe(output_parser)
     
-    prompt2 = PromptTemplate(
-        input_variables=['previous_content', 'requirements'],
-        template=SECTION_TEMPLATES["process_requirements"]
+    chain2 = RunnableSequence(
+        PromptTemplate(
+            input_variables=['previous_content', 'requirements'],
+            template=SECTION_TEMPLATES["process_requirements"]
+        ),
+        model,
+        output_parser
     )
-    chain2 = prompt2.pipe(model).pipe(output_parser)
     
-    prompt3 = PromptTemplate(
-        input_variables=['previous_content', 'requirements'],
-        template=SECTION_TEMPLATES["data_communication"]
+    chain3 = RunnableSequence(
+        PromptTemplate(
+            input_variables=['previous_content', 'requirements'],
+            template=SECTION_TEMPLATES["data_communication"]
+        ),
+        model,
+        output_parser
     )
-    chain3 = prompt3.pipe(model).pipe(output_parser)
     
-    prompt4 = PromptTemplate(
-        input_variables=['previous_content', 'requirements'],
-        template=SECTION_TEMPLATES["testing_final"]
+    chain4 = RunnableSequence(
+        PromptTemplate(
+            input_variables=['previous_content', 'requirements'],
+            template=SECTION_TEMPLATES["testing_final"]
+        ),
+        model,
+        output_parser
     )
-    chain4 = prompt4.pipe(model).pipe(output_parser)
     
     return [chain1, chain2, chain3, chain4]
 
