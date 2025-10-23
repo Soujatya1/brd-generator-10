@@ -959,6 +959,8 @@ def chunk_requirements(requirements, max_chunk_size=8000):
     
     return chunks
 
+
+
 @st.cache_resource
 def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azure_deployment=None, api_version=None):
     
@@ -2161,21 +2163,32 @@ def inject_apis_table_into_section(full_text: str, api_table_md: str) -> str:
 st.title("Business Requirements Document Generator")
 
 st.subheader("AI Model Selection")
-api_provider = st.radio("Select API Provider:", ["OpenAI", "Groq", "AzureOpenAI"])
-
-if api_provider == "OpenAI":
-    api_key = st.text_input("Enter your OpenAI API Key:", type="password")
-elif api_provider == "AzureOpenAI":
-    api_key = st.text_input("Enter your Azure OpenAI API Key:", type="password")
-    azure_endpoint = st.text_input("Enter your Azure OpenAI Endpoint:", 
-                                   placeholder="https://your-resource.openai.azure.com/")
-    azure_deployment = st.text_input("Enter your Azure Deployment Name:", 
-                                     placeholder="gpt-35-turbo")
-    api_version = st.text_input("Enter API Version (optional):", 
-                                value="2025-01-01-preview",
-                                placeholder="2025-01-01-preview")
-else:
-    api_key = st.text_input("Enter your Groq API Key:", type="password")
+with st.sidebar:
+    st.header("⚙️ API Configuration")
+    
+    api_provider = st.radio("Select API Provider:", ["OpenAI", "Groq", "AzureOpenAI"])
+    
+    if api_provider == "OpenAI":
+        api_key = st.text_input("Enter your OpenAI API Key:", type="password")
+        azure_endpoint = None
+        azure_deployment = None
+        api_version = None
+    elif api_provider == "AzureOpenAI":
+        api_key = st.text_input("Enter your Azure OpenAI API Key:", type="password")
+        azure_endpoint = st.text_input("Enter your Azure OpenAI Endpoint:", 
+                                       placeholder="https://your-resource.openai.azure.com/")
+        azure_deployment = st.text_input("Enter your Azure Deployment Name:", 
+                                         placeholder="gpt-35-turbo")
+        api_version = st.text_input("Enter API Version (optional):", 
+                                    value="2025-01-01-preview",
+                                    placeholder="2025-01-01-preview")
+    else:  # Groq
+        api_key = st.text_input("Enter your Groq API Key:", type="password")
+        azure_endpoint = None
+        azure_deployment = None
+        api_version = None
+    
+    st.divider()
 
 st.subheader("Document Logo")
 
