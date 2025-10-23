@@ -2,7 +2,7 @@ import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain_core.output_parsers import StrOutputParser
 from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -984,42 +984,43 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
             temperature=0.2,
             top_p=0.2
         )
+    output_parser = StrOutputParser()
     
     chains = []
-    chain1 = LLMChain(
-        llm=model,
+    chain1 = (
         prompt=PromptTemplate(
             input_variables=['requirements'],
             template=SECTION_TEMPLATES["intro_impact"]
         ),
-        output_key="intro_impact_sections"
+        | model
+        | output_parser
     )
     
-    chain2 = LLMChain(
-        llm=model,
+    chain2 = (
         prompt=PromptTemplate(
             input_variables=['previous_content', 'requirements'],
             template=SECTION_TEMPLATES["process_requirements"]
         ),
-        output_key="process_requirements_sections"
+        | model
+        | output_parser
     )
     
-    chain3 = LLMChain(
-        llm=model,
+    chain3 = (
         prompt=PromptTemplate(
             input_variables=['previous_content', 'requirements'],
             template=SECTION_TEMPLATES["data_communication"]
         ),
-        output_key="data_communication_sections"
+        | model
+        | output_parser
     )
     
-    chain4 = LLMChain(
-        llm=model,
+    chain4 = (
         prompt=PromptTemplate(
             input_variables=['previous_content', 'requirements'],
             template=SECTION_TEMPLATES["testing_final"]
         ),
-        output_key="testing_final_sections"
+        | model
+        | output_parser
     )
     
     return [chain1, chain2, chain3, chain4]
