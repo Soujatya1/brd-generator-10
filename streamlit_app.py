@@ -2025,11 +2025,11 @@ def add_header_with_logo(doc, logo_bytes):
     logo_stream = BytesIO(logo_bytes)
     run.add_picture(logo_stream, width=Inches(1.5))
 
-def create_word_document(content, logo_data=None):
+def create_word_document(content):
     doc = Document()
     
-    if logo_data:
-        add_header_with_logo(doc, logo_data)
+    # if logo_data:
+    #     add_header_with_logo(doc, logo_data)
     
     for _ in range(12):
         doc.add_paragraph()
@@ -2293,7 +2293,7 @@ if st.button("Generate BRD", type="primary"):
                 
                 try:
                     with st.spinner("Creating Word document..."):
-                        doc = create_word_document(brd_content, logo_data)
+                        doc = create_word_document(brd_content)
                         
                         doc_buffer = BytesIO()
                         doc.save(doc_buffer)
