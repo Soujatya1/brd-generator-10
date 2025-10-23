@@ -988,7 +988,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
     
     chains = []
     chain1 = (
-        prompt=PromptTemplate(
+        PromptTemplate(
             input_variables=['requirements'],
             template=SECTION_TEMPLATES["intro_impact"]
         ),
@@ -997,7 +997,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
     )
     
     chain2 = (
-        prompt=PromptTemplate(
+        PromptTemplate(
             input_variables=['previous_content', 'requirements'],
             template=SECTION_TEMPLATES["process_requirements"]
         ),
@@ -1006,7 +1006,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
     )
     
     chain3 = (
-        prompt=PromptTemplate(
+        PromptTemplate(
             input_variables=['previous_content', 'requirements'],
             template=SECTION_TEMPLATES["data_communication"]
         ),
@@ -1015,7 +1015,7 @@ def initialize_sequential_chains(api_provider, api_key, azure_endpoint=None, azu
     )
     
     chain4 = (
-        prompt=PromptTemplate(
+        PromptTemplate(
             input_variables=['previous_content', 'requirements'],
             template=SECTION_TEMPLATES["testing_final"]
         ),
