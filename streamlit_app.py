@@ -2189,13 +2189,13 @@ with st.sidebar:
     
     st.divider()
 
-st.subheader("Document Logo")
+# st.subheader("Document Logo")
 
-logo_file = st.file_uploader("Upload Company Logo (optional):", type=['png', 'jpg', 'jpeg'])
-logo_data = None
-if logo_file:
-    logo_data = logo_file.getvalue()
-    st.success("Logo uploaded successfully!")
+# logo_file = st.file_uploader("Upload Company Logo (optional):", type=['png', 'jpg', 'jpeg'])
+# logo_data = None
+# if logo_file:
+#     logo_data = logo_file.getvalue()
+#     st.success("Logo uploaded successfully!")
 
 st.subheader("Upload Requirements Documents")
 uploaded_files = st.file_uploader(
