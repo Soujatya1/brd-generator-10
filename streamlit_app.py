@@ -1102,7 +1102,7 @@ def generate_brd_sequentially(chains, requirements):
                     st.write("**Template Used:**")
                     st.code(SECTION_TEMPLATES["intro_impact"][:500] + "...")
                     
-                    result = chain.invoke(requirements=combined_requirements)
+                    result = chain.invoke(input=combined_requirements)
                 else:
                     chain_names = ["", "Process & Requirements", "Data & Communication", "Testing & Final"]
                     st.write(f"**Input to Chain {i+1} ({chain_names[i]}):**")
@@ -1119,7 +1119,7 @@ def generate_brd_sequentially(chains, requirements):
                     st.write(f"**Template Used ({template_keys[i]}):**")
                     st.code(SECTION_TEMPLATES[template_keys[i]][:500] + "...")
                     
-                    result = chain.invoke(previous_content=previous_content, requirements=combined_requirements)
+                    result = chain.invoke(previous_content=previous_content, input=combined_requirements)
                 
                 st.write(f"**Chain {i+1} Output:**")
                 st.write(f"- Response length: {len(result):,} characters")
