@@ -140,8 +140,7 @@ def expand_product_categories(impacted_products_text, product_alignment):
 def load_product_alignment():
 
     try:
-        
-product_alignment = {
+        product_alignment = {
     'annuity': ['annuity_1', 'annuity_2'],
     'combi': ['combi_1'],
     'group': ['group_1', 'group_2', 'group_3', 'group_4', 'group_5', 'group_6', 'group_7', 'group_8', 'group_9', 'group_10', 'group_11', 'group_12'],
